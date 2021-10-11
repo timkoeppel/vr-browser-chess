@@ -1,7 +1,7 @@
 import "@babylonjs/core/Debug/debugLayer";
 import "@babylonjs/inspector";
 import "@babylonjs/loaders/glTF";
-import { Engine, Scene, ArcRotateCamera, Vector3, HemisphericLight, Mesh, MeshBuilder, SceneLoader, PointLight } from "@babylonjs/core";
+import { Engine, Scene, ArcRotateCamera, Vector3, HemisphericLight, Mesh, MeshBuilder, SceneLoader, Color3, PointLight, WebXRExperienceHelper, WebXREnterExitUI } from "@babylonjs/core";
 
 class App {
     constructor() {
@@ -12,12 +12,6 @@ class App {
         canvas.id = "gameCanvas";
         document.body.appendChild(canvas);
 
-        let elem = document.documentElement;
-
-        elem.requestFullscreen({ navigationUI: "show" }).then(() => { }).catch(err => {
-            alert(`An error occurred while trying to switch into full-screen mode: ${err.message} (${err.name})`);
-        });
-
         // initialize babylon scene and engine
         var engine = new Engine(canvas, true);
         var scene = new Scene(engine);
@@ -27,26 +21,24 @@ class App {
 
 
         SceneLoader.AppendAsync("", "scene.babylon", scene).then(result => {
-            const kb = scene.getMeshByName("king_b");
-            camera.setTarget(kb);
-        })
+            camera.setTarget(scene.getMeshByName("king_b"));
+        });
 
+        // Default Environment
+        var environment = scene.createDefaultEnvironment({ enableGroundShadow: true, groundYBias: 2.8 });
+        environment.setMainColor(Color3.FromHexString("#74b9ff"));
+
+        // Enable VR
+        var vrHelper = scene.createDefaultVRExperience({createDeviceOrientationCamera:false, useXR: true});
+        vrHelper.enableTeleportation({floorMeshes: [environment.ground]});
 
         scene.registerBeforeRender(function () {
             light.position = camera.position;
-        });
+        })
 
-        // hide/show the Inspector
-        window.addEventListener("keydown", (ev) => {
-            // Shift+Ctrl+Alt+I
-            if (ev.shiftKey && ev.ctrlKey && ev.altKey && ev.keyCode === 73) {
-                if (scene.debugLayer.isVisible()) {
-                    scene.debugLayer.hide();
-                } else {
-                    scene.debugLayer.show();
-                }
-            }
-        });
+
+
+
 
         // run the main render loop
         engine.runRenderLoop(() => {
