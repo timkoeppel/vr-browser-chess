@@ -15,6 +15,7 @@ module.exports = {
         extensions: [".tsx", ".ts", ".js"],
     },
     devServer: {
+        https: true,
         host: "0.0.0.0",
         port: 8080,
         //disableHostCheck: true,

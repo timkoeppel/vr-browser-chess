@@ -32,12 +32,6 @@ export default class Game {
             result.meshes[2].position = new BABYLON.Vector3(0,25,0);
         });
 
-        // Enable VR
-        this._vr = this._scene.createDefaultVRExperience({
-            createDeviceOrientationCamera: false,
-            useXR: false,
-        });
-
         // Camera
         this._camera = new BABYLON.DeviceOrientationCamera(
             "camera_white",
@@ -47,8 +41,14 @@ export default class Game {
         this._scene.activeCamera = this._camera;
         this._camera.setTarget(BABYLON.Vector3.Zero());
         this._camera.attachControl(this._canvas, true);
-        //this._camera.angularSensibility = 10000;
+        this._camera.angularSensibility = 10000;
         //this._camera.disablePointerInputWhenUsingDeviceOrientation = true;
+        
+        // Enable VR
+        this._vr = this._scene.createDefaultVRExperience({
+            createDeviceOrientationCamera: true,
+            useXR: false,
+        });
         
     }
 
