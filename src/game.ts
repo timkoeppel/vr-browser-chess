@@ -3,7 +3,6 @@ import "@babylonjs/inspector";
 import "@babylonjs/loaders/glTF";
 import * as BABYLON from "@babylonjs/core";
 
-
 export default class Game {
     private _canvas: HTMLCanvasElement;
     private _engine: BABYLON.Engine;
@@ -43,16 +42,16 @@ export default class Game {
         this._camera.setTarget(BABYLON.Vector3.Zero());
         this._camera.attachControl(this._canvas, true);
         this._camera.angularSensibility = 10000;
-        //this._camera.disablePointerInputWhenUsingDeviceOrientation = true;
-
-        /* VR (deprecated)
-        this._vr = this._scene.createDefaultVRExperience({
-            createDeviceOrientationCamera: false,
-            useXR: false,
-        });*/
 
         // XR
         this._xr = await this._scene.createDefaultXRExperienceAsync({});
+        // XR puts camera on floor automatically -> Reset to original
+        // cam position
+        this._xr.baseExperience.onInitialXRPoseSetObservable.add(xrCamera => {
+            xrCamera.position = this._camera.position;
+            xrCamera.setTarget(this._scene.getMeshByID("board").position);
+        })
+
 
     }
 
