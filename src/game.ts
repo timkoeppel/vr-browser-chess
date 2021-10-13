@@ -10,9 +10,10 @@ export default class Game {
     private _scene: BABYLON.Scene;
     private _camera: BABYLON.DeviceOrientationCamera;
     private _light: BABYLON.Light;
-    private _vr: BABYLON.VRExperienceHelper;
+    //private _vr: BABYLON.VRExperienceHelper;
+    private _xr: BABYLON.WebXRDefaultExperience;
 
-    public CreateScene(): void {
+    public async CreateScene(): Promise<void> {
         // Initializations
         this._canvas = document.getElementById("gameCanvas") as HTMLCanvasElement;
         this._engine = new BABYLON.Engine(this._canvas, true);
@@ -20,22 +21,22 @@ export default class Game {
 
         // Lights
         this._light = new BABYLON.HemisphericLight(
-            "main_light", 
-            new BABYLON.Vector3(0, 50, 0), 
+            "main_light",
+            new BABYLON.Vector3(0, 50, 0),
             this._scene
         );
 
         // Load Scene
         BABYLON.SceneLoader.ImportMeshAsync("", "", "scene.babylon", this._scene).then(result => {
             // Board adjustment due to import error
-            result.meshes[1].position = new BABYLON.Vector3(0,25,0);
-            result.meshes[2].position = new BABYLON.Vector3(0,25,0);
+            result.meshes[1].position = new BABYLON.Vector3(0, 25, 0);
+            result.meshes[2].position = new BABYLON.Vector3(0, 25, 0);
         });
 
         // Camera
         this._camera = new BABYLON.DeviceOrientationCamera(
             "camera_white",
-            new BABYLON.Vector3(0, 40, 15), 
+            new BABYLON.Vector3(0, 40, 15),
             this._scene
         );
         this._scene.activeCamera = this._camera;
@@ -43,13 +44,16 @@ export default class Game {
         this._camera.attachControl(this._canvas, true);
         this._camera.angularSensibility = 10000;
         //this._camera.disablePointerInputWhenUsingDeviceOrientation = true;
-        
-        // Enable VR
+
+        /* VR (deprecated)
         this._vr = this._scene.createDefaultVRExperience({
-            createDeviceOrientationCamera: true,
+            createDeviceOrientationCamera: false,
             useXR: false,
-        });
-        
+        });*/
+
+        // XR
+        this._xr = await this._scene.createDefaultXRExperienceAsync({});
+
     }
 
     public DoRender(): void {
