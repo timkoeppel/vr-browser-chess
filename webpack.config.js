@@ -7,8 +7,9 @@ const appDirectory = fs.realpathSync(process.cwd());
 module.exports = {
     entry: path.resolve(appDirectory, "src/app.ts"), //path to the main .ts file
     output: {
-        filename: "js/bundleName.js", //name for the js file that is created/compiled in memory
+        filename: "[name].js", //name for the js file that is created/compiled in memory
         path: path.resolve(__dirname, "dist"),
+        //sourceMapFilename: "bundleName.js.map",
         clean: true,
     },
     resolve: {
@@ -21,11 +22,12 @@ module.exports = {
         //disableHostCheck: true,
         hot: true,
     },
+    devtool: "source-map",
     module: {
         rules: [
             {
                 test: /\.tsx?$/,
-                use: "ts-loader",
+                use: ["ts-loader", 'source-map-loader'],
                 exclude: /node_modules/,
             },
         ],

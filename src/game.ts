@@ -2,6 +2,7 @@ import "@babylonjs/core/Debug/debugLayer";
 import "@babylonjs/inspector";
 import "@babylonjs/loaders/glTF";
 import * as BABYLON from "@babylonjs/core";
+import {Avatar} from "./Avatar";
 
 export default class Game {
     private _canvas: HTMLCanvasElement;
@@ -26,10 +27,13 @@ export default class Game {
         );
 
         // Load Scene
-        BABYLON.SceneLoader.ImportMeshAsync("", "", "scene.babylon", this._scene).then(result => {
+        BABYLON.SceneLoader.ImportMeshAsync("", "/meshes/", "scene.babylon", this._scene).then(result => {
             // Board adjustment due to import error
+            console.log(result);
             result.meshes[1].position = new BABYLON.Vector3(0, 25, 0);
             result.meshes[2].position = new BABYLON.Vector3(0, 25, 0);
+        }).catch(error => {
+            console.log(error);
         });
 
         // Camera
@@ -50,11 +54,35 @@ export default class Game {
         this._xr.baseExperience.onInitialXRPoseSetObservable.add(xrCamera => {
             xrCamera.position = this._camera.position;
             xrCamera.setTarget(this._scene.getMeshByID("board").position);
-        })
+        });
 
-
+        // Load Avatars
+        // TODO Parametrize in game menu selection
+        const avatar_white = new Avatar("white", "male", 1);
+        const avatar_black = new Avatar("black", "female", 1);
+        this.LoadAvatar(avatar_white);
+        this.LoadAvatar(avatar_black);
     }
 
+    /**
+     * Loads the specified avatar
+     * @param avatar
+     * @constructor
+     */
+    public LoadAvatar(avatar): void {
+        BABYLON.SceneLoader.ImportMeshAsync("", avatar.rootURL, avatar.filename, this._scene).then(result => {
+            result.meshes.forEach(mesh => {
+                mesh.position = avatar.position;
+                mesh.rotation = avatar.rotation;
+                mesh.scaling = avatar.scale;
+            });
+        });
+    }
+
+    /**
+     * Handles the Rendering of the scene
+     * @constructor
+     */
     public DoRender(): void {
         // run the main render loop
         this._engine.runRenderLoop(() => {
