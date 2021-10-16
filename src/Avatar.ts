@@ -2,18 +2,12 @@ import * as BABYLON from "@babylonjs/core";
 import * as path from "path";
 
 export class Avatar {
+    // Properties
     public rootURL;
     public filename;
     public position;
     public rotation;
     public scale;
-
-    private _height = -15;
-    private _scale = new BABYLON.Vector3(100, 100, 100);
-    private _pos_white = new BABYLON.Vector3(0, this._height, 25);
-    private _rot_white = new BABYLON.Vector3(3 * Math.PI / 2, 0, Math.PI);
-    private _pos_black = new BABYLON.Vector3(0, this._height, -25);
-    private _rot_black = new BABYLON.Vector3(3 * Math.PI / 2, Math.PI, Math.PI);
 
     /**
      *
@@ -23,10 +17,26 @@ export class Avatar {
      */
     constructor(side, gender, no) {
         this.rootURL = `/meshes/${gender}_0${no}/`;
-        this.filename = `${gender}_0${no}.babylon`;
-        this.position = (side === "white") ? this._pos_white : this._pos_black;
-        this.rotation = (side === "white") ? this._rot_white : this._rot_black;
-        this.scale = this._scale;
+        this.filename = `${gender}_0${no}.glb`;
+        this.position = Avatar._getPosition(side);
+        this.rotation = Avatar._getRotation(side);
+        this.scale = new BABYLON.Vector3(100, 100, 100);
+    }
+
+    private static _getPosition(side): BABYLON.Vector3{
+        const x_pos = 0;
+        const y_pos = -15;
+        const z_pos = (side == "white") ? 25 : -25;
+
+        return new BABYLON.Vector3(x_pos, y_pos, z_pos);
+    }
+
+    private static _getRotation(side): BABYLON.Vector3{
+        const x_rot = 3 * Math.PI / 2;
+        const y_rot = (side === "white") ? 0 : Math.PI;
+        const z_rot = Math.PI;
+
+        return new BABYLON.Vector3(x_rot, y_rot, z_rot);
     }
 
 

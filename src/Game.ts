@@ -10,7 +10,6 @@ export default class Game {
     private _scene: BABYLON.Scene;
     private _camera: BABYLON.DeviceOrientationCamera;
     private _light: BABYLON.Light;
-    //private _vr: BABYLON.VRExperienceHelper;
     private _xr: BABYLON.WebXRDefaultExperience;
 
     public async CreateScene(): Promise<void> {
@@ -27,11 +26,8 @@ export default class Game {
         );
 
         // Load Scene
-        BABYLON.SceneLoader.ImportMeshAsync("", "/meshes/", "scene.babylon", this._scene).then(result => {
-            // Board adjustment due to import error
-            console.log(result);
-            result.meshes[1].position = new BABYLON.Vector3(0, 25, 0);
-            result.meshes[2].position = new BABYLON.Vector3(0, 25, 0);
+        BABYLON.SceneLoader.ImportMeshAsync("", "/meshes/", "scene.glb", this._scene).then(result => {
+
         }).catch(error => {
             console.log(error);
         });
@@ -71,6 +67,8 @@ export default class Game {
      */
     public LoadAvatar(avatar): void {
         BABYLON.SceneLoader.ImportMeshAsync("", avatar.rootURL, avatar.filename, this._scene).then(result => {
+            console.log(result);
+
             result.meshes.forEach(mesh => {
                 mesh.position = avatar.position;
                 mesh.rotation = avatar.rotation;

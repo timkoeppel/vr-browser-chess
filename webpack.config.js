@@ -16,7 +16,13 @@ module.exports = {
         extensions: [".tsx", ".ts", ".js"],
     },
     devServer: {
-        https: true,
+        https: {
+            cert: "./private.crt",
+            key: "./private.key",
+            cacert: "./private.pem",
+            passphrase: 'webpack-dev-server',
+            requestCert: false,
+        },
         host: "0.0.0.0",
         port: 8080,
         //disableHostCheck: true,

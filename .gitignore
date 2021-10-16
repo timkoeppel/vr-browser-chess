@@ -104,6 +104,7 @@ dist
 .tern-port
 
 # https certificates
-.key
-.pem
-.csr
+*.key
+*.pem
+*.csr
+*.crt
