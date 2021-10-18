@@ -38,14 +38,13 @@ export class Avatar {
     }
 
     /**
-     * Rotates the bones to a seating position
+     * Rotates the bones (transformNodes with .glb) to a seating position
      */
     public seatAvatar(): void {
         let bones = this.scene.transformNodes;
         let pose = new Pose(bones);
 
-        pose.clavicle_l.rotationQuaternion = Pose.seat_rotations.clavicle_l;
-
+        pose.makeSeatPose();
     }
 
     public stopAnimations(): void {
@@ -57,7 +56,7 @@ export class Avatar {
     private static _getPosition(side: string): BABYLON.Vector3 {
         const x_pos = 0;
         const y_pos = -15;
-        const z_pos = (side == "white") ? 25 : -25;
+        const z_pos = (side == "white") ? 26 : -26;
 
         return new BABYLON.Vector3(x_pos, y_pos, z_pos);
     }

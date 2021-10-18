@@ -25,7 +25,7 @@ export class Pose {
      */
     public ids = {
         id_head: "Bip01 Head",
-        id_neck:"Bip01 Neck",
+        id_neck: "Bip01 Neck",
         id_spine_2: "Bip01 Spine 2",
         id_spine_1: "Bip01 Spine 1",
         id_clavicle_l: "Bip01 L Clavicle",
@@ -45,11 +45,13 @@ export class Pose {
     }
 
     public static seat_rotations = {
-        clavicle_l: new BABYLON.Vector3(0, 0, 0).toQuaternion(),
+        clavicle_r: new BABYLON.Quaternion(0.06, -0.224, -0.068, 0.97),
+        upperarm_r: new BABYLON.Quaternion(0.101, 0.086, -0.069, 0.989),
+        forearm_r: new BABYLON.Quaternion(-0.572, -0.058, -0.104, 0.812),
 
     };
 
-    constructor(tnodes: Array<BABYLON.TransformNode>){
+    constructor(tnodes: Array<BABYLON.TransformNode>) {
         this.head = tnodes.find(b => b.id === this.ids["id_head"]);
         this.neck = tnodes.find(b => b.id === this.ids["id_neck"]);
         this.spine_2 = tnodes.find(b => b.id === this.ids["id_spine_2"]);
@@ -70,5 +72,17 @@ export class Pose {
         this.foot_r = tnodes.find(b => b.id === this.ids["id_foot_r"]);
     }
 
-
+    /**
+     * Brings the pose parts in a seating position
+     */
+    public makeSeatPose(){
+        this.upperarm_l.rotate(new BABYLON.Vector3(0, +Math.PI, 0), 0.5);
+        this.upperarm_r.rotate(new BABYLON.Vector3(0, -Math.PI, 0), 0.5);
+        this.forearm_l.rotate(new BABYLON.Vector3(+Math.PI, 0, -Math.PI), 1.5);
+        this.forearm_r.rotate(new BABYLON.Vector3(-Math.PI, 0, -Math.PI), 1.5);
+        this.thigh_l.rotate(new BABYLON.Vector3(0, 0, Math.PI), 1.35);
+        this.thigh_r.rotate(new BABYLON.Vector3(0, 0, Math.PI), 1.35);
+        this.calf_l.rotate(new BABYLON.Vector3(0, 0, -Math.PI), 1.1);
+        this.calf_r.rotate(new BABYLON.Vector3(0, 0, -Math.PI), 1.1);
+    }
 }

@@ -8,7 +8,8 @@ export default class Game {
     private _canvas: HTMLCanvasElement;
     private _engine: BABYLON.Engine;
     private _scene: BABYLON.Scene;
-    private _camera: BABYLON.DeviceOrientationCamera;
+    //private _camera: BABYLON.DeviceOrientationCamera;
+    private _camera: BABYLON.FreeCamera;
     private _light: BABYLON.Light;
     private _xr: BABYLON.WebXRDefaultExperience;
 
@@ -33,7 +34,7 @@ export default class Game {
         });
 
         // Camera
-        this._camera = new BABYLON.DeviceOrientationCamera(
+        this._camera = new BABYLON.FreeCamera(
             "camera_white",
             new BABYLON.Vector3(0, 40, 15),
             this._scene
@@ -44,13 +45,7 @@ export default class Game {
         this._camera.angularSensibility = 10000;
 
         // XR
-        this._xr = await this._scene.createDefaultXRExperienceAsync({});
-        // XR puts camera on floor automatically -> Reset to original
-        // cam position
-        this._xr.baseExperience.onInitialXRPoseSetObservable.add(xrCamera => {
-            xrCamera.position = this._camera.position;
-            xrCamera.setTarget(this._scene.getMeshByID("board").position);
-        });
+        await this.initiateXR(this._scene, this._xr, this._camera.position);
 
         // Load Avatars
         // TODO Parametrize in game menu selection
@@ -71,6 +66,22 @@ export default class Game {
             avatar.stopAnimations();
             avatar.placeAvatar();
             avatar.seatAvatar();
+        });
+    }
+
+    /**
+     * Initiates the Babylon JS Experience for mobile devices
+     * @param scene
+     * @param xr
+     * @param cameraPos
+     */
+    public async initiateXR(scene: BABYLON.Scene, xr: BABYLON.WebXRDefaultExperience, cameraPos: BABYLON.Vector3){
+        xr = await scene.createDefaultXRExperienceAsync({});
+        // XR puts camera on floor automatically
+        // -> Reset to original cam position
+        xr.baseExperience.onInitialXRPoseSetObservable.add(xrCamera => {
+            xrCamera.position = cameraPos;
+            xrCamera.setTarget(scene.getMeshByID("board").position);
         });
     }
 
