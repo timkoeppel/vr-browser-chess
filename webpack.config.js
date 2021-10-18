@@ -5,7 +5,7 @@ const {CleanWebpackPlugin} = require("clean-webpack-plugin");
 const appDirectory = fs.realpathSync(process.cwd());
 
 module.exports = {
-    entry: path.resolve(appDirectory, "src/app.ts"), //path to the main .ts file
+    entry: path.resolve(appDirectory, "src/App.ts"), //path to the main .ts file
     output: {
         filename: "[name].js", //name for the js file that is created/compiled in memory
         path: path.resolve(__dirname, "dist"),

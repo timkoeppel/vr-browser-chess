@@ -1,13 +1,14 @@
 import * as BABYLON from "@babylonjs/core";
-import * as path from "path";
+import {Pose} from "./Pose";
 
 export class Avatar {
     // Properties
-    public rootURL;
-    public filename;
-    public position;
-    public rotation;
-    public scale;
+    public rootURL: string;
+    public filename: string;
+    public position: BABYLON.Vector3;
+    public rotation: BABYLON.Vector3;
+    public scale: BABYLON.Vector3;
+    public scene: BABYLON.ISceneLoaderAsyncResult;
 
     /**
      *
@@ -23,7 +24,37 @@ export class Avatar {
         this.scale = new BABYLON.Vector3(100, 100, 100);
     }
 
-    private static _getPosition(side): BABYLON.Vector3{
+    /**
+     * Places the avatar in its respective chair
+     */
+    public placeAvatar(): void {
+        let meshes = this.scene.meshes;
+
+        meshes.forEach(mesh => {
+            mesh.position = this.position;
+            mesh.rotation = this.rotation;
+            mesh.scaling = this.scale;
+        });
+    }
+
+    /**
+     * Rotates the bones to a seating position
+     */
+    public seatAvatar(): void {
+        let bones = this.scene.transformNodes;
+        let pose = new Pose(bones);
+
+        pose.clavicle_l.rotationQuaternion = Pose.seat_rotations.clavicle_l;
+
+    }
+
+    public stopAnimations(): void {
+        this.scene.animationGroups.forEach(an => {
+            an.stop();
+        })
+    }
+
+    private static _getPosition(side: string): BABYLON.Vector3 {
         const x_pos = 0;
         const y_pos = -15;
         const z_pos = (side == "white") ? 25 : -25;
@@ -31,7 +62,7 @@ export class Avatar {
         return new BABYLON.Vector3(x_pos, y_pos, z_pos);
     }
 
-    private static _getRotation(side): BABYLON.Vector3{
+    private static _getRotation(side: string): BABYLON.Vector3 {
         const x_rot = 3 * Math.PI / 2;
         const y_rot = (side === "white") ? 0 : Math.PI;
         const z_rot = Math.PI;

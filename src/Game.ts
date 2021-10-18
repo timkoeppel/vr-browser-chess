@@ -65,15 +65,12 @@ export default class Game {
      * @param avatar
      * @constructor
      */
-    public LoadAvatar(avatar): void {
+    public LoadAvatar(avatar: Avatar): void {
         BABYLON.SceneLoader.ImportMeshAsync("", avatar.rootURL, avatar.filename, this._scene).then(result => {
-            console.log(result);
-
-            result.meshes.forEach(mesh => {
-                mesh.position = avatar.position;
-                mesh.rotation = avatar.rotation;
-                mesh.scaling = avatar.scale;
-            });
+            avatar.scene = result;
+            avatar.stopAnimations();
+            avatar.placeAvatar();
+            avatar.seatAvatar();
         });
     }
 
