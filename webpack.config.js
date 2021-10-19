@@ -17,11 +17,9 @@ module.exports = {
     },
     devServer: {
         https: {
-            cert: "./private.crt",
-            key: "./private.key",
-            cacert: "./private.pem",
-            passphrase: 'webpack-dev-server',
-            requestCert: false,
+            cert: fs.readFileSync("./cert.crt"),
+            key: fs.readFileSync("./cert.key"),
+            ca: fs.readFileSync("ca.crt")
         },
         host: "0.0.0.0",
         port: 8080,
