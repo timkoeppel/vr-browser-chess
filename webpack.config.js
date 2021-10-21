@@ -19,7 +19,7 @@ module.exports = {
         https: {
             cert: fs.readFileSync("./cert.crt"),
             key: fs.readFileSync("./cert.key"),
-            ca: fs.readFileSync("ca.crt")
+            ca: fs.readFileSync("./ca.crt")
         },
         host: "0.0.0.0",
         port: 8080,
@@ -40,6 +40,7 @@ module.exports = {
         new HtmlWebpackPlugin({
             inject: true,
             template: path.resolve(appDirectory, "public/index.html"),
+            favicon: "./chess_XR.png"
         }),
         new CleanWebpackPlugin(),
     ],

@@ -44,13 +44,6 @@ export class Pose {
         id_foot_r: "Bip01 R Foot",
     }
 
-    public static seat_rotations = {
-        clavicle_r: new BABYLON.Quaternion(0.06, -0.224, -0.068, 0.97),
-        upperarm_r: new BABYLON.Quaternion(0.101, 0.086, -0.069, 0.989),
-        forearm_r: new BABYLON.Quaternion(-0.572, -0.058, -0.104, 0.812),
-
-    };
-
     constructor(tnodes: Array<BABYLON.TransformNode>) {
         this.head = tnodes.find(b => b.id === this.ids["id_head"]);
         this.neck = tnodes.find(b => b.id === this.ids["id_neck"]);
