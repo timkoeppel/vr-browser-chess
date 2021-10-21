@@ -3,6 +3,8 @@ import "@babylonjs/inspector";
 import "@babylonjs/loaders/glTF";
 import * as BABYLON from "@babylonjs/core";
 import {Avatar} from "./Avatar";
+import {ChessBoard} from "./ChessBoard";
+import {ChessField} from "./ChessField";
 
 export default class Game {
     private _canvas: HTMLCanvasElement;
@@ -12,8 +14,7 @@ export default class Game {
     private _camera: BABYLON.FreeCamera;
     private _light: BABYLON.Light;
     private _xr: BABYLON.WebXRDefaultExperience;
-    private _fields: Array<BABYLON.AbstractMesh>;
-    private _figures: Array<BABYLON.AbstractMesh>;
+    private _chessboard: ChessBoard;
 
     public async CreateScene(): Promise<void> {
         // Initializations
@@ -31,13 +32,15 @@ export default class Game {
 
         // Load Scene
         BABYLON.SceneLoader.ImportMeshAsync("", "/meshes/", "scene.glb", this._scene).then(result => {
-            // TODO: Classify figures
-            this._figures = result.meshes.filter(m => m.id.includes("fig"));
-            this._figures.forEach(fig => {
-                fig.isPickable = false;
+            this._chessboard = new ChessBoard(result.meshes);
+
+            // Gaze through figures
+            this._chessboard.figures.forEach(fig => {
+                fig.mesh.isPickable = false;
             })
-            this._fields = result.meshes.filter(m => m.id.length == 2);
-            this.initiateFieldInteractions(this._fields, this._scene);
+
+            // Initiate field
+            this.initiateFieldInteractions(this._chessboard, this._scene);
         }).catch(error => {
             console.log(error);
         });
@@ -111,27 +114,38 @@ export default class Game {
         }*/
     }
 
-    public initiateFieldInteractions(fields: Array<BABYLON.AbstractMesh>, scene: BABYLON.Scene): void{
-        fields.forEach(mesh => {
+    public initiateFieldInteractions(chessboard: ChessBoard, scene: BABYLON.Scene): void {
+        let fields = chessboard.fields;
+
+        fields.forEach(field => {
+            let mesh = field.mesh;
             mesh.actionManager = new BABYLON.ActionManager(scene);
-            const myMat = mesh.material;
-            const selectMat = new BABYLON.StandardMaterial("myMat", scene);
-            selectMat.diffuseColor = new BABYLON.Color3(0.2, 0.2, 1);
+
+            const hover_material = new BABYLON.StandardMaterial("hover_material", scene);
+            hover_material.diffuseColor = new BABYLON.Color3(0.5, 0.6, 1);
+            const selection_material = new BABYLON.StandardMaterial("selection_material", scene);
+            selection_material.diffuseColor = new BABYLON.Color3(0.1, 0, 1);
+            const ori_material = field.getOriginalMaterial(scene);
 
             // Hover over -> set field to color
             mesh.actionManager.registerAction(
-                new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOverTrigger,
-                    function (evt) {
-                        mesh.material = selectMat;
-                        console.log(mesh.id);
-                    }));
+                new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOverTrigger, () => {
+                    mesh.material = hover_material;
+                }));
 
             // Hover out -> reset field to original
             mesh.actionManager.registerAction(
-                new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOutTrigger,
-                    function (evt) {
-                        mesh.material = myMat;
-                    }));
+                new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOutTrigger, () => {
+                    mesh.material = field.is_selected ? selection_material : ori_material;
+                }));
+
+            mesh.actionManager.registerAction(
+                new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, () => {
+                    chessboard.resetSelectedField(scene).then(() =>{
+                        field.is_selected = true;
+                        mesh.material = selection_material
+                    })
+                }));
         });
     }
 
