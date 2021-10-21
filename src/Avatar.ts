@@ -12,18 +12,21 @@ export class Avatar {
 
     /**
      *
-     * @param side The playing side ("white" | "black")
+     * @param player_side The playing side ("white" | "black")
      * @param gender The gender of the avatar ("male" | "female")
      * @param no The number of the selected avatar (1 | 2)
      */
-    constructor(side, gender, no) {
+    constructor(player_side, gender, no) {
         this.rootURL = `/meshes/${gender}_0${no}/`;
         this.filename = `${gender}_0${no}.glb`;
-        this.position = Avatar._getPosition(side);
-        this.rotation = Avatar._getRotation(side);
+        this.position = Avatar._getPlayerSidePosition(player_side);
+        this.rotation = Avatar._getRotation(player_side);
         this.scale = new BABYLON.Vector3(100, 100, 100);
     }
 
+    // ************************************************************************
+    // MAIN METHODS
+    // ************************************************************************
     /**
      * Places the avatar in its respective chair
      */
@@ -47,23 +50,39 @@ export class Avatar {
         pose.makeSeatPose();
     }
 
+    /**
+     * Stops all animations coming natively from the Rocketbox Library
+     */
     public stopAnimations(): void {
         this.scene.animationGroups.forEach(an => {
             an.stop();
         })
     }
 
-    private static _getPosition(side: string): BABYLON.Vector3 {
+    // ************************************************************************
+    // HELPER METHODS
+    // ************************************************************************
+    /**
+     * Gets the position, where the avatar should be placed according to side
+     * @param player_side
+     * @private
+     */
+    private static _getPlayerSidePosition(player_side: string): BABYLON.Vector3 {
         const x_pos = 0;
         const y_pos = -15;
-        const z_pos = (side == "white") ? 26 : -26;
+        const z_pos = (player_side == "white") ? 26 : -26;
 
         return new BABYLON.Vector3(x_pos, y_pos, z_pos);
     }
 
-    private static _getRotation(side: string): BABYLON.Vector3 {
+    /**
+     * Gets the rotation, how the avatar should be rotated according to side
+     * @param player_side
+     * @private
+     */
+    private static _getRotation(player_side: string): BABYLON.Vector3 {
         const x_rot = 3 * Math.PI / 2;
-        const y_rot = (side === "white") ? 0 : Math.PI;
+        const y_rot = (player_side === "white") ? 0 : Math.PI;
         const z_rot = Math.PI;
 
         return new BABYLON.Vector3(x_rot, y_rot, z_rot);
