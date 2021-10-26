@@ -3,7 +3,7 @@ import Game from "./Game";
 class App {
     constructor() {
         let game = new Game();
-        game.CreateScene().then(() => {
+        game.initiate().then(() => {
                 game.DoRender()
             }
         ).catch(error => {

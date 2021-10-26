@@ -5,6 +5,7 @@ import * as BABYLON from "@babylonjs/core";
 import {Avatar} from "./Avatar";
 import {ChessBoard} from "./ChessBoard";
 import {ChessField} from "./ChessField";
+import {Chess} from "chess.ts";
 
 export default class Game {
     private _canvas: HTMLCanvasElement;
@@ -15,7 +16,6 @@ export default class Game {
     private _light: BABYLON.Light;
     private _xr: BABYLON.WebXRDefaultExperience;
     private _chessboard: ChessBoard;
-    private _gamestate: string;
 
     // ************************************************************************
     // MAIN METHODS
@@ -24,7 +24,7 @@ export default class Game {
      * Creates the whole Game environment
      * @constructor
      */
-    public async CreateScene(): Promise<void> {
+    public async initiate(): Promise<void> {
         this.initiateHTMLScene();
         this.initiateEngine();
         this.initiateBabylonScene()
@@ -88,7 +88,7 @@ export default class Game {
      */
     public initiateMeshes(): void {
         BABYLON.SceneLoader.ImportMeshAsync("", "/meshes/", "scene.glb", this._scene).then(result => {
-            this._chessboard = new ChessBoard(result.meshes);
+            this._chessboard = new ChessBoard(result.meshes, this._scene);
 
             // Initiate field
             this._initiateFieldInteractions(this._chessboard, this._scene);
@@ -154,19 +154,14 @@ export default class Game {
         // Gaze through figures
         chessboard.makeFiguresUnpickable();
 
+
         chessboard.fields.forEach(field => {
             field.mesh.actionManager = new BABYLON.ActionManager(scene);
 
-            const hover_material = new BABYLON.StandardMaterial("hover_material", scene);
-            hover_material.diffuseColor = new BABYLON.Color3(0.5, 0.6, 1);
-            const selection_material = new BABYLON.StandardMaterial("selection_material", scene);
-            selection_material.diffuseColor = new BABYLON.Color3(0.1, 0, 1);
-            const ori_material = field.getOriginalMaterial(scene);
-
             // Interactions
-            field.setupHoverOn(hover_material);
-            field.setupHoverOut(selection_material, ori_material);
-            field.setupSelection(chessboard, selection_material, scene);
+            field.setupHoverOn();
+            field.setupHoverOut();
+            field.setupSelection(chessboard, scene);
         });
     }
 
