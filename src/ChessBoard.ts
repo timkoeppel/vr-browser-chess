@@ -21,6 +21,7 @@ export class ChessBoard {
     set fields(value: Array<ChessField>) {
         this._fields = value;
     }
+
     get logic(): Chess {
         return this._logic;
     }
@@ -28,6 +29,7 @@ export class ChessBoard {
     set logic(value: Chess) {
         this._logic = value;
     }
+
     private _logic: Chess;
     private _figures: Array<ChessFigure>;
     private _fields: Array<ChessField>;
@@ -38,34 +40,11 @@ export class ChessBoard {
      * @param scene
      */
     constructor(meshes: Array<BABYLON.AbstractMesh>, scene: BABYLON.Scene) {
-        // FIGURES
-        let figures = [];
-        const chess_figures: Array<BABYLON.AbstractMesh> = meshes.filter(m => m.id.includes("fig"));
-        chess_figures.forEach(fig => {
-            figures.push(new ChessFigure(fig.id, new Position(null, fig.position, Position.y_figure), fig));
-        });
-
-        // FIELDS
-        let fields = [];
-        const chess_fields: Array<BABYLON.AbstractMesh> = meshes.filter(m => m.id.length === 2);
-        chess_fields.forEach(field => {
-            const fig = ChessField.getFigureOnField(field.position, figures);
-            fields.push(
-                new ChessField(
-                    field.id,
-                    new Position(null, field.position, Position.y_field),
-                    fig,
-                    field,
-                    this,
-                    field.material,
-                    scene
-                    ));
-        });
-
-        this.figures = figures;
-        this.fields = fields;
         this.logic = new Chess();
+        this.figures = ChessFigure.extractFigures(meshes);
+        this.fields = ChessField.extractFields(meshes, this, scene);
     }
+
 
     /**
      * Gets the Chessfield which is selected
@@ -97,7 +76,7 @@ export class ChessBoard {
         });
     }
 
-    public getPlayableFields(chess_pos: string): Array<ChessField>{
+    public getPlayableFields(chess_pos: string): Array<ChessField> {
         const moves = this.logic.moves({square: chess_pos});
 
         let playable_fields = [];
@@ -112,8 +91,18 @@ export class ChessBoard {
         return playable_fields;
     }
 
-    private static getFlag(move: string): string{
-        if(move.length > 2){
+    public getFigureById(id: string){
+        let result_fig = null;
+        this.figures.forEach(fig => {
+            if (fig.id === id){
+                result_fig = fig;
+            }
+        })
+        return result_fig;
+    }
+
+    private static getFlag(move: string): string {
+        if (move.length > 2) {
             return move.charAt(0);
         }
         return "";

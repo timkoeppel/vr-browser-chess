@@ -11,4 +11,25 @@ export class ChessFigure {
         this.pos = pos;
         this.mesh = mesh;
     }
+
+    public static types = {
+        "p": "pawn",
+        "r":"rook" ,
+        "n": "knight" ,
+        "b": "bishop",
+        "q": "queen",
+        "k": "king"
+    }
+
+    public static extractFigures(meshes: Array<BABYLON.AbstractMesh>):Array<ChessFigure>{
+        // FIGURES
+        let figures = [];
+        const chess_figures: Array<BABYLON.AbstractMesh> = meshes.filter(m => m.id.includes("fig"));
+        chess_figures.forEach(fig => {
+            figures.push(new ChessFigure(fig.id, new Position(null, fig.position, Position.y_figure), fig));
+        });
+
+        return figures;
+    }
+
 }

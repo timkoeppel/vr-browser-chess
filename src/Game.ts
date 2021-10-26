@@ -91,7 +91,7 @@ export default class Game {
             this._chessboard = new ChessBoard(result.meshes, this._scene);
 
             // Initiate field
-            this._initiateFieldInteractions(this._chessboard, this._scene);
+            this.initiateFieldInteractions(this._chessboard, this._scene);
         }).catch(error => {
             console.log(error);
         });
@@ -122,8 +122,8 @@ export default class Game {
         // TODO Parametrize in game menu selection
         const avatar_white = new Avatar("white", "male", 1);
         const avatar_black = new Avatar("black", "female", 1);
-        this._LoadAvatar(avatar_white);
-        this._LoadAvatar(avatar_black);
+        this.LoadAvatar(avatar_white);
+        this.LoadAvatar(avatar_black);
     }
 
     /**
@@ -150,7 +150,7 @@ export default class Game {
      * @param chessboard
      * @param scene
      */
-    private _initiateFieldInteractions(chessboard: ChessBoard, scene: BABYLON.Scene): void {
+    private initiateFieldInteractions(chessboard: ChessBoard, scene: BABYLON.Scene): void {
         // Gaze through figures
         chessboard.makeFiguresUnpickable();
 
@@ -170,7 +170,7 @@ export default class Game {
      * @param avatar
      * @constructor
      */
-    private _LoadAvatar(avatar: Avatar): void {
+    private LoadAvatar(avatar: Avatar): void {
         BABYLON.SceneLoader.ImportMeshAsync("", avatar.rootURL, avatar.filename, this._scene).then(result => {
             avatar.scene = result;
             avatar.stopAnimations();
