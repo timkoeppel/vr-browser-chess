@@ -19,16 +19,16 @@ export class Position {
     private _chess_pos: string;
     private _scene_pos: BABYLON.Vector3;
 
-    public static y_figure = 25;
-    public static y_field = 24.95;
-
-    constructor(chess_pos: string | null, scene_pos: BABYLON.Vector3 | null, y_scene_pos) {
-        if(scene_pos === null){
-            scene_pos = Position._convertToScenePos(chess_pos, y_scene_pos);
-        } else if (chess_pos === null) {
-            chess_pos = Position._convertToChessPos(scene_pos);
+    constructor(pos: BABYLON.Vector3 | string, obj: string) {
+        let chess_pos;
+        let scene_pos;
+        if(typeof pos === "string"){
+            chess_pos = pos;
+            scene_pos = Position._convertToScenePos(pos, obj);
+        }else{
+            chess_pos = Position._convertToChessPos(pos);
+            scene_pos = Position._normalizeVector(pos);
         }
-
         this.chess_pos = chess_pos;
         this.scene_pos = scene_pos;
     }
@@ -39,6 +39,7 @@ export class Position {
      * @param obj ("figure" | "field")
      * @private
      */
+
     private static _convertToScenePos(chess_pos: string, obj: string): BABYLON.Vector3{
         const x_chess = chess_pos.charAt(0);
         const z_chess = chess_pos.charAt(1);
@@ -52,7 +53,7 @@ export class Position {
         const z_pos = this._getUnevenPlusMinusRange(8)[z_num];
 
         // y
-        const y_pos = obj === "figure" ? this.y_figure : this.y_field;
+        const y_pos = obj === "figure" ? 25 : 24.95;
 
         return new BABYLON.Vector3(x_pos, y_pos, z_pos);
     }
@@ -72,7 +73,7 @@ export class Position {
     }
 
     /**
-     * Returns [-7, -5, -3, -1, 1, 3, 5, 7]
+     * Returns [-7, -5, -3, -1, 1, 3, 5, 7] if num = 8
      * @private
      */
     private static _getUnevenPlusMinusRange(num): Array<number>{
@@ -83,5 +84,13 @@ export class Position {
             }
         }
         return range;
+    }
+
+    private static _normalizeVector(vec: BABYLON.Vector3): BABYLON.Vector3{
+        const x = Math.round(vec.x);
+        const y = Math.round(vec.y * 100) / 100; // Fields have height 24.95
+        const z = Math.round(vec.z);
+
+        return new BABYLON.Vector3(x, y, z);
     }
 }

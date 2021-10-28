@@ -14,20 +14,23 @@ export class ChessFigure {
 
     public static types = {
         "p": "pawn",
-        "r":"rook" ,
-        "n": "knight" ,
+        "r": "rook",
+        "n": "knight",
         "b": "bishop",
         "q": "queen",
         "k": "king"
     }
 
-    public static extractFigures(meshes: Array<BABYLON.AbstractMesh>):Array<ChessFigure>{
+    public static extractFigures(meshes: Array<BABYLON.AbstractMesh>): Array<ChessFigure> {
         // FIGURES
         let figures = [];
         const chess_figures: Array<BABYLON.AbstractMesh> = meshes.filter(m => m.id.includes("fig"));
+        console.log(meshes.find(f => f.id === "fig_rook_w1").position);
+
         chess_figures.forEach(fig => {
-            figures.push(new ChessFigure(fig.id, new Position(null, fig.position, Position.y_figure), fig));
+            figures.push(new ChessFigure(fig.id, new Position(fig.position, "figure"), fig));
         });
+
 
         return figures;
     }

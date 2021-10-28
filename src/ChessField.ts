@@ -227,24 +227,7 @@ export class ChessField {
         return result_fig;
     }
 
-    public static extractFields(meshes: Array<BABYLON.AbstractMesh>, board: ChessBoard, scene: BABYLON.Scene): Array<ChessField> {
-        let fields = [];
-        const chess_fields: Array<BABYLON.AbstractMesh> = meshes.filter(m => m.id.length === 2);
-        chess_fields.forEach(field => {
-            const chess_field_pos = new Position(null, field.position, Position.y_field);
-            const chess_field = new ChessField(
-                field.id,
-                chess_field_pos,
-                this.getFigureByPos(chess_field_pos, board.figures),
-                field,
-                board,
-                field.material,
-                scene
-            );
-            fields.push(chess_field);
-        });
-        return fields;
-    }
+
 
     // ************************************************************************
     // HELPER METHODS
@@ -256,7 +239,6 @@ export class ChessField {
     private setFieldAsSelected(): void {
         this.is_selected = true;
         this.mesh.material = this.selection_material;
-
     }
 
     private setFieldsAsPlayable(fields: Array<ChessField>): void {
@@ -271,13 +253,5 @@ export class ChessField {
         })
     }
 
-    private static getFigureByPos(pos: Position, figures: Array<ChessFigure>): ChessFigure | null {
-        figures.forEach(fig => {
-            const same_pos = pos.chess_pos === fig.pos.chess_pos;
-            if (same_pos) {
-                return ChessFigure;
-            }
-        })
-        return null;
-    }
+
 }

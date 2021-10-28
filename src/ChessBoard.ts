@@ -36,13 +36,12 @@ export class ChessBoard {
 
     /**
      * Constructs a complex chessboard with its figures from the meshes
-     * @param meshes
-     * @param scene
+     * @param meshes The imported meshes
      */
-    constructor(meshes: Array<BABYLON.AbstractMesh>, scene: BABYLON.Scene) {
+    constructor(meshes: Array<BABYLON.AbstractMesh>) {
         this.logic = new Chess();
         this.figures = ChessFigure.extractFigures(meshes);
-        this.fields = ChessField.extractFields(meshes, this, scene);
+        this.fields = ChessBoard.extractFields(meshes, this);
     }
 
 
@@ -61,6 +60,9 @@ export class ChessBoard {
         return result;
     }
 
+    /**
+     * Resets the material for all fields to their original black/white field material
+     */
     public async resetFieldMaterial(): Promise<void> {
         this.fields.forEach(field => {
             field.resetField();
@@ -76,6 +78,10 @@ export class ChessBoard {
         });
     }
 
+    /**
+     * Uses the chess logic to determine possible moves for this figure
+     * @param chess_pos The position
+     */
     public getPlayableFields(chess_pos: string): Array<ChessField> {
         const moves = this.logic.moves({square: chess_pos});
 
@@ -91,20 +97,62 @@ export class ChessBoard {
         return playable_fields;
     }
 
-    public getFigureById(id: string){
-        let result_fig = null;
-        this.figures.forEach(fig => {
-            if (fig.id === id){
-                result_fig = fig;
-            }
-        })
-        return result_fig;
-    }
-
+    // ************************************************************************
+    // HELPER METHODS
+    // ************************************************************************
+    /**
+     * Gets the flag of a move from the chess logic response
+     * @param move the move from the chess logic (Syntax)
+     * @private
+     */
     private static getFlag(move: string): string {
         if (move.length > 2) {
             return move.charAt(0);
         }
         return "";
+    }
+
+    /**
+     * Extracts all the Chessfields from imported meshes
+     * @param meshes The imported chess meshes (board/fields, figures)
+     * @param board The chessboard to which the Chessfields should belong to
+     * @private
+     */
+    private static extractFields(meshes: Array<BABYLON.AbstractMesh>, board: ChessBoard): Array<ChessField> {
+        const scene = meshes[0].getScene();
+        let fields = [];
+        const chess_fields: Array<BABYLON.AbstractMesh> = meshes.filter(m => m.id.length === 2);
+        chess_fields.forEach(field => {
+            const chess_field_pos = new Position(field.position, "field");
+            const chess_field = new ChessField(
+                field.id,
+                chess_field_pos,
+                this.getFigureByPos(chess_field_pos, board.figures),
+                field,
+                board,
+                field.material,
+                scene
+            );
+            fields.push(chess_field);
+        });
+        return fields;
+    }
+
+    /**
+     * Gets the figure on a field by its position (getFigure won't work, because the board isn't initialized yet)
+     * @param pos The field position
+     * @param figures All the possible figures
+     * @private
+     */
+    private static getFigureByPos(pos: Position, figures: Array<ChessFigure>): ChessFigure | null {
+        figures.forEach(fig => {
+            const same_pos = pos.chess_pos === fig.pos.chess_pos;
+            if (same_pos) {
+                return fig;
+            } else {
+                //console.log(pos.chess_pos, fig);
+            }
+        })
+        return null;
     }
 }
