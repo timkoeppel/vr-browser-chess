@@ -121,16 +121,18 @@ export class ChessBoard {
     private static extractFields(meshes: Array<BABYLON.AbstractMesh>, board: ChessBoard): Array<ChessField> {
         const scene = meshes[0].getScene();
         let fields = [];
-        const chess_fields: Array<BABYLON.AbstractMesh> = meshes.filter(m => m.id.length === 2);
-        chess_fields.forEach(field => {
-            const chess_field_pos = new Position(field.position, "field");
+        const field_meshes: Array<BABYLON.AbstractMesh> = meshes.filter(m => m.id.length === 2);
+        field_meshes.forEach(mesh => {
+            const chess_field_pos = new Position(mesh.position, "field");
+            const fig = this.getFigureByPos(chess_field_pos, board.figures);
+
             const chess_field = new ChessField(
-                field.id,
+                mesh.id,
                 chess_field_pos,
-                this.getFigureByPos(chess_field_pos, board.figures),
-                field,
+                fig,
+                mesh,
                 board,
-                field.material,
+                mesh.material,
                 scene
             );
             fields.push(chess_field);
@@ -145,14 +147,15 @@ export class ChessBoard {
      * @private
      */
     private static getFigureByPos(pos: Position, figures: Array<ChessFigure>): ChessFigure | null {
+        let result = null;
         figures.forEach(fig => {
             const same_pos = pos.chess_pos === fig.pos.chess_pos;
             if (same_pos) {
-                return fig;
+                result = fig;
             } else {
                 //console.log(pos.chess_pos, fig);
             }
         })
-        return null;
+        return result;
     }
 }

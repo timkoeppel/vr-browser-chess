@@ -50,7 +50,8 @@ export class Position {
 
         // z conversion
         const z_num = parseInt(z_chess) - 1;
-        const z_pos = this._getUnevenPlusMinusRange(8)[z_num];
+        //const z_pos = this._getUnevenPlusMinusRange(8)[z_num];
+        const z_pos = this._getUnevenPlusMinusRange(8).reverse()[z_num];
 
         // y
         const y_pos = obj === "figure" ? 25 : 24.95;
@@ -59,15 +60,16 @@ export class Position {
     }
 
     private static _convertToChessPos(scene_pos: BABYLON.Vector3): string{
+        scene_pos = this._normalizeVector(scene_pos);
         const x_scene = scene_pos.x;
         const z_scene = scene_pos.z;
 
         // x conversion
         const x_chess = this._getUnevenPlusMinusRange(8).indexOf(x_scene);
-        const x_letter = String.fromCharCode(x_chess + 97).toUpperCase();
+        const x_letter = String.fromCharCode(x_chess + 65).toUpperCase();
 
         // z conversion
-        const z_chess = this._getUnevenPlusMinusRange(8).indexOf(z_scene) + 1;
+        const z_chess = this._getUnevenPlusMinusRange(8).reverse().indexOf(z_scene) + 1;
 
         return x_letter + z_chess;
     }

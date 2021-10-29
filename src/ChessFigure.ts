@@ -25,12 +25,10 @@ export class ChessFigure {
         // FIGURES
         let figures = [];
         const chess_figures: Array<BABYLON.AbstractMesh> = meshes.filter(m => m.id.includes("fig"));
-        console.log(meshes.find(f => f.id === "fig_rook_w1").position);
 
         chess_figures.forEach(fig => {
             figures.push(new ChessFigure(fig.id, new Position(fig.position, "figure"), fig));
         });
-
 
         return figures;
     }

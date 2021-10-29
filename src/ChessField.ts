@@ -185,46 +185,37 @@ export class ChessField {
      */
     public setupSelection(chessboard: ChessBoard, scene: BABYLON.Scene): void {
         this.mesh.actionManager.registerAction(
-            new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickDownTrigger, () => {
+            new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, () => {
                 let selected_field = chessboard.getSelectedField();
 
                 // If there was a previously selected field -> reset
-                if (selected_field !== null) {
+                if (selected_field !== null && this.hasFigure()) {
                     chessboard.resetFieldMaterial().then(() => {
                         this.setSelected();
                     })
                 } else {
                     this.setSelected();
                 }
-                console.log(this.id);
             }));
     }
 
     public setSelected() {
-        console.log(this.getFigure());
-        if (this.getFigure() !== null) {
+        console.log(this);
+        if (this.hasFigure()) {
             this.setFieldAsSelected()
             this.setFieldsAsPlayable(this.board.getPlayableFields(this.id));
         }
     }
 
     public getFigure(): ChessFigure | null {
-        let result_fig = null;
-        const fig_obj = this.board.logic.get(this.pos.chess_pos);
-        if (fig_obj !== null) {
-            //console.log(fig_obj);
-            const color = fig_obj.color;
-            const fig_type = fig_obj.type;
-
-            this.board.figures.forEach(fig => {
-                const is_target_fig = (fig.id.slice(-2).includes(color)) && (fig.id.includes(ChessFigure.types[fig_type]));
-
-                if (is_target_fig) {
-                    result_fig = fig;
-                }
-            });
-        }
-        return result_fig;
+        let result = null;
+        this.board.figures.forEach(fig => {
+            const pos_same = this.id === fig.pos.chess_pos;
+            if(pos_same){
+                result = fig;
+            }
+        })
+        return result;
     }
 
 
@@ -251,6 +242,10 @@ export class ChessField {
             field.mesh.edgesColor = new BABYLON.Color4(0.5, 0.5, 0.5, 1);
             field.mesh.enableEdgesRendering();
         })
+    }
+
+    private hasFigure(): boolean{
+        return this.getFigure() !== null;
     }
 
 
