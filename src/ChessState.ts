@@ -3,6 +3,8 @@ import {ChessField} from "./ChessField";
 import {Chess, Move} from "chess.ts";
 import {ChessPlayer} from "./ChessPlayer";
 import {ChessBoard} from "./ChessBoard";
+import {Pose} from "./Pose";
+import {Position} from "./Position";
 
 export class ChessState {
     get board(): ChessBoard {
@@ -66,37 +68,43 @@ export class ChessState {
     private _white: ChessPlayer;
     private _black: ChessPlayer;
     private _selected_field: ChessField | null;
-    private _moves: Array<Move> | null;
+    private _moves: Array<Move>;
     private _board: ChessBoard;
 
     constructor(board: ChessBoard) {
         this.logic = new Chess();
-        this.white = new ChessPlayer("w");
-        this.black = new ChessPlayer("b");
+        this.white = new ChessPlayer(true, "w");
+        this.black = new ChessPlayer(false, "b");
         this.current_player = this.white;
         this.selected_field = null;
         this.moves = [];
         this.board = board;
     }
 
+    // ************************************************************************
+    // MAIN METHODS
+    // ************************************************************************
+
     public processClick(clicked_field: ChessField) {
         // Field with figure
         this.board.resetFieldsMaterial().then(() => {
-            if (clicked_field.fig !== null) {
+            if (clicked_field.figure !== null) {
                 // Own figure --> Select this figure
-                if (this.isOwnFigure(clicked_field.fig)) {
+                if (this.isOwnFigure(clicked_field.figure)) {
                     this.toMoveSelection(clicked_field)
                 }
                 // Beatable enemy figure --> Make (beat) move
-                else if (this.isPartOfMove(clicked_field)){
-                    this.makeMove(this.getMove(clicked_field))
+                else if (this.isPartOfMove(clicked_field)) {
+                    this.makeMove(this.getMove(clicked_field), this.selected_field.figure);
+                    this.toNextPlayer();
                 }
             }
             // Field without figure
             else {
                 // Playable Field --> Make move
-                if(this.isPartOfMove(clicked_field)){
-                    this.makeMove(this.getMove(clicked_field))
+                if (this.isPartOfMove(clicked_field)) {
+                    this.makeMove(this.getMove(clicked_field), this.selected_field.figure)
+                    this.toNextPlayer();
                 }
             }
         })
@@ -114,21 +122,50 @@ export class ChessState {
         this.selected_field.setFieldsAsPlayable(playable_fields)
     }
 
-    public makeMove(move: Move): void {
-        // Inform logic about move
-        this.logic.move({from: move.from, to: move.to});
-
+    // TODO
+    public toNextPlayer() {
         // Reset state
-        // TODO
+        this.resetMoveProperties();
 
-        // Animate
-        console.log(move);
+        // Check game over/ ... state
+
+        // Refresh player score
+
+        // Pass to next player
+        this.passToNextPlayer();
+
+        // Make moves if Ai
+        if(!this.current_player.human){
+            // TODO do AI stuff
+        }
     }
 
+    private makeMove(move: Move, fig: ChessFigure): void {
+        // Inform logic about move
+        this.logic.move({from: move.from.toLowerCase(), to: move.to.toLowerCase()});
+        console.log(this.logic.ascii());
+        // TODO move feedback
+
+        // Inform chessboard about move
+        this.refreshBoard(move, fig);
+
+        // Animate
+        Pose.makeMove(fig.mesh, fig.pos.scene_pos, Position.convertToScenePos(move.to, "figure"));
+    }
+
+    public isPartOfMove(field: ChessField): boolean {
+        const move_targets = this.getMoveTargets();
+
+        return move_targets.includes(field.id);
+    }
+
+    // ************************************************************************
+    // HELPER METHODS
+    // ************************************************************************
     /**
      * Uses the chess logic to determine possible moves for this figure
      */
-    public getPlayableFields(moves: Array<Move>): Array<ChessField> {
+    private getPlayableFields(moves: Array<Move>): Array<ChessField> {
         let playable_fields = [];
         // TODO make flagged moves different colors
         moves.forEach(m => {
@@ -143,22 +180,39 @@ export class ChessState {
         return fig.color === this.current_player.color;
     }
 
-    public isPartOfMove(field: ChessField): boolean{
-        const move_targets = this.getMoveTargets();
 
-        return move_targets.includes(field.id);
-    }
-
-    private getMove(field: ChessField): Move{
+    private getMove(field: ChessField): Move {
         return this.moves.find(m => m.to === field.id)
     }
 
-    private getMoveTargets(): Array<string>{
+    private getMoveTargets(): Array<string> {
         let move_targets = [];
-        this.moves.forEach( m => {
+        this.moves.forEach(m => {
             move_targets.push(m.to);
         })
         return move_targets;
+    }
+
+    private resetMoveProperties(): void {
+        this.moves = [];
+        this.selected_field = null;
+    }
+
+    private refreshBoard(move: Move, fig: ChessFigure): void {
+        // Refresh Figure
+        fig.pos = new Position(move.to, "figure");
+
+        // Refresh fields
+        this.board.getField(move.from).figure = null;
+        this.board.getField(move.to).figure = fig;
+    }
+
+    private passToNextPlayer(): void{
+        if(this.current_player.color === "w"){
+            this.current_player = this.black;
+        }else{
+            this.current_player = this.white;
+        }
     }
 
     private static toUpperNotation(moves: Array<Move>): Array<Move> {

@@ -68,7 +68,7 @@ export class Pose {
     /**
      * Brings the pose parts in a seating position
      */
-    public makeSeatPose(){
+    public makeSeatPose() {
         this.upperarm_l.rotate(new BABYLON.Vector3(0, +Math.PI, 0), 0.5);
         this.upperarm_r.rotate(new BABYLON.Vector3(0, -Math.PI, 0), 0.5);
         this.forearm_l.rotate(new BABYLON.Vector3(+Math.PI, 0, -Math.PI), 1.5);
@@ -77,5 +77,17 @@ export class Pose {
         this.thigh_r.rotate(new BABYLON.Vector3(0, 0, Math.PI), 1.35);
         this.calf_l.rotate(new BABYLON.Vector3(0, 0, -Math.PI), 1.1);
         this.calf_r.rotate(new BABYLON.Vector3(0, 0, -Math.PI), 1.1);
+    }
+
+    public static makeMove(fig_mesh: BABYLON.AbstractMesh, start_pos: BABYLON.Vector3, end_pos: BABYLON.Vector3) {
+        BABYLON.Animation.CreateAndStartAnimation(
+            "anim",
+            fig_mesh,
+            "position",
+            50,
+            100,
+            start_pos,
+            end_pos,
+            BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
     }
 }

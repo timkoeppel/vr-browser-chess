@@ -1,6 +1,13 @@
 import {ChessFigure} from "./ChessFigure";
 
 export class ChessPlayer {
+    get human(): boolean {
+        return this._human;
+    }
+
+    set human(value: boolean) {
+        this._human = value;
+    }
     get score(): number {
         return this._score;
     }
@@ -17,11 +24,19 @@ export class ChessPlayer {
         this._color = value;
     }
 
+    private _human: boolean; // "human" | "computer"
     private _color: string;
     private _score: number;
 
-    constructor(color: string) {
+    constructor(human: boolean, color: string) {
+        this.human = human;
         this.color = color;
         this.score = 0;
+    }
+
+    public togglePlayer(player: ChessPlayer){
+        this.human = player.human;
+        this.color = player.color;
+        this.score = player.score;
     }
 }

@@ -44,6 +44,10 @@ export class ChessBoard {
         this.fields = ChessBoard.extractFields(meshes, this);
     }
 
+    // ************************************************************************
+    // MAIN METHODS
+    // ************************************************************************
+
     /**
      * Resets the material for all fields to their original black/white field material
      */
@@ -60,6 +64,10 @@ export class ChessBoard {
         this.figures.forEach(fig => {
             fig.mesh.isPickable = false;
         });
+    }
+
+    public getField(chess_pos: string): ChessField{
+        return this.fields.find(f => f.id === chess_pos);
     }
 
 

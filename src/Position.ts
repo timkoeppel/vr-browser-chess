@@ -25,9 +25,9 @@ export class Position {
         let scene_pos;
         if(typeof pos === "string"){
             chess_pos = pos;
-            scene_pos = Position._convertToScenePos(pos, obj);
+            scene_pos = Position.convertToScenePos(pos, obj);
         }else{
-            chess_pos = Position._convertToChessPos(pos);
+            chess_pos = Position.convertToChessPos(pos);
             scene_pos = Position._normalizeVector(pos);
         }
         this.chess_pos = chess_pos;
@@ -40,14 +40,13 @@ export class Position {
      * @param obj The object mesh ("figure" | "field")
      * @private
      */
-    private static _convertToScenePos(chess_pos: string, obj: string): BABYLON.Vector3{
+    public static convertToScenePos(chess_pos: string, obj: string): BABYLON.Vector3{
         const x_chess = chess_pos.charAt(0);
         const z_chess = chess_pos.charAt(1);
 
         // x conversion
-        const x_num = x_chess.toLowerCase().charCodeAt(0) - 65 + 1;
+        const x_num = x_chess.toLowerCase().charCodeAt(0) - 97;
         const x_pos = this._getUnevenPlusMinusRange(8, true)[x_num];
-        console.log(x_chess, x_pos);
 
         // z conversion
         const z_num = parseInt(z_chess) - 1;
@@ -65,7 +64,7 @@ export class Position {
      * @param scene_pos The vector
      * @private
      */
-    private static _convertToChessPos(scene_pos: BABYLON.Vector3): string{
+    public static convertToChessPos(scene_pos: BABYLON.Vector3): string{
         scene_pos = this._normalizeVector(scene_pos);
         const x_scene = scene_pos.x;
         const z_scene = scene_pos.z;

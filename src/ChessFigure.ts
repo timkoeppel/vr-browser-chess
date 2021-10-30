@@ -44,6 +44,10 @@ export class ChessFigure {
         this.color = side;
     }
 
+    // ************************************************************************
+    // MAIN METHODS
+    // ************************************************************************
+
     /**
      * Extracts the figures from a mesh import
      * @param meshes The (imported) meshes to be extracted from
@@ -60,6 +64,9 @@ export class ChessFigure {
         return figures;
     }
 
+    // ************************************************************************
+    // HELPER METHODS
+    // ************************************************************************
     private static getColor(mesh: BABYLON.AbstractMesh): string{
         return mesh.id.slice(-2, -1);
     }

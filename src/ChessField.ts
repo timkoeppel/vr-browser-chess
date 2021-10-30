@@ -54,20 +54,20 @@ export class ChessField {
         this._mesh = value;
     }
 
-    get fig(): ChessFigure | null {
-        return this._fig;
+    get figure(): ChessFigure | null {
+        return this._figure;
     }
 
-    set fig(value: ChessFigure | null) {
-        this._fig = value;
+    set figure(value: ChessFigure | null) {
+        this._figure = value;
     }
 
-    get pos(): Position {
-        return this._pos;
+    get position(): Position {
+        return this._position;
     }
 
-    set pos(value: Position) {
-        this._pos = value;
+    set position(value: Position) {
+        this._position = value;
     }
 
     get id(): string {
@@ -79,8 +79,8 @@ export class ChessField {
     }
 
     private _id: string;
-    private _pos: Position;
-    private _fig: ChessFigure | null;
+    private _position: Position;
+    private _figure: ChessFigure | null;
     private _mesh: BABYLON.AbstractMesh;
     private _board: ChessBoard;
     private _original_material: BABYLON.Material;
@@ -100,8 +100,8 @@ export class ChessField {
      */
     constructor(id: string, pos: Position, fig: ChessFigure | null, mesh: BABYLON.AbstractMesh, board: ChessBoard, ori_material: BABYLON.Material, scene: BABYLON.Scene) {
         this.id = id;
-        this.pos = pos;
-        this.fig = fig;
+        this.position = pos;
+        this.figure = fig;
         this.mesh = mesh;
         this.board = board;
 
@@ -161,6 +161,7 @@ export class ChessField {
      * @param scene For retrieving information for the reset to original material
      */
     public setupSelection(scene: BABYLON.Scene): void {
+        console.log(this);
         this.mesh.actionManager.registerAction(
             new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickDownTrigger, () => {
                 this.board.state.processClick(this);
