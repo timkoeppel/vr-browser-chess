@@ -1,4 +1,5 @@
 import * as BABYLON from "@babylonjs/core";
+import {int} from "@babylonjs/core";
 
 export class Position {
     get scene_pos() {
@@ -34,24 +35,24 @@ export class Position {
     }
 
     /**
-     *
-     * @param chess_pos
-     * @param obj ("figure" | "field")
+     * Converts the string notation of chess to a Vector according to the mesh
+     * @param chess_pos The chess string notation e.g. "A1", "H8", ...
+     * @param obj The object mesh ("figure" | "field")
      * @private
      */
-
     private static _convertToScenePos(chess_pos: string, obj: string): BABYLON.Vector3{
         const x_chess = chess_pos.charAt(0);
         const z_chess = chess_pos.charAt(1);
 
         // x conversion
-        const x_num = x_chess.toLowerCase().charCodeAt(0) - 97 + 1;
-        const x_pos = this._getUnevenPlusMinusRange(8)[x_num];
+        const x_num = x_chess.toLowerCase().charCodeAt(0) - 65 + 1;
+        const x_pos = this._getUnevenPlusMinusRange(8, true)[x_num];
+        console.log(x_chess, x_pos);
 
         // z conversion
         const z_num = parseInt(z_chess) - 1;
         //const z_pos = this._getUnevenPlusMinusRange(8)[z_num];
-        const z_pos = this._getUnevenPlusMinusRange(8).reverse()[z_num];
+        const z_pos = this._getUnevenPlusMinusRange(8, false)[z_num];
 
         // y
         const y_pos = obj === "figure" ? 25 : 24.95;
@@ -59,35 +60,47 @@ export class Position {
         return new BABYLON.Vector3(x_pos, y_pos, z_pos);
     }
 
+    /**
+     * Converts the Vector into the chess string notation
+     * @param scene_pos The vector
+     * @private
+     */
     private static _convertToChessPos(scene_pos: BABYLON.Vector3): string{
         scene_pos = this._normalizeVector(scene_pos);
         const x_scene = scene_pos.x;
         const z_scene = scene_pos.z;
 
         // x conversion
-        const x_chess = this._getUnevenPlusMinusRange(8).indexOf(x_scene);
+        const x_chess = this._getUnevenPlusMinusRange(8, true).indexOf(x_scene);
         const x_letter = String.fromCharCode(x_chess + 65).toUpperCase();
 
         // z conversion
-        const z_chess = this._getUnevenPlusMinusRange(8).reverse().indexOf(z_scene) + 1;
+        const z_chess = this._getUnevenPlusMinusRange(8, false).indexOf(z_scene) + 1;
 
         return x_letter + z_chess;
     }
 
     /**
-     * Returns [-7, -5, -3, -1, 1, 3, 5, 7] if num = 8
+     * Returns Gets the uneven range from -num to +num
+     * e.g. [-7, -5, -3, -1, 1, 3, 5, 7] if num = 8
      * @private
      */
-    private static _getUnevenPlusMinusRange(num): Array<number>{
+    private static _getUnevenPlusMinusRange(num: number, minus_first: boolean): Array<number>{
         let range = [];
         for (let i=1; i<2*num; i++) {
             if(i % 2 !== 0) {
                 range.push(i - num);
             }
         }
-        return range;
+        return minus_first ? range : range.reverse();
     }
 
+    /**
+     * Rounds up the vector position to work with
+     * (Some imported meshes have positions with heaps of decimal places)
+     * @param vec The vector
+     * @private
+     */
     private static _normalizeVector(vec: BABYLON.Vector3): BABYLON.Vector3{
         const x = Math.round(vec.x);
         const y = Math.round(vec.y * 100) / 100; // Fields have height 24.95

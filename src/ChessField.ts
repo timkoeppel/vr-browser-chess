@@ -3,6 +3,7 @@ import {ChessFigure} from "./ChessFigure";
 import {ChessBoard} from "./ChessBoard";
 import {Position} from "./Position";
 import {AbstractMesh} from "@babylonjs/core";
+import {Move} from "chess.ts";
 
 export class ChessField {
     get board(): ChessBoard {
@@ -43,22 +44,6 @@ export class ChessField {
 
     set hover_material(value: BABYLON.Material) {
         this._hover_material = value;
-    }
-
-    get is_selected(): boolean {
-        return this._is_selected;
-    }
-
-    set is_selected(value: boolean) {
-        this._is_selected = value;
-    }
-
-    get is_playable(): boolean {
-        return this._is_playable;
-    }
-
-    set is_playable(value: boolean) {
-        this._is_playable = value;
     }
 
     get mesh(): BABYLON.AbstractMesh {
@@ -102,8 +87,6 @@ export class ChessField {
     private _hover_material: BABYLON.Material;
     private _selection_material: BABYLON.Material;
     private _playable_material: BABYLON.Material;
-    private _is_selected: boolean;
-    private _is_playable: boolean;
 
     /**
      * Constructs a Chess field
@@ -137,17 +120,12 @@ export class ChessField {
         this.hover_material = hover_material;
         this.selection_material = selection_material;
         this.playable_material = playable_material;
-
-        this.is_selected = false;
-        this.is_playable = false;
     }
 
     /**
      * Resets the selected fields by setting is_selected false and reinstalling the original texture
      */
-    public async resetField(): Promise<void> {
-        this.is_selected = false;
-        this.is_playable = false;
+    public async resetFieldMaterial(): Promise<void> {
         this.mesh.material = this.original_material;
         this.mesh.disableEdgesRendering();
     }
@@ -168,9 +146,9 @@ export class ChessField {
     public setupHoverOut(): void {
         this.mesh.actionManager.registerAction(
             new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOutTrigger, () => {
-                if (this.is_selected) {
+                if (this.isSelected()) {
                     this.mesh.material = this.selection_material;
-                } else if (this.is_playable) {
+                } else if (this.board.state.isPartOfMove(this)) {
                     this.mesh.material = this.playable_material;
                 } else {
                     this.mesh.material = this.original_material;
@@ -180,73 +158,41 @@ export class ChessField {
 
     /**
      * Sets up the selection of a field
-     * @param chessboard for retrieving the currently selected field
      * @param scene For retrieving information for the reset to original material
      */
-    public setupSelection(chessboard: ChessBoard, scene: BABYLON.Scene): void {
+    public setupSelection(scene: BABYLON.Scene): void {
         this.mesh.actionManager.registerAction(
-            new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, () => {
-                let selected_field = chessboard.getSelectedField();
-
-                // If there was a previously selected field -> reset
-                if (selected_field !== null && this.hasFigure()) {
-                    chessboard.resetFieldMaterial().then(() => {
-                        this.setSelected();
-                    })
-                } else {
-                    this.setSelected();
-                }
+            new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickDownTrigger, () => {
+                this.board.state.processClick(this);
             }));
     }
-
-    public setSelected() {
-        console.log(this);
-        if (this.hasFigure()) {
-            this.setFieldAsSelected()
-            this.setFieldsAsPlayable(this.board.getPlayableFields(this.id));
-        }
-    }
-
-    public getFigure(): ChessFigure | null {
-        let result = null;
-        this.board.figures.forEach(fig => {
-            const pos_same = this.id === fig.pos.chess_pos;
-            if(pos_same){
-                result = fig;
-            }
-        })
-        return result;
-    }
-
-
-
-    // ************************************************************************
-    // HELPER METHODS
-    // ************************************************************************
 
     /**
      * Sets the field to the given material
      */
-    private setFieldAsSelected(): void {
-        this.is_selected = true;
+    public setFieldAsSelected(): void {
         this.mesh.material = this.selection_material;
     }
 
-    private setFieldsAsPlayable(fields: Array<ChessField>): void {
-        fields.forEach(field => {
-            field.is_playable = true;
+    /**
+     * Sets field as playable and its logical consequences
+     * @private
+     * @param playable_moves
+     */
+    public setFieldsAsPlayable(playable_moves: Array<ChessField>): void {
+        playable_moves.forEach(field => {
             field.mesh.material = this.playable_material;
-
-            // Edge coloring for distinction
             field.mesh.edgesWidth = 10;
             field.mesh.edgesColor = new BABYLON.Color4(0.5, 0.5, 0.5, 1);
             field.mesh.enableEdgesRendering();
         })
     }
 
-    private hasFigure(): boolean{
-        return this.getFigure() !== null;
+    // ************************************************************************
+    // HELPER METHODS
+    // ************************************************************************
+    private isSelected() {
+        return this.mesh.material === this.selection_material;
     }
-
 
 }

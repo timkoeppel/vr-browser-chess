@@ -2,9 +2,17 @@ import * as BABYLON from "@babylonjs/core";
 import {ChessField} from "./ChessField";
 import {ChessFigure} from "./ChessFigure";
 import {Position} from "./Position";
-import {Chess} from "chess.ts";
+import {Chess, Move} from "chess.ts";
+import {ChessState} from "./ChessState";
 
 export class ChessBoard {
+    get state(): ChessState {
+        return this._state;
+    }
+
+    set state(value: ChessState) {
+        this._state = value;
+    }
 
     get figures(): Array<ChessFigure> {
         return this._figures;
@@ -22,50 +30,26 @@ export class ChessBoard {
         this._fields = value;
     }
 
-    get logic(): Chess {
-        return this._logic;
-    }
-
-    set logic(value: Chess) {
-        this._logic = value;
-    }
-
-    private _logic: Chess;
     private _figures: Array<ChessFigure>;
     private _fields: Array<ChessField>;
+    private _state: ChessState;
 
     /**
      * Constructs a complex chessboard with its figures from the meshes
      * @param meshes The imported meshes
      */
     constructor(meshes: Array<BABYLON.AbstractMesh>) {
-        this.logic = new Chess();
+        this.state = new ChessState(this);
         this.figures = ChessFigure.extractFigures(meshes);
         this.fields = ChessBoard.extractFields(meshes, this);
-    }
-
-
-    /**
-     * Gets the Chessfield which is selected
-     * @return null when there was no field selected previously
-     */
-    public getSelectedField(): ChessField | null {
-        let result = null;
-
-        this.fields.forEach(field => {
-            if (field.is_selected) {
-                result = field;
-            }
-        })
-        return result;
     }
 
     /**
      * Resets the material for all fields to their original black/white field material
      */
-    public async resetFieldMaterial(): Promise<void> {
+    public async resetFieldsMaterial(): Promise<void> {
         this.fields.forEach(field => {
-            field.resetField();
+            field.resetFieldMaterial();
         })
     }
 
@@ -78,40 +62,10 @@ export class ChessBoard {
         });
     }
 
-    /**
-     * Uses the chess logic to determine possible moves for this figure
-     * @param chess_pos The position
-     */
-    public getPlayableFields(chess_pos: string): Array<ChessField> {
-        const moves = this.logic.moves({square: chess_pos});
-
-        let playable_fields = [];
-
-        moves.forEach(m => {
-            const id = m.slice(-2).toUpperCase(); // Last 2 of moves method are the id
-            const flag = ChessBoard.getFlag(id); // TODO Flags
-            const playable_field = this.fields.find(f => f.id === id);
-            playable_fields.push(playable_field);
-        })
-
-        return playable_fields;
-    }
 
     // ************************************************************************
     // HELPER METHODS
     // ************************************************************************
-    /**
-     * Gets the flag of a move from the chess logic response
-     * @param move the move from the chess logic (Syntax)
-     * @private
-     */
-    private static getFlag(move: string): string {
-        if (move.length > 2) {
-            return move.charAt(0);
-        }
-        return "";
-    }
-
     /**
      * Extracts all the Chessfields from imported meshes
      * @param meshes The imported chess meshes (board/fields, figures)
@@ -152,8 +106,6 @@ export class ChessBoard {
             const same_pos = pos.chess_pos === fig.pos.chess_pos;
             if (same_pos) {
                 result = fig;
-            } else {
-                //console.log(pos.chess_pos, fig);
             }
         })
         return result;

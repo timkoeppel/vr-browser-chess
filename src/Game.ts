@@ -217,7 +217,7 @@ export default class Game {
             // Interactions
             field.setupHoverOn();
             field.setupHoverOut();
-            field.setupSelection(chessboard, scene);
+            field.setupSelection(scene);
         });
     }
 
