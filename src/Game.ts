@@ -6,6 +6,7 @@ import {Avatar} from "./Avatar";
 import {ChessBoard} from "./ChessBoard";
 import {ChessField} from "./ChessField";
 import {Chess} from "chess.ts";
+import {WebXRDefaultExperience} from "@babylonjs/core";
 
 export default class Game {
     get chessboard(): ChessBoard {
@@ -16,11 +17,11 @@ export default class Game {
         this._chessboard = value;
     }
 
-    get xr(): BABYLON.WebXRDefaultExperience {
+    get xr(): WebXRDefaultExperience {
         return this._xr;
     }
 
-    set xr(value: BABYLON.WebXRDefaultExperience) {
+    set xr(value: WebXRDefaultExperience) {
         this._xr = value;
     }
 
@@ -70,7 +71,7 @@ export default class Game {
     //private _camera: BABYLON.DeviceOrientationCamera;
     private _camera: BABYLON.FreeCamera;
     private _light: BABYLON.Light;
-    private _xr: BABYLON.WebXRDefaultExperience;
+    private _xr: WebXRDefaultExperience;
     private _chessboard: ChessBoard;
 
     // ************************************************************************
@@ -87,8 +88,8 @@ export default class Game {
         this.initiateLights();
         this.initiateMeshes();
         this.initiateCamera();
-        await this.initiateXR();
         this.initiateAvatars();
+        await this.initiateXR();
     }
 
     /**
@@ -159,16 +160,15 @@ export default class Game {
      */
     public async initiateXR() {
         this.xr = await this.scene.createDefaultXRExperienceAsync({});
-
         this.xr.baseExperience.onInitialXRPoseSetObservable.add(xrCamera => {
             xrCamera.position = this.camera.position;
-            xrCamera.setTarget(this.scene.getMeshByID("board").position);
+
+            //console.log(this.xr.baseExperience.featuresManager.getEnabledFeature("xr-controller-pointer-selection"));
+            this.xr.pointerSelection.displayLaserPointer = true;
+            this.xr.pointerSelection.displaySelectionMesh = true;
+            this.xr.pointerSelection.disableSelectionMeshLighting = true;
         });
 
-        this.xr.pointerSelection = <BABYLON.WebXRControllerPointerSelection>this.xr.baseExperience.featuresManager.enableFeature(BABYLON.WebXRControllerPointerSelection, 'latest', {
-            gazeCamera: this.xr.baseExperience.camera,
-            xrInput: this.xr.input
-        });
     }
 
     /**
@@ -186,9 +186,12 @@ export default class Game {
      * Handles the Rendering of the scene
      * @constructor
      */
+    public divFps = document.getElementById("fps");
+
     public DoRender(): void {
         // run the main render loop
         this.engine.runRenderLoop(() => {
+            this.divFps.innerHTML = this.engine.getFps().toFixed() + " fps";
             this.scene.render();
         });
 

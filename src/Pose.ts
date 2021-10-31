@@ -79,15 +79,5 @@ export class Pose {
         this.calf_r.rotate(new BABYLON.Vector3(0, 0, -Math.PI), 1.1);
     }
 
-    public static makeMove(fig_mesh: BABYLON.AbstractMesh, start_pos: BABYLON.Vector3, end_pos: BABYLON.Vector3) {
-        BABYLON.Animation.CreateAndStartAnimation(
-            "anim",
-            fig_mesh,
-            "position",
-            50,
-            100,
-            start_pos,
-            end_pos,
-            BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
-    }
+
 }

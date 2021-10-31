@@ -1,5 +1,4 @@
 import * as BABYLON from "@babylonjs/core";
-import {int} from "@babylonjs/core";
 
 export class Position {
     get scene_pos() {
@@ -20,7 +19,7 @@ export class Position {
     private _chess_pos: string;
     private _scene_pos: BABYLON.Vector3;
 
-    constructor(pos: BABYLON.Vector3 | string, obj: string) {
+    constructor(pos: BABYLON.Vector3 | string, obj?: string) {
         let chess_pos;
         let scene_pos;
         if(typeof pos === "string"){
@@ -50,7 +49,6 @@ export class Position {
 
         // z conversion
         const z_num = parseInt(z_chess) - 1;
-        //const z_pos = this._getUnevenPlusMinusRange(8)[z_num];
         const z_pos = this._getUnevenPlusMinusRange(8, false)[z_num];
 
         // y

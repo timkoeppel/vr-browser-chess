@@ -1,4 +1,4 @@
-import {ChessFigure} from "./ChessFigure";
+
 
 export class ChessPlayer {
     get human(): boolean {

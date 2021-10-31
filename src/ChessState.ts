@@ -3,8 +3,8 @@ import {ChessField} from "./ChessField";
 import {Chess, Move} from "chess.ts";
 import {ChessPlayer} from "./ChessPlayer";
 import {ChessBoard} from "./ChessBoard";
-import {Pose} from "./Pose";
 import {Position} from "./Position";
+import {Action} from "./Action";
 
 export class ChessState {
     get board(): ChessBoard {
@@ -103,7 +103,7 @@ export class ChessState {
             else {
                 // Playable Field --> Make move
                 if (this.isPartOfMove(clicked_field)) {
-                    this.makeMove(this.getMove(clicked_field), this.selected_field.figure)
+                    this.makeMove(this.getMove(clicked_field), this.selected_field.figure);
                     this.toNextPlayer();
                 }
             }
@@ -124,10 +124,11 @@ export class ChessState {
 
     // TODO
     public toNextPlayer() {
-        // Reset state
+        // Reset move related properties of ChessState
         this.resetMoveProperties();
 
         // Check game over/ ... state
+
 
         // Refresh player score
 
@@ -140,17 +141,9 @@ export class ChessState {
         }
     }
 
-    private makeMove(move: Move, fig: ChessFigure): void {
-        // Inform logic about move
-        this.logic.move({from: move.from.toLowerCase(), to: move.to.toLowerCase()});
-        console.log(this.logic.ascii());
-        // TODO move feedback
-
-        // Inform chessboard about move
-        this.refreshBoard(move, fig);
-
-        // Animate
-        Pose.makeMove(fig.mesh, fig.pos.scene_pos, Position.convertToScenePos(move.to, "figure"));
+    private makeMove(move: Move, fig_to_move: ChessFigure): void {
+        this.makePhysicalMove(move, fig_to_move);
+        this.makeLogicalMove(move, fig_to_move);
     }
 
     public isPartOfMove(field: ChessField): boolean {
@@ -198,13 +191,27 @@ export class ChessState {
         this.selected_field = null;
     }
 
-    private refreshBoard(move: Move, fig: ChessFigure): void {
-        // Refresh Figure
-        fig.pos = new Position(move.to, "figure");
+    private makePhysicalMove(move: Move, fig_to_move: ChessFigure): void {
+        // Capture case
+        if(ChessState.isCapture(move)){
+            let captured_fig = this.board.getField(move.to).figure;
+            captured_fig.capture();
+        }
+        // Animate
+        Action.makeMove(fig_to_move.mesh, fig_to_move.pos.scene_pos, Position.convertToScenePos(move.to, "figure"));
+    }
 
-        // Refresh fields
+    private makeLogicalMove(move: Move, fig_to_move: ChessFigure): void {
+        // Inform Chess.ts logic about move
+        this.logic.move({from: move.from.toLowerCase(), to: move.to.toLowerCase()});
+        console.log(this.logic.ascii());
+
+        // Refresh Project Figure
+        fig_to_move.pos = new Position(move.to, "figure");
+
+        // Refresh Project fields
         this.board.getField(move.from).figure = null;
-        this.board.getField(move.to).figure = fig;
+        this.board.getField(move.to).figure = fig_to_move;
     }
 
     private passToNextPlayer(): void{
@@ -213,6 +220,10 @@ export class ChessState {
         }else{
             this.current_player = this.white;
         }
+    }
+
+    private executeCapture(field: ChessField, captured_figure: ChessFigure){
+
     }
 
     private static toUpperNotation(moves: Array<Move>): Array<Move> {
@@ -228,6 +239,10 @@ export class ChessState {
         })
 
         return new_moves;
+    }
+
+    private static isCapture(move: Move){
+        return move.flags.includes("C") || move.flags.includes("E");
     }
 
 }

@@ -1,8 +1,14 @@
 import * as BABYLON from "@babylonjs/core";
 import {Position} from "./Position";
-import {ChessField} from "./ChessField";
 
 export class ChessFigure {
+    get on_field(): boolean {
+        return this._on_field;
+    }
+
+    set on_field(value: boolean) {
+        this._on_field = value;
+    }
     get color(): string {
         return this._color;
     }
@@ -35,13 +41,15 @@ export class ChessFigure {
     private _pos: Position;
     private _mesh: BABYLON.AbstractMesh;
     private _color: string; // ("b" | "w")
+    private _on_field: boolean;
 
 
-    constructor(id: string, pos: Position, mesh: BABYLON.AbstractMesh, side: string) {
+    constructor(id: string, pos: Position, mesh: BABYLON.AbstractMesh, side: string, on_field: boolean) {
         this.id = id;
         this.pos = pos;
         this.mesh = mesh;
         this.color = side;
+        this.on_field = on_field;
     }
 
     // ************************************************************************
@@ -58,10 +66,17 @@ export class ChessFigure {
         const figure_meshes: Array<BABYLON.AbstractMesh> = meshes.filter(m => m.id.includes("fig"));
 
         figure_meshes.forEach(mesh => {
-            figures.push(new ChessFigure(mesh.id, new Position(mesh.position, "figure"), mesh, this.getColor(mesh)));
+            figures.push(
+                new ChessFigure(mesh.id, new Position(mesh.position, "figure"), mesh, this.getColor(mesh), true));
         });
 
         return figures;
+    }
+
+    public capture(){
+        this.on_field = false;
+        this.pos = new Position(new BABYLON.Vector3(0,0,0)); // TODO to the side
+        this.mesh.position = this.pos.scene_pos;
     }
 
     // ************************************************************************

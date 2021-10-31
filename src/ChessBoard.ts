@@ -2,7 +2,6 @@ import * as BABYLON from "@babylonjs/core";
 import {ChessField} from "./ChessField";
 import {ChessFigure} from "./ChessFigure";
 import {Position} from "./Position";
-import {Chess, Move} from "chess.ts";
 import {ChessState} from "./ChessState";
 
 export class ChessBoard {

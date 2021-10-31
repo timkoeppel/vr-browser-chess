@@ -2,8 +2,6 @@ import * as BABYLON from "@babylonjs/core";
 import {ChessFigure} from "./ChessFigure";
 import {ChessBoard} from "./ChessBoard";
 import {Position} from "./Position";
-import {AbstractMesh} from "@babylonjs/core";
-import {Move} from "chess.ts";
 
 export class ChessField {
     get board(): ChessBoard {
@@ -161,7 +159,6 @@ export class ChessField {
      * @param scene For retrieving information for the reset to original material
      */
     public setupSelection(scene: BABYLON.Scene): void {
-        console.log(this);
         this.mesh.actionManager.registerAction(
             new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickDownTrigger, () => {
                 this.board.state.processClick(this);
@@ -193,7 +190,11 @@ export class ChessField {
     // HELPER METHODS
     // ************************************************************************
     private isSelected() {
-        return this.mesh.material === this.selection_material;
+        let result = false;
+        if(this.board.state.selected_field !== null){
+            result = this.id === this.board.state.selected_field.id;
+        }
+        return result;
     }
 
 }
