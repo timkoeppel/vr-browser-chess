@@ -1,3 +1,4 @@
+import * as BABYLON from "@babylonjs/core";
 import {ChessFigure} from "./ChessFigure";
 import {ChessField} from "./ChessField";
 import {Chess, Move} from "chess.ts";
@@ -152,6 +153,12 @@ export class ChessState {
         return move_targets.includes(field.id);
     }
 
+    public processCapturedFigure(captured_figure: ChessFigure){
+        const new_pos = ChessState.getOffBoardPosition(captured_figure);
+        captured_figure.updatePosition(new_pos);
+    }
+
+
     // ************************************************************************
     // HELPER METHODS
     // ************************************************************************
@@ -199,6 +206,13 @@ export class ChessState {
         }
         // Animate
         Action.makeMove(fig_to_move.mesh, fig_to_move.pos.scene_pos, Position.convertToScenePos(move.to, "figure"));
+
+        // Rochade/Castling case
+        if(ChessState.isCastling(move)){
+            const castling = this.getCastlingInfo(move);
+            console.log(castling['rook']);
+            Action.makeMove(castling['rook'].mesh, castling['from'].position.scene_pos, castling['to'].position.scene_pos);
+        }
     }
 
     private makeLogicalMove(move: Move, fig_to_move: ChessFigure): void {
@@ -212,6 +226,18 @@ export class ChessState {
         // Refresh Project fields
         this.board.getField(move.from).figure = null;
         this.board.getField(move.to).figure = fig_to_move;
+
+        // Rochade/Castling case
+        if(ChessState.isCastling(move)) {
+            const castling = this.getCastlingInfo(move);
+
+            // Refresh Project Rook
+            castling['rook'].pos = castling['to'].position;
+
+            // Refresh Project fields
+            castling['from'].figure = null;
+            castling['to'].figure = castling['rook'];
+        }
     }
 
     private passToNextPlayer(): void{
@@ -220,10 +246,6 @@ export class ChessState {
         }else{
             this.current_player = this.white;
         }
-    }
-
-    private executeCapture(field: ChessField, captured_figure: ChessFigure){
-
     }
 
     private static toUpperNotation(moves: Array<Move>): Array<Move> {
@@ -243,6 +265,41 @@ export class ChessState {
 
     private static isCapture(move: Move){
         return move.flags.includes("C") || move.flags.includes("E");
+    }
+
+    private static isCastling(move: Move){
+        return move.flags.includes("K") || move.flags.includes("Q");
+    }
+
+    private static getOffBoardPosition(fig: ChessFigure){
+            const pos_add = fig.color === "w" ? 5 : -5
+
+            const x = fig.original_position.scene_pos.z + pos_add;
+            const y = 24.95;
+            const z = -fig.original_position.scene_pos.x;
+
+        return new BABYLON.Vector3(x,y,z);
+    }
+
+    private getCastlingInfo(move: Move): object{
+        // @ts-ignore
+        const chess_z = move.color === "W" ? 1 : 8;
+
+        // Get rook and from
+        const rook_from_x = move.flags.includes("Q") ? "A" : "H";
+        const from_field = this.board.getField(rook_from_x + chess_z);
+        const rook = from_field.figure;
+
+        // get to
+        const rook_to_x = move.flags.includes("Q") ? "D" : "F";
+        const to_field = this.board.getField(rook_to_x + chess_z);
+
+        return {
+            rook: rook,
+            from: from_field,
+            to: to_field
+        };
+
     }
 
 }

@@ -6,7 +6,7 @@ import {Avatar} from "./Avatar";
 import {ChessBoard} from "./ChessBoard";
 import {ChessField} from "./ChessField";
 import {Chess} from "chess.ts";
-import {WebXRDefaultExperience} from "@babylonjs/core";
+import {IWebXRControllerPointerSelectionOptions, WebXRDefaultExperience} from "@babylonjs/core";
 
 export default class Game {
     get chessboard(): ChessBoard {
@@ -159,16 +159,24 @@ export default class Game {
      * Initiates the Babylon XR Experience for mobile devices
      */
     public async initiateXR() {
-        this.xr = await this.scene.createDefaultXRExperienceAsync({});
-        this.xr.baseExperience.onInitialXRPoseSetObservable.add(xrCamera => {
-            xrCamera.position = this.camera.position;
-
-            //console.log(this.xr.baseExperience.featuresManager.getEnabledFeature("xr-controller-pointer-selection"));
-            this.xr.pointerSelection.displayLaserPointer = true;
-            this.xr.pointerSelection.displaySelectionMesh = true;
-            this.xr.pointerSelection.disableSelectionMeshLighting = true;
+        this.xr = await this.scene.createDefaultXRExperienceAsync({
+            uiOptions: {
+                sessionMode: "immersive-vr"
+            },
         });
 
+        this.xr.baseExperience.onInitialXRPoseSetObservable.add(xrCamera => {
+            xrCamera.position = this.camera.position;
+        });
+
+        this.xr.baseExperience.onStateChangedObservable.add((xrs, xre) => {
+            if (xrs === 2) {
+                this.xr.pointerSelection.displayLaserPointer = true;
+                this.xr.pointerSelection.displaySelectionMesh = true;
+                this.xr.pointerSelection.disableSelectionMeshLighting = true;
+            }
+
+        })
     }
 
     /**

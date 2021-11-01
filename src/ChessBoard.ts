@@ -39,7 +39,7 @@ export class ChessBoard {
      */
     constructor(meshes: Array<BABYLON.AbstractMesh>) {
         this.state = new ChessState(this);
-        this.figures = ChessFigure.extractFigures(meshes);
+        this.figures = ChessFigure.extractFigures(meshes, this);
         this.fields = ChessBoard.extractFields(meshes, this);
     }
 
