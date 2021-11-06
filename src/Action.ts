@@ -1,7 +1,17 @@
 import * as BABYLON from "@babylonjs/core";
 
+/**
+ * Manages all Actions/Animations including movements
+ */
 export class Action {
-    public static makeMove(fig_mesh: BABYLON.AbstractMesh, start_pos: BABYLON.Vector3, end_pos: BABYLON.Vector3) {
+
+    /**
+     * Moves a figure to the given 3D vector location
+     * @param fig_mesh
+     * @param start_pos
+     * @param end_pos
+     */
+    public static moveFigure(fig_mesh: BABYLON.AbstractMesh, start_pos: BABYLON.Vector3, end_pos: BABYLON.Vector3) {
         BABYLON.Animation.CreateAndStartAnimation(
             "anim",
             fig_mesh,

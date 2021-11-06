@@ -3,7 +3,18 @@ import {ChessFigure} from "./ChessFigure";
 import {ChessBoard} from "./ChessBoard";
 import {Position} from "./Position";
 
+/**
+ * ChessField manages all aspects bound to a single chess field
+ */
 export class ChessField {
+    get capture_material(): BABYLON.Material {
+        return this._capture_material;
+    }
+
+    set capture_material(value: BABYLON.Material) {
+        this._capture_material = value;
+    }
+
     get board(): ChessBoard {
         return this._board;
     }
@@ -85,6 +96,7 @@ export class ChessField {
     private _hover_material: BABYLON.Material;
     private _selection_material: BABYLON.Material;
     private _playable_material: BABYLON.Material;
+    private _capture_material: BABYLON.Material;
 
     /**
      * Constructs a Chess field
@@ -113,11 +125,15 @@ export class ChessField {
         let playable_material = new BABYLON.StandardMaterial("playable_material", scene);
         playable_material.diffuseColor = new BABYLON.Color3(0.5, 1, 0.5);
 
+        let capture_material = new BABYLON.StandardMaterial("capture_material", scene);
+        capture_material.diffuseColor = new BABYLON.Color3(0.1, 0.5, 0.1);
+
 
         this.original_material = ori_material;
         this.hover_material = hover_material;
         this.selection_material = selection_material;
         this.playable_material = playable_material;
+        this.capture_material = capture_material;
     }
 
     /**
@@ -138,19 +154,14 @@ export class ChessField {
             }));
     }
 
+
     /**
      * Sets up the hover-out functionality which resets to the previous state
      */
     public setupHoverOut(): void {
         this.mesh.actionManager.registerAction(
             new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOutTrigger, () => {
-                if (this.isSelected()) {
-                    this.mesh.material = this.selection_material;
-                } else if (this.board.state.isPartOfMove(this)) {
-                    this.mesh.material = this.playable_material;
-                } else {
-                    this.mesh.material = this.original_material;
-                }
+                this.restorePreviousMaterial();
             }));
     }
 
@@ -179,7 +190,7 @@ export class ChessField {
      */
     public setFieldsAsPlayable(playable_moves: Array<ChessField>): void {
         playable_moves.forEach(field => {
-            field.mesh.material = this.playable_material;
+            field.mesh.material = field.getMoveMaterial();
             field.mesh.edgesWidth = 10;
             field.mesh.edgesColor = new BABYLON.Color4(0.5, 0.5, 0.5, 1);
             field.mesh.enableEdgesRendering();
@@ -189,12 +200,39 @@ export class ChessField {
     // ************************************************************************
     // HELPER METHODS
     // ************************************************************************
+    /**
+     * Checks id the given field is selected by communicating with the ChessState
+     * @private
+     */
     private isSelected() {
         let result = false;
-        if(this.board.state.selected_field !== null){
+        if (this.board.state.selected_field !== null) {
             result = this.id === this.board.state.selected_field.id;
         }
         return result;
+    }
+
+    /**
+     * Resets the field to the previous material
+     * @private
+     */
+    private restorePreviousMaterial() {
+        if (this.isSelected()) {
+            this.mesh.material = this.selection_material;
+        } else if (this.board.state.isPartOfMove(this)) {
+            this.mesh.material = this.getMoveMaterial();
+        } else {
+            this.mesh.material = this.original_material;
+        }
+    }
+
+    /**
+     * Gets the move related material
+     * (Different color for capture move than color for moving move)
+     * @private
+     */
+    private getMoveMaterial() {
+        return this.figure === null ? this.playable_material : this.capture_material;
     }
 
 }

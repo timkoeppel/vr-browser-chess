@@ -4,6 +4,9 @@ import {ChessFigure} from "./ChessFigure";
 import {Position} from "./Position";
 import {ChessState} from "./ChessState";
 
+/**
+ * ChessBoard manages all aspects bound to the chessboard
+ */
 export class ChessBoard {
     get state(): ChessState {
         return this._state;
@@ -65,7 +68,11 @@ export class ChessBoard {
         });
     }
 
-    public getField(chess_pos: string): ChessField{
+    /**
+     * Gets the ChessField by the given chess ID
+     * @param chess_pos
+     */
+    public getField(chess_pos: string): ChessField {
         return this.fields.find(f => f.id === chess_pos);
     }
 

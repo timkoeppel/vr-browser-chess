@@ -8,6 +8,7 @@ export class Position {
     set scene_pos(value) {
         this._scene_pos = value;
     }
+
     get chess_pos() {
         return this._chess_pos;
     }
@@ -22,10 +23,10 @@ export class Position {
     constructor(pos: BABYLON.Vector3 | string, obj?: string) {
         let chess_pos;
         let scene_pos;
-        if(typeof pos === "string"){
+        if (typeof pos === "string") {
             chess_pos = pos;
             scene_pos = Position.convertToScenePos(pos, obj);
-        }else{
+        } else {
             chess_pos = Position.convertToChessPos(pos);
             scene_pos = Position._normalizeVector(pos);
         }
@@ -39,7 +40,7 @@ export class Position {
      * @param obj The object mesh ("figure" | "field")
      * @private
      */
-    public static convertToScenePos(chess_pos: string, obj: string): BABYLON.Vector3{
+    public static convertToScenePos(chess_pos: string, obj: string): BABYLON.Vector3 {
         const x_chess = chess_pos.charAt(0);
         const z_chess = chess_pos.charAt(1);
 
@@ -62,7 +63,7 @@ export class Position {
      * @param scene_pos The vector
      * @private
      */
-    public static convertToChessPos(scene_pos: BABYLON.Vector3): string{
+    public static convertToChessPos(scene_pos: BABYLON.Vector3): string {
         scene_pos = this._normalizeVector(scene_pos);
         const x_scene = scene_pos.x;
         const z_scene = scene_pos.z;
@@ -82,10 +83,10 @@ export class Position {
      * e.g. [-7, -5, -3, -1, 1, 3, 5, 7] if num = 8
      * @private
      */
-    private static _getUnevenPlusMinusRange(num: number, minus_first: boolean): Array<number>{
+    private static _getUnevenPlusMinusRange(num: number, minus_first: boolean): Array<number> {
         let range = [];
-        for (let i=1; i<2*num; i++) {
-            if(i % 2 !== 0) {
+        for (let i = 1; i < 2 * num; i++) {
+            if (i % 2 !== 0) {
                 range.push(i - num);
             }
         }
@@ -98,7 +99,7 @@ export class Position {
      * @param vec The vector
      * @private
      */
-    private static _normalizeVector(vec: BABYLON.Vector3): BABYLON.Vector3{
+    private static _normalizeVector(vec: BABYLON.Vector3): BABYLON.Vector3 {
         const x = Math.round(vec.x);
         const y = Math.round(vec.y * 100) / 100; // Fields have height 24.95
         const z = Math.round(vec.z);

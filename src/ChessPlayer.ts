@@ -1,19 +1,32 @@
+import {AI} from "./AI";
+import {ChessState} from "./ChessState";
 
-
+/**
+ * Manages the player
+ */
 export class ChessPlayer {
+    get state(): ChessState {
+        return this._state;
+    }
+
+    set state(value: ChessState) {
+        this._state = value;
+    }
+
+    get ai(): AI | null {
+        return this._ai;
+    }
+
+    set ai(value: AI | null) {
+        this._ai = value;
+    }
+
     get human(): boolean {
         return this._human;
     }
 
     set human(value: boolean) {
         this._human = value;
-    }
-    get score(): number {
-        return this._score;
-    }
-
-    set score(value: number) {
-        this._score = value;
     }
 
     get color(): string {
@@ -24,19 +37,16 @@ export class ChessPlayer {
         this._color = value;
     }
 
-    private _human: boolean; // "human" | "computer"
+    private _human: boolean;
     private _color: string;
-    private _score: number;
+    private _state: ChessState;
+    private _ai: AI | null;
 
-    constructor(human: boolean, color: string) {
+    constructor(human: boolean, color: string, state: ChessState) {
         this.human = human;
         this.color = color;
-        this.score = 0;
+        this.state = state;
+        this.ai = human ? null : new AI(this.state);
     }
 
-    public togglePlayer(player: ChessPlayer){
-        this.human = player.human;
-        this.color = player.color;
-        this.score = player.score;
-    }
 }

@@ -2,6 +2,9 @@ import * as BABYLON from "@babylonjs/core";
 import {Position} from "./Position";
 import {ChessBoard} from "./ChessBoard";
 
+/**
+ * ChessFigure manages a figure on the field
+ */
 export class ChessFigure {
     get original_position(): Position {
         return this._original_position;
@@ -10,6 +13,7 @@ export class ChessFigure {
     set original_position(value: Position) {
         this._original_position = value;
     }
+
     get board(): ChessBoard {
         return this._board;
     }
@@ -17,6 +21,7 @@ export class ChessFigure {
     set board(value: ChessBoard) {
         this._board = value;
     }
+
     get on_field(): boolean {
         return this._on_field;
     }
@@ -24,13 +29,15 @@ export class ChessFigure {
     set on_field(value: boolean) {
         this._on_field = value;
     }
-    get color(): string {
+
+    get color(): "b" | "w" {
         return this._color;
     }
 
-    set color(value: string) {
+    set color(value: "b" | "w") {
         this._color = value;
     }
+
     get mesh(): BABYLON.AbstractMesh {
         return this._mesh;
     }
@@ -38,6 +45,7 @@ export class ChessFigure {
     set mesh(value: BABYLON.AbstractMesh) {
         this._mesh = value;
     }
+
     get pos(): Position {
         return this._pos;
     }
@@ -45,6 +53,7 @@ export class ChessFigure {
     set pos(value: Position) {
         this._pos = value;
     }
+
     get id(): string {
         return this._id;
     }
@@ -52,21 +61,22 @@ export class ChessFigure {
     set id(value: string) {
         this._id = value;
     }
+
     private _id: string;
     private _pos: Position;
     private _original_position: Position;
     private _mesh: BABYLON.AbstractMesh;
-    private _color: string; // ("b" | "w")
+    private _color: "b" | "w";
     private _on_field: boolean;
     private _board: ChessBoard;
 
 
-    constructor(id: string, pos: Position, mesh: BABYLON.AbstractMesh, side: string, on_field: boolean, board: ChessBoard) {
+    constructor(id: string, pos: Position, mesh: BABYLON.AbstractMesh, color: "b" | "w", on_field: boolean, board: ChessBoard) {
         this.id = id;
         this.pos = pos;
         this.original_position = pos;
         this.mesh = mesh;
-        this.color = side;
+        this.color = color;
         this.on_field = on_field;
         this.board = board;
     }
@@ -94,23 +104,32 @@ export class ChessFigure {
         return figures;
     }
 
-    public capture(){
+    /**
+     * Initializes the capture of the figure
+     */
+    public capture() {
         this.on_field = false;
         this.board.state.processCapturedFigure(this);
-        //this.pos = new Position(new BABYLON.Vector3(0,0,0)); // TODO to the side
-        //this.mesh.position = this.pos.scene_pos;
     }
 
-    public updatePosition(scene_pos: BABYLON.Vector3){
+    /**
+     * Updates the Position object property
+     * @param scene_pos
+     */
+    public updatePosition(scene_pos: BABYLON.Vector3) {
         this.pos = new Position(scene_pos);
-        this.mesh.position = this.pos.scene_pos;
     }
 
     // ************************************************************************
     // HELPER METHODS
     // ************************************************************************
-    private static getColor(mesh: BABYLON.AbstractMesh): string{
-        return mesh.id.slice(-2, -1);
+    /**
+     * Gets the color of a figure mesh (second last character)
+     * @param mesh
+     * @private
+     */
+    private static getColor(mesh: BABYLON.AbstractMesh): "b" | "w" {
+        return <"b" | "w">mesh.id.slice(-2, -1);
     }
 
 }

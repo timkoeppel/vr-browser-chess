@@ -4,10 +4,10 @@ import "@babylonjs/loaders/glTF";
 import * as BABYLON from "@babylonjs/core";
 import {Avatar} from "./Avatar";
 import {ChessBoard} from "./ChessBoard";
-import {ChessField} from "./ChessField";
-import {Chess} from "chess.ts";
-import {IWebXRControllerPointerSelectionOptions, WebXRDefaultExperience} from "@babylonjs/core";
 
+/**
+ * Game manages all modules necessary for a chess game
+ */
 export default class Game {
     get chessboard(): ChessBoard {
         return this._chessboard;
@@ -17,11 +17,11 @@ export default class Game {
         this._chessboard = value;
     }
 
-    get xr(): WebXRDefaultExperience {
+    get xr(): BABYLON.WebXRDefaultExperience {
         return this._xr;
     }
 
-    set xr(value: WebXRDefaultExperience) {
+    set xr(value: BABYLON.WebXRDefaultExperience) {
         this._xr = value;
     }
 
@@ -71,7 +71,7 @@ export default class Game {
     //private _camera: BABYLON.DeviceOrientationCamera;
     private _camera: BABYLON.FreeCamera;
     private _light: BABYLON.Light;
-    private _xr: WebXRDefaultExperience;
+    private _xr: BABYLON.WebXRDefaultExperience;
     private _chessboard: ChessBoard;
 
     // ************************************************************************
@@ -82,41 +82,41 @@ export default class Game {
      * @constructor
      */
     public async initiate(): Promise<void> {
-        this.initiateHTMLScene();
-        this.initiateEngine();
-        this.initiateBabylonScene()
-        this.initiateLights();
-        this.initiateMeshes();
-        this.initiateCamera();
-        this.initiateAvatars();
+        await this.initiateHTMLScene();
+        await this.initiateEngine();
+        await this.initiateBabylonScene();
+        await this.initiateLights();
+        await this.initiateMeshes();
+        await this.initiateCamera();
+        await this.initiateAvatars();
         await this.initiateXR();
     }
 
     /**
      * Initiates the HTML Canvas, which BABYLON uses to render everything in
      */
-    public initiateHTMLScene(): void {
+    public async initiateHTMLScene(): Promise<void> {
         this.canvas = document.getElementById("gameCanvas") as HTMLCanvasElement;
     }
 
     /**
      * Initiates the BABYLON Engine
      */
-    public initiateEngine(): void {
+    public async initiateEngine(): Promise<void> {
         this.engine = new BABYLON.Engine(this.canvas, true);
     }
 
     /**
-     * Initiates the BABYLON Scene envitonment
+     * Initiates the BABYLON Scene environment
      */
-    public initiateBabylonScene(): void {
+    public async initiateBabylonScene(): Promise<void> {
         this.scene = new BABYLON.Scene(this.engine);
     }
 
     /**
      * Initiates the Lights over the table
      */
-    public initiateLights(): void {
+    public async initiateLights(): Promise<void> {
         this.light = new BABYLON.HemisphericLight(
             "main_light",
             new BABYLON.Vector3(0, 50, 0),
@@ -126,9 +126,23 @@ export default class Game {
     }
 
     /**
+     * Initiates all meshes and imports the whole 3D scene from Blender into the BABYLON Scene
+     */
+    public async initiateMeshes(): Promise<void> {
+        BABYLON.SceneLoader.ImportMeshAsync("", "/meshes/", "scene.glb", this.scene).then(result => {
+            this.chessboard = new ChessBoard(result.meshes);
+
+            // Initiate field
+            this.initiateFieldInteractions();
+        }).catch(error => {
+            console.log(error);
+        });
+    }
+
+    /**
      * Initiates the camera which is used
      */
-    public initiateCamera(): void {
+    public async initiateCamera(): Promise<void> {
         this.camera = new BABYLON.FreeCamera(
             "camera_white",
             new BABYLON.Vector3(0, 51.5, 20), // general eye position
@@ -137,31 +151,28 @@ export default class Game {
         this.scene.activeCamera = this.camera;
         this.camera.setTarget(BABYLON.Vector3.Zero());
         this.camera.attachControl(this.canvas, true);
-        this.camera.angularSensibility = 10000
+        this.camera.angularSensibility = 10000;
     }
 
     /**
-     * Initiates all meshes and imports the whole 3D scene from Blender into the BABYLON Scene
+     * Initiates the Avatars by importing and positioning them
      */
-    public initiateMeshes(): void {
-        BABYLON.SceneLoader.ImportMeshAsync("", "/meshes/", "scene.glb", this.scene).then(result => {
-            this.chessboard = new ChessBoard(result.meshes);
-
-            // Initiate field
-            this.initiateFieldInteractions(this.chessboard, this.scene);
-        }).catch(error => {
-            console.log(error);
-        });
+    public async initiateAvatars(): Promise<void> {
+        // TODO Parametrize in game menu selection
+        const avatar_white = new Avatar("white", "male", 1);
+        const avatar_black = new Avatar("black", "female", 1);
+        this.LoadAvatar(avatar_white);
+        this.LoadAvatar(avatar_black);
     }
 
 
     /**
      * Initiates the Babylon XR Experience for mobile devices
      */
-    public async initiateXR() {
+    public async initiateXR(): Promise<void> {
         this.xr = await this.scene.createDefaultXRExperienceAsync({
             uiOptions: {
-                sessionMode: "immersive-vr"
+                sessionMode: "immersive-vr",
             },
         });
 
@@ -175,26 +186,24 @@ export default class Game {
                 this.xr.pointerSelection.displaySelectionMesh = true;
                 this.xr.pointerSelection.disableSelectionMeshLighting = true;
             }
-
         })
     }
 
     /**
-     * Initiates the Avatars by importing and positioning them
+     * Starts the game chain by making the first move for white
+     * (necessary if white is AI)
      */
-    public initiateAvatars(): void {
-        // TODO Parametrize in game menu selection
-        const avatar_white = new Avatar("white", "male", 1);
-        const avatar_black = new Avatar("black", "female", 1);
-        this.LoadAvatar(avatar_white);
-        this.LoadAvatar(avatar_black);
+    public startGame(): void {
+        if (this.chessboard.state.current_player.color === "w") {
+            this.chessboard.state.makeAIMove();
+        }
     }
 
     /**
      * Handles the Rendering of the scene
      * @constructor
      */
-    public divFps = document.getElementById("fps");
+    private divFps = document.getElementById("fps");
 
     public DoRender(): void {
         // run the main render loop
@@ -213,22 +222,22 @@ export default class Game {
     // HELPER METHODS
     // ************************************************************************
     /**
-     * Enables
-     * @param chessboard
-     * @param scene
+     * Enables the interaction with the chess fields
+     * - Hover over/out
+     * - Click (selection)
      */
-    private initiateFieldInteractions(chessboard: ChessBoard, scene: BABYLON.Scene): void {
+    private initiateFieldInteractions(): void {
         // Gaze through figures
-        chessboard.makeFiguresUnpickable();
+        this.chessboard.makeFiguresUnpickable();
 
 
-        chessboard.fields.forEach(field => {
-            field.mesh.actionManager = new BABYLON.ActionManager(scene);
+        this.chessboard.fields.forEach(field => {
+            field.mesh.actionManager = new BABYLON.ActionManager(this.scene);
 
             // Interactions
             field.setupHoverOn();
             field.setupHoverOut();
-            field.setupSelection(scene);
+            field.setupSelection(this.scene);
         });
     }
 

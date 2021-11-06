@@ -1,5 +1,8 @@
 import * as BABYLON from "@babylonjs/core";
 
+/**
+ * Pose manages the stature/pose of the avatars
+ */
 export class Pose {
     public head: BABYLON.TransformNode;
     public neck: BABYLON.TransformNode;
