@@ -8,7 +8,6 @@ class App {
         let game = new Game();
         game.initiate().then(() => {
                 console.log(game);
-                game.startGame();
                 game.DoRender();
             }
         ).catch(error => {

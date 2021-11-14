@@ -119,18 +119,19 @@ export default class Game {
     public async initiateLights(): Promise<void> {
         this.light = new BABYLON.HemisphericLight(
             "main_light",
-            new BABYLON.Vector3(0, 50, 0),
+            new BABYLON.Vector3(0, 40, 0),
             this.scene
         );
-        this.light.intensity = 1.2;
+        this.light.intensity = 0.8;
     }
 
     /**
      * Initiates all meshes and imports the whole 3D scene from Blender into the BABYLON Scene
      */
     public async initiateMeshes(): Promise<void> {
-        BABYLON.SceneLoader.ImportMeshAsync("", "/meshes/", "scene.glb", this.scene).then(result => {
-            this.chessboard = new ChessBoard(result.meshes);
+        BABYLON.SceneLoader.AppendAsync( "./meshes/", "scene.glb",  this.scene).then(scene => {
+            this.scene = scene;
+            this.chessboard = new ChessBoard(scene.meshes);
 
             // Initiate field
             this.initiateFieldInteractions();

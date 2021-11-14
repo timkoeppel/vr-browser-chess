@@ -117,16 +117,20 @@ export class ChessField {
 
         // Materials
         let selection_material = new BABYLON.StandardMaterial("selection_material", scene);
-        selection_material.diffuseColor = new BABYLON.Color3(0.1, 0, 1);
+        selection_material.emissiveColor = new BABYLON.Color3(0.1, 0, 1);
+        selection_material.disableLighting = true;
 
         let hover_material = new BABYLON.StandardMaterial("hover_material", scene);
-        hover_material.diffuseColor = new BABYLON.Color3(0.5, 0.6, 1);
+        hover_material.emissiveColor = new BABYLON.Color3(0.5, 0.6, 1);
+        hover_material.disableLighting = true;
 
         let playable_material = new BABYLON.StandardMaterial("playable_material", scene);
-        playable_material.diffuseColor = new BABYLON.Color3(0.5, 1, 0.5);
+        playable_material.emissiveColor = new BABYLON.Color3(0.5, 1, 0.5);
+        playable_material.disableLighting = true;
 
         let capture_material = new BABYLON.StandardMaterial("capture_material", scene);
-        capture_material.diffuseColor = new BABYLON.Color3(0.1, 0.5, 0.1);
+        capture_material.emissiveColor = new BABYLON.Color3(0.1, 0.5, 0.1);
+        capture_material.disableLighting = true;
 
 
         this.original_material = ori_material;

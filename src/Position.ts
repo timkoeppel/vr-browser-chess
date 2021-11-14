@@ -61,6 +61,7 @@ export class Position {
     /**
      * Converts the Vector into the chess string notation
      * @param scene_pos The vector
+     * @return chess_pos if on the field "C3" and captured outside of board ""
      * @private
      */
     public static convertToChessPos(scene_pos: BABYLON.Vector3): string {
@@ -74,6 +75,11 @@ export class Position {
 
         // z conversion
         const z_chess = this._getUnevenPlusMinusRange(8, false).indexOf(z_scene) + 1;
+
+        // captured figure
+        if (x_chess < 0){
+            return "";
+        }
 
         return x_letter + z_chess;
     }

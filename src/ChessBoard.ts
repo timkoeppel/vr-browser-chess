@@ -117,7 +117,7 @@ export class ChessBoard {
     private static getFigureByPos(pos: Position, figures: Array<ChessFigure>): ChessFigure | null {
         let result = null;
         figures.forEach(fig => {
-            const same_pos = pos.chess_pos === fig.pos.chess_pos;
+            const same_pos = pos.chess_pos === fig.position.chess_pos;
             if (same_pos) {
                 result = fig;
             }

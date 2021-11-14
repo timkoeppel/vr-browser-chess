@@ -46,12 +46,12 @@ export class ChessFigure {
         this._mesh = value;
     }
 
-    get pos(): Position {
-        return this._pos;
+    get position(): Position {
+        return this._position;
     }
 
-    set pos(value: Position) {
-        this._pos = value;
+    set position(value: Position) {
+        this._position = value;
     }
 
     get id(): string {
@@ -63,7 +63,7 @@ export class ChessFigure {
     }
 
     private _id: string;
-    private _pos: Position;
+    private _position: Position;
     private _original_position: Position;
     private _mesh: BABYLON.AbstractMesh;
     private _color: "b" | "w";
@@ -73,7 +73,7 @@ export class ChessFigure {
 
     constructor(id: string, pos: Position, mesh: BABYLON.AbstractMesh, color: "b" | "w", on_field: boolean, board: ChessBoard) {
         this.id = id;
-        this.pos = pos;
+        this.position = pos;
         this.original_position = pos;
         this.mesh = mesh;
         this.color = color;
@@ -110,14 +110,6 @@ export class ChessFigure {
     public capture() {
         this.on_field = false;
         this.board.state.processCapturedFigure(this);
-    }
-
-    /**
-     * Updates the Position object property
-     * @param scene_pos
-     */
-    public updatePosition(scene_pos: BABYLON.Vector3) {
-        this.pos = new Position(scene_pos);
     }
 
     // ************************************************************************

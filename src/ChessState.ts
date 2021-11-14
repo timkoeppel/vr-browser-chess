@@ -94,6 +94,11 @@ export class ChessState {
      * @param clicked_field
      */
     public processClick(clicked_field: ChessField) {
+        // Field without figure and which is not part of a move -> No reset
+        if(clicked_field.figure === null && !this.isPartOfMove(clicked_field)){
+            return;
+        }
+
         // Field with figure
         this.board.resetFieldsMaterial().then(() => {
             if (clicked_field.figure !== null) {
@@ -130,7 +135,7 @@ export class ChessState {
      */
     public makeAIMove() {
         // Change State
-        const move = this.current_player.ai.getRandomMove();
+        const move = this.current_player.ai.getMove();
         this.selected_field = this.board.getField(move.from);
 
         // Wait 2 seconds
@@ -218,8 +223,8 @@ export class ChessState {
     public processCapturedFigure(captured_figure: ChessFigure): void {
         const new_pos = ChessState.getOffBoardPosition(captured_figure);
 
-        Action.moveFigure(captured_figure.mesh, captured_figure.pos.scene_pos, new_pos);
-        captured_figure.updatePosition(new_pos);
+        Action.moveFigure(captured_figure.mesh, captured_figure.position.scene_pos, new_pos);
+        captured_figure.position = new Position(new_pos);
     }
 
     // ************************************************************************
@@ -291,7 +296,7 @@ export class ChessState {
             captured_fig.capture();
         }
         // Animate
-        Action.moveFigure(fig_to_move.mesh, fig_to_move.pos.scene_pos, Position.convertToScenePos(move.to, "figure"));
+        Action.moveFigure(fig_to_move.mesh, fig_to_move.position.scene_pos, Position.convertToScenePos(move.to, "figure"));
 
         // Rochade/Castling case
         if (ChessState.isCastling(move)) {
@@ -308,11 +313,12 @@ export class ChessState {
      */
     private makeLogicalMove(move: Move, fig_to_move: ChessFigure): void {
         // Inform Chess.ts logic about move
-        this.logic.move({from: move.from.toLowerCase(), to: move.to.toLowerCase()});
+        const made_move = this.logic.move({from: move.from.toLowerCase(), to: move.to.toLowerCase()});
+        console.log(made_move);
         console.log(this.logic.ascii());
 
         // Refresh Project Figure
-        fig_to_move.pos = new Position(move.to, "figure");
+        fig_to_move.position = new Position(move.to, "figure");
 
         // Refresh Project fields
         this.board.getField(move.from).figure = null;
