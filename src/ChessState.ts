@@ -6,18 +6,20 @@ import {ChessPlayer} from "./ChessPlayer";
 import {ChessBoard} from "./ChessBoard";
 import {Position} from "./Position";
 import {Action} from "./Action";
+import Game from "./Game";
+import {GazeController} from "./GazeController";
 
 /**
  * ChessState manages the game state, logic and move management
  * ... -> next Player (begin) -> select move -> make move -> next Player -> ... -> Game Over
  */
 export class ChessState {
-    get board(): ChessBoard {
-        return this._board;
+    get game(): Game {
+        return this._game;
     }
 
-    set board(value: ChessBoard) {
-        this._board = value;
+    set game(value: Game) {
+        this._game = value;
     }
 
     get black(): ChessPlayer {
@@ -74,16 +76,16 @@ export class ChessState {
     private _black: ChessPlayer;
     private _selected_field: ChessField | null;
     private _moves: Array<Move>;
-    private _board: ChessBoard;
+    private _game: Game;
 
-    constructor(board: ChessBoard) {
+    constructor(game: Game) {
         this.logic = new Chess();
-        this.white = new ChessPlayer(true, "w", this);
+        this.white = new ChessPlayer(true, "w", this); // TODO Player selection
         this.black = new ChessPlayer(false, "b", this);
         this.current_player = this.white;
         this.selected_field = null;
         this.moves = [];
-        this.board = board;
+        this.game = game;
     }
 
     // ************************************************************************
@@ -100,7 +102,7 @@ export class ChessState {
         }
 
         // Field with figure
-        this.board.resetFieldsMaterial().then(() => {
+        this.game.chessboard.resetFieldsMaterial().then(() => {
             if (clicked_field.figure !== null) {
                 // Own figure --> Select this figure
                 if (this.isOwnFigure(clicked_field.figure)) {
@@ -136,7 +138,7 @@ export class ChessState {
     public makeAIMove() {
         // Change State
         const move = this.current_player.ai.getMove();
-        this.selected_field = this.board.getField(move.from);
+        this.selected_field = this.game.chessboard.getField(move.from);
 
         // Wait 2 seconds
         // (If moves too fast --> bad UX & physical move corrupts by capture)
@@ -156,10 +158,12 @@ export class ChessState {
         this.moves = ChessState.toUpperNotation(moves);
         this.selected_field = clicked_field;
 
-        // Change Material
-        const playable_fields = this.getPlayableFields(this.moves);
-        this.selected_field.setFieldAsSelected();
-        this.selected_field.setFieldsAsPlayable(playable_fields)
+        // Change Material if gaze controller
+        if(this.game.controller instanceof GazeController){
+            const playable_fields = this.getPlayableFields(this.moves);
+            this.game.controller.setFieldAsSelected(this.selected_field);
+            this.game.controller.setFieldsAsPlayable(playable_fields)
+        }
     }
 
     /**
@@ -237,7 +241,7 @@ export class ChessState {
         let playable_fields = [];
 
         moves.forEach(m => {
-            const playable_field = this.board.fields.find(f => f.id === m.to);
+            const playable_field = this.game.chessboard.fields.find(f => f.id === m.to);
             playable_fields.push(playable_field);
         })
 
@@ -292,7 +296,7 @@ export class ChessState {
     private makePhysicalMove(move: Move, fig_to_move: ChessFigure): void {
         // Capture case
         if (ChessState.isCapture(move)) {
-            let captured_fig = this.board.getField(move.to).figure;
+            let captured_fig = this.game.chessboard.getField(move.to).figure;
             captured_fig.capture();
         }
         // Animate
@@ -321,8 +325,8 @@ export class ChessState {
         fig_to_move.position = new Position(move.to, "figure");
 
         // Refresh Project fields
-        this.board.getField(move.from).figure = null;
-        this.board.getField(move.to).figure = fig_to_move;
+        this.game.chessboard.getField(move.from).figure = null;
+        this.game.chessboard.getField(move.to).figure = fig_to_move;
 
         // Rochade/Castling case
         if (ChessState.isCastling(move)) {
@@ -412,12 +416,12 @@ export class ChessState {
 
         // Get rook and from
         const rook_from_x = move.flags.includes("Q") ? "A" : "H";
-        const from_field = this.board.getField(rook_from_x + chess_z);
+        const from_field = this.game.chessboard.getField(rook_from_x + chess_z);
         const rook = from_field.figure;
 
         // get to
         const rook_to_x = move.flags.includes("Q") ? "D" : "F";
-        const to_field = this.board.getField(rook_to_x + chess_z);
+        const to_field = this.game.chessboard.getField(rook_to_x + chess_z);
 
         return {
             rook: rook,

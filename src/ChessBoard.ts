@@ -3,11 +3,19 @@ import {ChessField} from "./ChessField";
 import {ChessFigure} from "./ChessFigure";
 import {Position} from "./Position";
 import {ChessState} from "./ChessState";
+import Game from "./Game";
 
 /**
  * ChessBoard manages all aspects bound to the chessboard
  */
 export class ChessBoard {
+    get game(): Game {
+        return this._game;
+    }
+
+    set game(value: Game) {
+        this._game = value;
+    }
     get state(): ChessState {
         return this._state;
     }
@@ -35,13 +43,16 @@ export class ChessBoard {
     private _figures: Array<ChessFigure>;
     private _fields: Array<ChessField>;
     private _state: ChessState;
+    private _game: Game;
 
     /**
      * Constructs a complex chessboard with its figures from the meshes
      * @param meshes The imported meshes
+     * @param game The game the board is bounded to
      */
-    constructor(meshes: Array<BABYLON.AbstractMesh>) {
-        this.state = new ChessState(this);
+    constructor(meshes: Array<BABYLON.AbstractMesh>, game: Game) {
+        this.game = game;
+        this.state = new ChessState(game);
         this.figures = ChessFigure.extractFigures(meshes, this);
         this.fields = ChessBoard.extractFields(meshes, this);
     }

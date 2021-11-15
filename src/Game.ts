@@ -4,11 +4,20 @@ import "@babylonjs/loaders/glTF";
 import * as BABYLON from "@babylonjs/core";
 import {Avatar} from "./Avatar";
 import {ChessBoard} from "./ChessBoard";
+import {GazeController} from "./GazeController";
+import {VoiceController} from "./VoiceController";
 
 /**
  * Game manages all modules necessary for a chess game
  */
 export default class Game {
+    get controller() : GazeController | VoiceController{
+        return this._controller;
+    }
+
+    set controller(value: GazeController | VoiceController) {
+        this._controller = value;
+    }
     get chessboard(): ChessBoard {
         return this._chessboard;
     }
@@ -68,20 +77,18 @@ export default class Game {
     private _canvas: HTMLCanvasElement;
     private _engine: BABYLON.Engine;
     private _scene: BABYLON.Scene;
-    //private _camera: BABYLON.DeviceOrientationCamera;
     private _camera: BABYLON.FreeCamera;
     private _light: BABYLON.Light;
     private _xr: BABYLON.WebXRDefaultExperience;
     private _chessboard: ChessBoard;
 
-    // ************************************************************************
-    // MAIN METHODS
+    private _controller: GazeController | VoiceController;
     // ************************************************************************
     /**
      * Creates the whole Game environment
      * @constructor
      */
-    public async initiate(): Promise<void> {
+    public async initiate() {
         await this.initiateHTMLScene();
         await this.initiateEngine();
         await this.initiateBabylonScene();
@@ -90,33 +97,35 @@ export default class Game {
         await this.initiateCamera();
         await this.initiateAvatars();
         await this.initiateXR();
+        await this.initiateController(); // TODO PARAMETER
     }
 
     /**
      * Initiates the HTML Canvas, which BABYLON uses to render everything in
      */
-    public async initiateHTMLScene(): Promise<void> {
+    public async initiateHTMLScene(){
         this.canvas = document.getElementById("gameCanvas") as HTMLCanvasElement;
+
     }
 
     /**
      * Initiates the BABYLON Engine
      */
-    public async initiateEngine(): Promise<void> {
+    public async initiateEngine() {
         this.engine = new BABYLON.Engine(this.canvas, true);
     }
 
     /**
      * Initiates the BABYLON Scene environment
      */
-    public async initiateBabylonScene(): Promise<void> {
+    public async initiateBabylonScene() {
         this.scene = new BABYLON.Scene(this.engine);
     }
 
     /**
      * Initiates the Lights over the table
      */
-    public async initiateLights(): Promise<void> {
+    public async initiateLights() {
         this.light = new BABYLON.HemisphericLight(
             "main_light",
             new BABYLON.Vector3(0, 40, 0),
@@ -128,13 +137,11 @@ export default class Game {
     /**
      * Initiates all meshes and imports the whole 3D scene from Blender into the BABYLON Scene
      */
-    public async initiateMeshes(): Promise<void> {
-        BABYLON.SceneLoader.AppendAsync( "./meshes/", "scene.glb",  this.scene).then(scene => {
+    public async initiateMeshes() {
+        await BABYLON.SceneLoader.AppendAsync( "./meshes/", "scene.glb",  this.scene).then(scene => {
             this.scene = scene;
-            this.chessboard = new ChessBoard(scene.meshes);
-
-            // Initiate field
-            this.initiateFieldInteractions();
+            this.chessboard = new ChessBoard(scene.meshes, this);
+            console.log(1);
         }).catch(error => {
             console.log(error);
         });
@@ -143,7 +150,7 @@ export default class Game {
     /**
      * Initiates the camera which is used
      */
-    public async initiateCamera(): Promise<void> {
+    public async initiateCamera() {
         this.camera = new BABYLON.FreeCamera(
             "camera_white",
             new BABYLON.Vector3(0, 51.5, 20), // general eye position
@@ -158,7 +165,7 @@ export default class Game {
     /**
      * Initiates the Avatars by importing and positioning them
      */
-    public async initiateAvatars(): Promise<void> {
+    public async initiateAvatars(){
         // TODO Parametrize in game menu selection
         const avatar_white = new Avatar("white", "male", 1);
         const avatar_black = new Avatar("black", "female", 1);
@@ -170,7 +177,7 @@ export default class Game {
     /**
      * Initiates the Babylon XR Experience for mobile devices
      */
-    public async initiateXR(): Promise<void> {
+    public async initiateXR() {
         this.xr = await this.scene.createDefaultXRExperienceAsync({
             uiOptions: {
                 sessionMode: "immersive-vr",
@@ -188,6 +195,17 @@ export default class Game {
                 this.xr.pointerSelection.disableSelectionMeshLighting = true;
             }
         })
+    }
+
+    public async initiateController(){
+        console.log(2);
+        this.controller = new GazeController(this);
+        // Initiate field
+        if(this.controller instanceof GazeController) {
+            this.controller.initiateGazeInteractions();
+        }else{
+            // TODO
+        }
     }
 
     /**
@@ -222,26 +240,6 @@ export default class Game {
     // ************************************************************************
     // HELPER METHODS
     // ************************************************************************
-    /**
-     * Enables the interaction with the chess fields
-     * - Hover over/out
-     * - Click (selection)
-     */
-    private initiateFieldInteractions(): void {
-        // Gaze through figures
-        this.chessboard.makeFiguresUnpickable();
-
-
-        this.chessboard.fields.forEach(field => {
-            field.mesh.actionManager = new BABYLON.ActionManager(this.scene);
-
-            // Interactions
-            field.setupHoverOn();
-            field.setupHoverOut();
-            field.setupSelection(this.scene);
-        });
-    }
-
     /**
      * Loads the specified avatar
      * @param avatar

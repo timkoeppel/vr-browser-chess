@@ -108,8 +108,3 @@ dist
 *.pem
 *.csr
 *.crt
-
-# Blender files
-*.blend
-*.blend1
-git pull
