@@ -6,16 +6,17 @@ import {Avatar} from "./Avatar";
 import {ChessBoard} from "./ChessBoard";
 import {GazeController} from "./GazeController";
 import {VoiceController} from "./VoiceController";
+import {Controller} from "./Controller";
 
 /**
  * Game manages all modules necessary for a chess game
  */
 export default class Game {
-    get controller() : GazeController | VoiceController{
+    get controller() : Controller{
         return this._controller;
     }
 
-    set controller(value: GazeController | VoiceController) {
+    set controller(value: Controller) {
         this._controller = value;
     }
     get chessboard(): ChessBoard {
@@ -82,28 +83,34 @@ export default class Game {
     private _xr: BABYLON.WebXRDefaultExperience;
     private _chessboard: ChessBoard;
 
-    private _controller: GazeController | VoiceController;
+    private _controller: Controller;
     // ************************************************************************
     /**
      * Creates the whole Game environment
      * @constructor
      */
+    constructor(){
+        this.initiateHTMLScene();
+        this.initiateEngine();
+        this.initiateBabylonScene();
+        this.initiateLights();
+        this.initiateCamera();
+    }
+
+    /**
+     * Parametrizes the game
+     */
     public async initiate() {
-        await this.initiateHTMLScene();
-        await this.initiateEngine();
-        await this.initiateBabylonScene();
-        await this.initiateLights();
         await this.initiateMeshes();
-        await this.initiateCamera();
-        await this.initiateAvatars();
+        await this.initiateAvatars("male", 1, "female", 1);
         await this.initiateXR();
-        await this.initiateController(); // TODO PARAMETER
+        await this.initiateController("gaze");
     }
 
     /**
      * Initiates the HTML Canvas, which BABYLON uses to render everything in
      */
-    public async initiateHTMLScene(){
+    public initiateHTMLScene(){
         this.canvas = document.getElementById("gameCanvas") as HTMLCanvasElement;
 
     }
@@ -111,21 +118,21 @@ export default class Game {
     /**
      * Initiates the BABYLON Engine
      */
-    public async initiateEngine() {
+    public initiateEngine() {
         this.engine = new BABYLON.Engine(this.canvas, true);
     }
 
     /**
      * Initiates the BABYLON Scene environment
      */
-    public async initiateBabylonScene() {
+    public initiateBabylonScene() {
         this.scene = new BABYLON.Scene(this.engine);
     }
 
     /**
      * Initiates the Lights over the table
      */
-    public async initiateLights() {
+    public initiateLights() {
         this.light = new BABYLON.HemisphericLight(
             "main_light",
             new BABYLON.Vector3(0, 40, 0),
@@ -141,7 +148,6 @@ export default class Game {
         await BABYLON.SceneLoader.AppendAsync( "./meshes/", "scene.glb",  this.scene).then(scene => {
             this.scene = scene;
             this.chessboard = new ChessBoard(scene.meshes, this);
-            console.log(1);
         }).catch(error => {
             console.log(error);
         });
@@ -150,7 +156,7 @@ export default class Game {
     /**
      * Initiates the camera which is used
      */
-    public async initiateCamera() {
+    public initiateCamera() {
         this.camera = new BABYLON.FreeCamera(
             "camera_white",
             new BABYLON.Vector3(0, 51.5, 20), // general eye position
@@ -165,10 +171,10 @@ export default class Game {
     /**
      * Initiates the Avatars by importing and positioning them
      */
-    public async initiateAvatars(){
+    public async initiateAvatars(white_gender: "male" | "female", white_ava_no: number, black_gender: "male" | "female", black_ava_no: number){
         // TODO Parametrize in game menu selection
-        const avatar_white = new Avatar("white", "male", 1);
-        const avatar_black = new Avatar("black", "female", 1);
+        const avatar_white = new Avatar("white", white_gender, white_ava_no);
+        const avatar_black = new Avatar("black", black_gender, black_ava_no);
         this.LoadAvatar(avatar_white);
         this.LoadAvatar(avatar_black);
     }
@@ -184,7 +190,7 @@ export default class Game {
             },
         });
 
-        this.xr.baseExperience.onInitialXRPoseSetObservable.add(xrCamera => {
+        await this.xr.baseExperience.onInitialXRPoseSetObservable.add(xrCamera => {
             xrCamera.position = this.camera.position;
         });
 
@@ -197,14 +203,11 @@ export default class Game {
         })
     }
 
-    public async initiateController(){
-        console.log(2);
-        this.controller = new GazeController(this);
-        // Initiate field
-        if(this.controller instanceof GazeController) {
-            this.controller.initiateGazeInteractions();
-        }else{
-            // TODO
+    public async initiateController(type: "gaze" | "voice"){
+        if(type === "gaze"){
+            const controller = new GazeController(this);
+            controller.initiateGazeInteractions();
+            this.controller = controller;
         }
     }
 
