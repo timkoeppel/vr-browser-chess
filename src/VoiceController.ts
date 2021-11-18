@@ -53,6 +53,7 @@ export class VoiceController extends Controller {
 
             // Evaluate the optimized transcript
             VoiceController.optimizeTranscript(current_transcript).then(transcript => {
+                console.log("You said:", transcript);
                 // SELECT
                 if (transcript.includes("select") || transcript.includes("move")) {
                     const pos = VoiceController.extractPosition(transcript);
@@ -155,6 +156,7 @@ export class VoiceController extends Controller {
         "be ": "B",
         "by ": "B",
         "see ": "C",
+        "the": "D",
         "Die ": "D",
         "die ": "D",
         "T": "G",

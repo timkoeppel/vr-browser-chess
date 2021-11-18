@@ -212,7 +212,6 @@ export default class Game {
             const controller = new VoiceController(this);
             controller.initiate();
             this.controller = controller;
-            console.log(this.controller);
         }
     }
 
