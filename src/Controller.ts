@@ -41,18 +41,6 @@ export class Controller{
         this.capture_material = capture_material;
     }
 
-
-    /**
-     * Sets up the selection of a field
-     * @param field field to set up
-     */
-    public setupSelection(field: ChessField): void {
-        field.mesh.actionManager.registerAction(
-            new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickDownTrigger, () => {
-                field.board.state.processClick(field);
-            }));
-    }
-
     /**
      * Resets the field to the previous material
      * @private

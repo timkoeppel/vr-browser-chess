@@ -27,6 +27,17 @@ export class GazeController extends Controller{
             this.setupSelection(field);
         });
     }
+    /**
+     * Sets up the selection of a field
+     * @param field field to set up
+     */
+    public setupSelection(field: ChessField): void {
+        field.mesh.actionManager.registerAction(
+            new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickDownTrigger, () => {
+                field.board.state.processClick(field);
+            }));
+    }
+
 
     /**
      * Sets up the hover-on functionality to change to the given material

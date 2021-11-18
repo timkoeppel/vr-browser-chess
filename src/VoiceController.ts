@@ -32,12 +32,18 @@ export class VoiceController extends Controller {
         this.grammar = new webkitSpeechGrammarList();
     }
 
+    // ************************************************************************
+    // MAIN METHODS
+    // ************************************************************************
+    /**
+     * Initiates the WebSpeechAPI Client with all its properties and event functions
+     */
     public initiate() {
         this.initiateGrammar();
         this.initiateClient();
         this.client.start()
 
-        // RESULT
+        // ON RESULT
         this.client.onresult = (event) => {
             let current_transcript = '';
             // Transcript preparation
@@ -48,30 +54,30 @@ export class VoiceController extends Controller {
             // Evaluate the optimized transcript
             VoiceController.optimizeTranscript(current_transcript).then(transcript => {
                 // SELECT
-                if (transcript.includes("select")) {
+                if (transcript.includes("select") || transcript.includes("move")) {
                     const pos = VoiceController.extractPosition(transcript);
-                    console.log("select:", pos);
+                    if (pos !== "") {
+                        const chess_field = this.game.chessboard.getField(pos);
+                        this.game.chessboard.state.processClick(chess_field);
+                    }
                 }
-                // MOVE
-                else if (transcript.includes("move")) {
-                    const pos = VoiceController.extractPosition(transcript);
-                    console.log("move to:", pos);
-                }
-                console.log('You said:"' + transcript + '"');
             })
         }
 
-        // PREVENT LISTENING STOP
+        // PREVENT LISTENING STOP (After a time the recording mode stops)
         this.client.onend = (event) => {
             this.client.start();
         }
 
     }
 
-
     // ************************************************************************
     // HELPER METHODS
     // ************************************************************************
+    /**
+     * Get all chess field position names upper and lower case, e.g. "A8", ...
+     * @private
+     */
     private static getAllChessFieldNames(): Array<string> {
         const char_codes = [65, 97];
         let chess_fields = [];
@@ -87,6 +93,10 @@ export class VoiceController extends Controller {
         return chess_fields;
     }
 
+    /**
+     * Initiate grammar properties
+     * @private
+     */
     private initiateGrammar() {
         let fields_and_commands = ['select', 'move to'].concat(VoiceController.getAllChessFieldNames());
         let grammar = '#JSGF V1.0; grammar fields; public <fields> = ' + fields_and_commands.join(' | ') + ' ;'
@@ -95,65 +105,83 @@ export class VoiceController extends Controller {
         this.grammar.grammars = this.grammar;
     }
 
+    /**
+     * Initiate client properties
+     * @private
+     */
     private initiateClient() {
         this.client.continuous = true;
         this.client.interimResults = false;
         this.client.lang = "en-US";
     }
 
+    /**
+     * Optimize the transcript to the chess positions and commands by replacing words
+     * @param transcript
+     * @private
+     */
     private static async optimizeTranscript(transcript: string): Promise<string> {
-        const dict = {
-            // Letters (with space)
-            "a ": "A",
-            "be ": "B",
-            "by ": "B",
-            "see ": "C",
-            "Die ": "D",
-            "die ": "D",
-            "T": "G",
-            "she ": "G",
-            "gu": "G",
-            "GU": "G",
-            "20": "H",
-            "age ": "H",
-
-            // Numbers
-            "one": "1",
-            "to": "2",
-            "too": "2",
-            "free": "3",
-            "for": "4",
-
-            // Both
-            "ASICS": "A6",
-            "before": "B4",
-            "ch": "C8",
-            "DY1": "D1",
-            "fh4": "F4",
-            "T5": "G5",
-            "C8eese 7": "G7",
-            "81": "H1",
-            "82": "H2",
-            "83": "H3",
-        }
-
         let optimized = transcript;
-        for (const [key, value] of Object.entries(dict)) {
+        for (const [key, value] of Object.entries(this.optimize_dict)) {
             optimized = optimized.replace(key, value);
         }
         return optimized;
     }
 
+    /**
+     * Extract the chess position from a transcript command
+     * @param transcript
+     * @private
+     */
     private static extractPosition(transcript: string): string {
         const chess_positions = VoiceController.getAllChessFieldNames();
         let result = "";
 
         chess_positions.forEach(pos => {
-            if(transcript.includes(pos)){
+            if (transcript.includes(pos)) {
                 result = pos.toUpperCase();
             }
         })
         return result;
+    }
+
+    /**
+     * The dictionary used for the transcription optimization
+     * @private
+     */
+    private static optimize_dict = {
+        // Letters (with occasional space to bring positions together)
+        "a ": "A",
+        "be ": "B",
+        "by ": "B",
+        "see ": "C",
+        "Die ": "D",
+        "die ": "D",
+        "T": "G",
+        "she ": "G",
+        "gu": "G",
+        "GU": "G",
+        "20": "H",
+        "age ": "H",
+
+        // Numbers
+        "one": "1",
+        "to": "2",
+        "too": "2",
+        "free": "3",
+        "for": "4",
+
+        // Both
+        "ASICS": "A6",
+        "before": "B4",
+        "ch": "C8",
+        "DY1": "D1",
+        "fh4": "F4",
+        "T5": "G5",
+        "C8eese 7": "G7",
+        "81": "H1",
+        "82": "H2",
+        "83": "H3",
     }
 
 }

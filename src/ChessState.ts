@@ -158,12 +158,10 @@ export class ChessState {
         this.moves = ChessState.toUpperNotation(moves);
         this.selected_field = clicked_field;
 
-        // Change Material if gaze controller
-        if(this.game.controller instanceof GazeController){
-            const playable_fields = this.getPlayableFields(this.moves);
-            this.game.controller.setFieldAsSelected(this.selected_field);
-            this.game.controller.setFieldsAsPlayable(playable_fields)
-        }
+        // Change Materials
+        const playable_fields = this.getPlayableFields(this.moves);
+        this.game.controller.setFieldAsSelected(this.selected_field);
+        this.game.controller.setFieldsAsPlayable(playable_fields)
     }
 
     /**
