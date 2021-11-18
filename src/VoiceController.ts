@@ -10,6 +10,7 @@ export class VoiceController extends Controller {
     set grammar(value: any) {
         this._grammar = value;
     }
+
     get client(): any {
         return this._client;
     }
@@ -31,7 +32,7 @@ export class VoiceController extends Controller {
         this.grammar = new webkitSpeechGrammarList();
     }
 
-    public initiate(){
+    public initiate() {
         this.initiateGrammar();
         this.initiateClient();
         this.client.start()
@@ -43,15 +44,21 @@ export class VoiceController extends Controller {
             for (let i = event.resultIndex; i < event.results.length; ++i) {
                 current_transcript += event.results[i][0].transcript;
             }
-            const transcript = VoiceController.optimizeTranscript(current_transcript);
 
-            // Transcript evaluation
-            if(transcript.includes("select")){
-                // TODO selection
-            }else if(transcript.includes("move")){
-                // TODO Move
-            }
-            console.log('You said:"' + transcript +'"');
+            // Evaluate the optimized transcript
+            VoiceController.optimizeTranscript(current_transcript).then(transcript => {
+                // SELECT
+                if (transcript.includes("select")) {
+                    const pos = VoiceController.extractPosition(transcript);
+                    console.log("select:", pos);
+                }
+                // MOVE
+                else if (transcript.includes("move")) {
+                    const pos = VoiceController.extractPosition(transcript);
+                    console.log("move to:", pos);
+                }
+                console.log('You said:"' + transcript + '"');
+            })
         }
 
         // PREVENT LISTENING STOP
@@ -65,57 +72,88 @@ export class VoiceController extends Controller {
     // ************************************************************************
     // HELPER METHODS
     // ************************************************************************
-    private static createAllChessFields() : Array<string>{
-        const char_codes = [97, 65];
+    private static getAllChessFieldNames(): Array<string> {
+        const char_codes = [65, 97];
         let chess_fields = [];
+
         char_codes.forEach(char_code => {
-            for(let i = 0; i < 8; i++){
-                for( let j = 1; j <= 8;j++){
+            for (let i = 0; i < 8; i++) {
+                for (let j = 1; j <= 8; j++) {
                     const letter = String.fromCharCode(char_code + i);
                     chess_fields.push(letter + j);
                 }
             }
         })
-
         return chess_fields;
     }
 
-    private initiateGrammar(){
-        let fields_and_commands = [ 'select', 'move to'].concat(VoiceController.createAllChessFields());
+    private initiateGrammar() {
+        let fields_and_commands = ['select', 'move to'].concat(VoiceController.getAllChessFieldNames());
         let grammar = '#JSGF V1.0; grammar fields; public <fields> = ' + fields_and_commands.join(' | ') + ' ;'
 
         this.grammar.addFromString(grammar, 1);
         this.grammar.grammars = this.grammar;
     }
 
-    private initiateClient(){
+    private initiateClient() {
         this.client.continuous = true;
         this.client.interimResults = false;
         this.client.lang = "en-US";
     }
 
-    private static optimizeTranscript(transcript: string): string {
+    private static async optimizeTranscript(transcript: string): Promise<string> {
         const dict = {
             // Letters (with space)
             "a ": "A",
             "be ": "B",
+            "by ": "B",
+            "see ": "C",
+            "Die ": "D",
+            "die ": "D",
+            "T": "G",
+            "she ": "G",
+            "gu": "G",
+            "GU": "G",
+            "20": "H",
+            "age ": "H",
 
             // Numbers
+            "one": "1",
             "to": "2",
             "too": "2",
             "free": "3",
+            "for": "4",
 
             // Both
             "ASICS": "A6",
-            "before": "B4"
+            "before": "B4",
+            "ch": "C8",
+            "DY1": "D1",
+            "fh4": "F4",
+            "T5": "G5",
+            "C8eese 7": "G7",
+            "81": "H1",
+            "82": "H2",
+            "83": "H3",
         }
 
         let optimized = transcript;
         for (const [key, value] of Object.entries(dict)) {
             optimized = optimized.replace(key, value);
         }
-;
         return optimized;
+    }
+
+    private static extractPosition(transcript: string): string {
+        const chess_positions = VoiceController.getAllChessFieldNames();
+        let result = "";
+
+        chess_positions.forEach(pos => {
+            if(transcript.includes(pos)){
+                result = pos.toUpperCase();
+            }
+        })
+        return result;
     }
 
 }
