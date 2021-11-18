@@ -104,7 +104,7 @@ export default class Game {
         await this.initiateMeshes();
         await this.initiateAvatars("male", 1, "female", 1);
         await this.initiateXR();
-        await this.initiateController("gaze");
+        await this.initiateController("voice");
     }
 
     /**
@@ -208,6 +208,11 @@ export default class Game {
             const controller = new GazeController(this);
             controller.initiateGazeInteractions();
             this.controller = controller;
+        }else{
+            const controller = new VoiceController(this);
+            controller.initiate();
+            this.controller = controller;
+            console.log(this.controller);
         }
     }
 

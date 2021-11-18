@@ -1,14 +1,15 @@
 {
   "compilerOptions": {
-    "target": "es6",
+    "target": "ES2020",
     "module": "commonjs",
     "noResolve": false,
     "noImplicitAny": false,
     "sourceMap": true,
     "preserveConstEnums":true,
     "lib": [
-        "dom",
-        "es6"
+      "DOM",
+      "ES2020",
+      "dom"
     ],
     "rootDir": "src"
   }

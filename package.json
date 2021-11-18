@@ -31,6 +31,7 @@
     "webpack-dev-server": "^4.3.1"
   },
   "dependencies": {
+    "@google-cloud/speech": "^4.9.0",
     "chess.ts": "^0.16.2"
   }
 }
