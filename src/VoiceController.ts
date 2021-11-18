@@ -32,30 +32,90 @@ export class VoiceController extends Controller {
     }
 
     public initiate(){
-        let colors = [ 'aqua' , 'azure' , 'beige', 'bisque', 'black', 'blue', 'brown', 'chocolate', 'coral'];
-        let grammar = '#JSGF V1.0; grammar colors; public <color> = ' + colors.join(' | ') + ' ;'
+        this.initiateGrammar();
+        this.initiateClient();
+        this.client.start()
+
+        // RESULT
+        this.client.onresult = (event) => {
+            let current_transcript = '';
+            // Transcript preparation
+            for (let i = event.resultIndex; i < event.results.length; ++i) {
+                current_transcript += event.results[i][0].transcript;
+            }
+            const transcript = VoiceController.optimizeTranscript(current_transcript);
+
+            // Transcript evaluation
+            if(transcript.includes("select")){
+                // TODO selection
+            }else if(transcript.includes("move")){
+                // TODO Move
+            }
+            console.log('You said:"' + transcript +'"');
+        }
+
+        // PREVENT LISTENING STOP
+        this.client.onend = (event) => {
+            this.client.start();
+        }
+
+    }
+
+
+    // ************************************************************************
+    // HELPER METHODS
+    // ************************************************************************
+    private static createAllChessFields() : Array<string>{
+        const char_codes = [97, 65];
+        let chess_fields = [];
+        char_codes.forEach(char_code => {
+            for(let i = 0; i < 8; i++){
+                for( let j = 1; j <= 8;j++){
+                    const letter = String.fromCharCode(char_code + i);
+                    chess_fields.push(letter + j);
+                }
+            }
+        })
+
+        return chess_fields;
+    }
+
+    private initiateGrammar(){
+        let fields_and_commands = [ 'select', 'move to'].concat(VoiceController.createAllChessFields());
+        let grammar = '#JSGF V1.0; grammar fields; public <fields> = ' + fields_and_commands.join(' | ') + ' ;'
 
         this.grammar.addFromString(grammar, 1);
         this.grammar.grammars = this.grammar;
+    }
 
-
+    private initiateClient(){
         this.client.continuous = true;
-        this.client.interimResults = true;
-        this.client.lang = "en-GB";
-        this.client.start()
+        this.client.interimResults = false;
+        this.client.lang = "en-US";
+    }
 
-        this.client.onresult = (event) => {
-            let res = event.results[0][0].transcript;
-            console.log(res);
+    private static optimizeTranscript(transcript: string): string {
+        const dict = {
+            // Letters (with space)
+            "a ": "A",
+            "be ": "B",
+
+            // Numbers
+            "to": "2",
+            "too": "2",
+            "free": "3",
+
+            // Both
+            "ASICS": "A6",
+            "before": "B4"
         }
 
-        this.client.onnomatch = (event) => {
-            console.log('I didnt recognize that color.');
+        let optimized = transcript;
+        for (const [key, value] of Object.entries(dict)) {
+            optimized = optimized.replace(key, value);
         }
-
-        console.log(this.client);
-
-
+;
+        return optimized;
     }
 
 }
