@@ -172,7 +172,6 @@ export default class Game {
      * Initiates the Avatars by importing and positioning them
      */
     public async initiateAvatars(white_gender: "male" | "female", white_ava_no: number, black_gender: "male" | "female", black_ava_no: number){
-        // TODO Parametrize in game menu selection
         const avatar_white = new Avatar("white", white_gender, white_ava_no);
         const avatar_black = new Avatar("black", black_gender, black_ava_no);
         this.LoadAvatar(avatar_white);
@@ -196,6 +195,7 @@ export default class Game {
 
         this.xr.baseExperience.onStateChangedObservable.add((xrs, xre) => {
             if (xrs === 2) {
+                this.xr.baseExperience.camera.position = this.camera.position;
                 this.xr.pointerSelection.displayLaserPointer = true;
                 this.xr.pointerSelection.displaySelectionMesh = true;
                 this.xr.pointerSelection.disableSelectionMeshLighting = true;
