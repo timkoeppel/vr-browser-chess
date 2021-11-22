@@ -23,8 +23,8 @@ export class AI {
     private _chess_state: ChessState;
     private _difficulty: "easy" | "advanced" | "expert";
 
-    constructor(board: ChessState, difficulty: "easy" | "advanced" | "expert") {
-        this.chess_state = board;
+    constructor(state: ChessState, difficulty: "easy" | "advanced" | "expert") {
+        this.chess_state = state;
         this.difficulty = difficulty;
     }
 
@@ -45,8 +45,16 @@ export class AI {
      */
     private getRandomMove(): Move {
         const available_moves = ChessState.toUpperNotation(this.chess_state.logic.moves({verbose: true}));
+        let chosen_move = available_moves[Math.floor(Math.random() * available_moves.length)];
 
-        return available_moves[Math.floor(Math.random() * available_moves.length)];
+        // If capture move
+        available_moves.forEach(m => {
+           if(ChessState.isCapture(m)){
+               chosen_move = m;
+           }
+        });
+
+        return chosen_move;
     }
 
     private getAlphaBetaMove(): Move {

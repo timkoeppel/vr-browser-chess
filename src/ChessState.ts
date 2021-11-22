@@ -375,7 +375,7 @@ export class ChessState {
      * @param move
      * @private
      */
-    private static isCapture(move: Move) {
+    public static isCapture(move: Move) {
         return move.flags.includes("C") || move.flags.includes("E");
     }
 

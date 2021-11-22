@@ -145,8 +145,8 @@ export default class Game {
      * Initiates all meshes and imports the whole 3D scene from Blender into the BABYLON Scene
      */
     public async initiateMeshes() {
-        await BABYLON.SceneLoader.AppendAsync( "./meshes/", "scene.glb",  this.scene).then(scene => {
-            this.scene = scene;
+        await BABYLON.SceneLoader.AppendAsync("./meshes/", "scene.glb",  this.scene).then(scene => {
+            //this.scene = scene;
             this.chessboard = new ChessBoard(scene.meshes, this);
         }).catch(error => {
             console.log(error);
@@ -189,13 +189,14 @@ export default class Game {
             },
         });
 
-        await this.xr.baseExperience.onInitialXRPoseSetObservable.add(xrCamera => {
-            xrCamera.position = this.camera.position;
+        this.xr.input.xrCamera.position = this.camera.position;
+
+        this.xr.baseExperience.onInitialXRPoseSetObservable.add(xrCamera => {
+            //xrCamera.position = this.camera.position;
         });
 
         this.xr.baseExperience.onStateChangedObservable.add((xrs, xre) => {
             if (xrs === 2) {
-                this.xr.baseExperience.camera.position = this.camera.position;
                 this.xr.pointerSelection.displayLaserPointer = true;
                 this.xr.pointerSelection.displaySelectionMesh = true;
                 this.xr.pointerSelection.disableSelectionMeshLighting = true;

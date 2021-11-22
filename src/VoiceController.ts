@@ -176,6 +176,7 @@ export class VoiceController extends Controller {
         // Both
         "ASICS": "A6",
         "before": "B4",
+        "be4e": "B4",
         "ch": "C8",
         "DY1": "D1",
         "fh4": "F4",
