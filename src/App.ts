@@ -1,5 +1,4 @@
 import Game from "./Game";
-import {GazeController} from "./GazeController";
 
 /**
  * App is the main module

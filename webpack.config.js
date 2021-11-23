@@ -14,16 +14,6 @@ module.exports = {
     },
     resolve: {
         extensions: [".tsx", ".ts", ".js"],
-        /*fallback: {
-            stream: require.resolve("https-browserify"),
-            https: require.resolve("https-browserify"),
-            http: require.resolve("stream-http"),
-            buffer: require.resolve("buffer/"),
-            assert: require.resolve("assert/"),
-            crypto: require.resolve("crypto-browserify"),
-            path: require.resolve("path-browserify"),
-            os: require.resolve("os-browserify/browser")
-        }*/
     },
     devServer: {
         https: {
