@@ -3,7 +3,7 @@ import Game from "./Game";
 /**
  * App is the main module
  */
-class App {
+export class App {
     constructor() {
         let game = new Game();
         game.initiate().then(() => {
@@ -16,4 +16,4 @@ class App {
     }
 }
 
-new App();
+//new App();
