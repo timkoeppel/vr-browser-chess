@@ -7,6 +7,7 @@ import {ChessBoard} from "./ChessBoard";
 import {GazeController} from "./GazeController";
 import {VoiceController} from "./VoiceController";
 import {Controller} from "./Controller";
+import {WindowManager} from "./WindowManager";
 
 /**
  * Game manages all modules necessary for a chess game
@@ -90,27 +91,29 @@ export default class Game {
      * @constructor
      */
     constructor(){
-        this.initiateHTMLScene();
-        this.initiateEngine();
-        this.initiateBabylonScene();
-        this.initiateLights();
-        this.initiateCamera();
+        // Made in initiation
     }
 
     /**
      * Parametrizes the game
      */
     public async initiate() {
+        WindowManager.switchToGameScreen();
+        this.initiateHTMLCanvas();
+        this.initiateEngine();
+        this.initiateBabylonScene();
+        this.initiateLights();
+        this.initiateCamera();
         await this.initiateMeshes();
         await this.initiateAvatars("male", 1, "female", 1);
         await this.initiateXR();
-        await this.initiateController("voice");
+        await this.initiateController("gaze");
     }
 
     /**
      * Initiates the HTML Canvas, which BABYLON uses to render everything in
      */
-    public initiateHTMLScene(){
+    public initiateHTMLCanvas(){
         this.canvas = document.getElementById("gameCanvas") as HTMLCanvasElement;
 
     }
@@ -146,7 +149,7 @@ export default class Game {
      */
     public async initiateMeshes() {
         await BABYLON.SceneLoader.AppendAsync("./meshes/", "scene.glb",  this.scene).then(scene => {
-            //this.scene = scene;
+            this.scene = scene;
             this.chessboard = new ChessBoard(scene.meshes, this);
         }).catch(error => {
             console.log(error);
@@ -221,7 +224,7 @@ export default class Game {
      * (necessary if white is AI)
      */
     public startGame(): void {
-        if (this.chessboard.state.current_player.color === "w") {
+        if (this.chessboard.state.current_player.color === "white" && !this.chessboard.state.current_player.human) {
             this.chessboard.state.makeAIMove();
         }
     }
@@ -230,12 +233,17 @@ export default class Game {
      * Handles the Rendering of the scene
      * @constructor
      */
-    private divFps = document.getElementById("fps");
 
-    public DoRender(): void {
+    public DoRender(show_fps: boolean): void {
+        // Fps management
+        let fps_element = document.getElementById("fps");
+        if(show_fps) {
+            WindowManager.showElement(fps_element)
+        }
+
         // run the main render loop
         this.engine.runRenderLoop(() => {
-            this.divFps.innerHTML = this.engine.getFps().toFixed() + " fps";
+            fps_element.innerHTML = this.engine.getFps().toFixed() + " fps";
             this.scene.render();
         });
 

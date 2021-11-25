@@ -153,6 +153,7 @@ export class VoiceController extends Controller {
     private static optimize_dict = {
         // Letters (with occasional space to bring positions together)
         "a ": "A",
+        "EH": "A",
         "be ": "B",
         "by ": "B",
         "see ": "C",

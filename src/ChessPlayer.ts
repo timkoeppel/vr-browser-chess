@@ -29,20 +29,20 @@ export class ChessPlayer {
         this._human = value;
     }
 
-    get color(): string {
+    get color(): "white" | "black" {
         return this._color;
     }
 
-    set color(value: string) {
+    set color(value: "white" | "black") {
         this._color = value;
     }
 
     private _human: boolean;
-    private _color: string;
+    private _color: "white" | "black";
     private _state: ChessState;
     private _ai: AI | null;
 
-    constructor(human: boolean, color: string, state: ChessState) {
+    constructor(human: boolean, color: "white" | "black", state: ChessState) {
         this.human = human;
         this.color = color;
         this.state = state;

@@ -3,17 +3,22 @@ import {ChessFigure} from "./ChessFigure";
 import {ChessField} from "./ChessField";
 import {Chess, Move} from "chess.ts";
 import {ChessPlayer} from "./ChessPlayer";
-import {ChessBoard} from "./ChessBoard";
 import {Position} from "./Position";
 import {Action} from "./Action";
 import Game from "./Game";
-import {GazeController} from "./GazeController";
 
 /**
  * ChessState manages the game state, logic and move management
  * ... -> next Player (begin) -> select move -> make move -> next Player -> ... -> Game Over
  */
 export class ChessState {
+    get my_player(): ChessPlayer {
+        return this._my_player;
+    }
+
+    set my_player(value: ChessPlayer) {
+        this._my_player = value;
+    }
     get game(): Game {
         return this._game;
     }
@@ -72,16 +77,18 @@ export class ChessState {
 
     private _logic: Chess;
     private _current_player: ChessPlayer;
+    private _my_player: ChessPlayer;
     private _white: ChessPlayer;
     private _black: ChessPlayer;
     private _selected_field: ChessField | null;
     private _moves: Array<Move>;
     private _game: Game;
 
-    constructor(game: Game) {
+    constructor(game: Game, my_color: "white" | "black") {
         this.logic = new Chess();
-        this.white = new ChessPlayer(true, "w", this); // TODO Player selection
-        this.black = new ChessPlayer(false, "b", this);
+        this.white = new ChessPlayer(true, "white", this); // TODO Player selection
+        this.black = new ChessPlayer(false, "black", this);
+        this.my_player = my_color === "white" ? this.white : this.black;
         this.current_player = this.white;
         this.selected_field = null;
         this.moves = [];
@@ -97,7 +104,10 @@ export class ChessState {
      */
     public processClick(clicked_field: ChessField) {
         // Field without figure and which is not part of a move -> No reset
-        if(clicked_field.figure === null && !this.isPartOfMove(clicked_field)){
+        const is_unplayable_field = clicked_field.figure === null && !this.isPartOfMove(clicked_field);
+        const is_not_my_turn = this.my_player !== this.current_player;
+
+        if(is_unplayable_field || is_not_my_turn){
             return;
         }
 
@@ -145,7 +155,7 @@ export class ChessState {
         setTimeout(() => {
             this.makeMove(move, this.selected_field.figure);
             this.toNextPlayer();
-        }, 2000);
+        }, 10000);
     }
 
     /**
@@ -154,7 +164,7 @@ export class ChessState {
      */
     public toMoveSelection(clicked_field: ChessField) {
         // Change State
-        const moves = this.logic.moves({square: clicked_field.id, verbose: true})
+        const moves = this.logic.moves({square: clicked_field.id, verbose: true});
         this.moves = ChessState.toUpperNotation(moves);
         this.selected_field = clicked_field;
 
@@ -241,7 +251,7 @@ export class ChessState {
         moves.forEach(m => {
             const playable_field = this.game.chessboard.fields.find(f => f.id === m.to);
             playable_fields.push(playable_field);
-        })
+        });
 
         return playable_fields;
     }
@@ -272,7 +282,7 @@ export class ChessState {
         let move_targets = [];
         this.moves.forEach(m => {
             move_targets.push(m.to);
-        })
+        });
         return move_targets;
     }
 
@@ -344,7 +354,7 @@ export class ChessState {
      * @private
      */
     private passToNextPlayer(): void {
-        if (this.current_player.color === "w") {
+        if (this.current_player.color === "white") {
             this.current_player = this.black;
         } else {
             this.current_player = this.white;
@@ -356,7 +366,7 @@ export class ChessState {
      * @param moves
      */
     public static toUpperNotation(moves: Array<Move>): Array<Move> {
-        let new_moves = []
+        let new_moves = [];
         moves.forEach(m => {
             let new_move = Object.assign(m);
             for (let [key, value] of Object.entries(m)) {
@@ -365,7 +375,7 @@ export class ChessState {
                 }
             }
             new_moves.push(new_move);
-        })
+        });
 
         return new_moves;
     }
@@ -394,7 +404,7 @@ export class ChessState {
      * @private
      */
     private static getOffBoardPosition(fig: ChessFigure): BABYLON.Vector3 {
-        const pos_add = fig.color === "w" ? 5 : -5
+        const pos_add = fig.color === "white" ? 5 : -5;
 
         const x = fig.original_position.scene_pos.z + pos_add;
         const y = 24.95;
