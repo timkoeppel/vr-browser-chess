@@ -7,11 +7,11 @@ const appDirectory = fs.realpathSync(process.cwd());
 
 module.exports = {
     target: "node",
-    entry: path.resolve(appDirectory, "src/Server.ts"),
+    entry: [path.resolve(__dirname, "src/App.ts")],
     output: {
         filename: "[name].js",
         path: path.resolve(__dirname, "dist"),
-        clean: true,
+        //clean: true,
     },
     resolve: {
         extensions: [".tsx", ".ts", ".js"],
@@ -20,17 +20,22 @@ module.exports = {
     module: {
         rules: [
             {
-                test: /\.tsx?$/,
+                test: /\.ts$/,
                 use: ["ts-loader", 'source-map-loader'],
                 exclude: /node_modules/,
             },
         ],
     },
     plugins: [
-        new HtmlWebpackPlugin({
+        /*new HtmlWebpackPlugin({
             inject: false,
             template: "./public/index.html",
             favicon: "./chess_XR.png"
+        }),*/
+        new CopyPlugin({
+            patterns: [
+                "public"
+            ]
         }),
         new CleanWebpackPlugin(),
     ],

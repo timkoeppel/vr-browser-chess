@@ -16,4 +16,4 @@ export class App {
     }
 }
 
-//new App();
+new App();

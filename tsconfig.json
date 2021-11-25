@@ -1,17 +1,22 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
+    "target": "es6",
     "module": "commonjs",
     "noResolve": false,
     "noImplicitAny": false,
+    "noEmit": false,
     "sourceMap": true,
     "preserveConstEnums":true,
     "lib": [
-      "ES2020",
-      "dom"
+      "dom",
+      "es6"
     ],
     "rootDir": "src",
-    "declaration": true,
-    "moduleResolution": "Node"
+    "outDir": "dist",
+    "declaration": false,
+    "moduleResolution": "Node",
+    "emitDeclarationOnly": false,
+    "listEmittedFiles": true,
+    "watch": true,
   }
 }
