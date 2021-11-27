@@ -25,7 +25,7 @@ export class App {
     private _game: Game;
 
     constructor() {
-        this.game = new Game();
+        this.game = new Game(this);
         this.connection = new Connection(this);
     }
 

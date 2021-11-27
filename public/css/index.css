@@ -23,3 +23,28 @@ canvas {
 .no_display {
     display: none !important;
 }
+
+/* HIDE RADIO */
+.avatar_radio{
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+/* IMAGE STYLES */
+.avatar_img {
+    padding: 4px;
+    width: 150px;
+    cursor: pointer;
+    margin: 2px;
+}
+
+/* CHECKED STYLES */
+.avatar_radio:checked + label{
+    border: 1px;
+    border-radius: 2pt;
+    box-shadow: 0 0 0 2px var(--bs-blue);
+    outline: none;
+    transition: .2s;
+}

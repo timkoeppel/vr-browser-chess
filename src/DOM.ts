@@ -1,4 +1,11 @@
 export class WindowManager{
+    public game_canvas: HTMLCanvasElement;
+    public game_menu: 
+
+
+    constructor() {
+    }
+
     public static showElement(elem: Element): void {
         elem.classList.remove("no_display");
     }
@@ -14,4 +21,6 @@ export class WindowManager{
         WindowManager.showElement(canvas);
         WindowManager.hideElement(menu);
     }
+
+    public static manageControllerHelp
 }

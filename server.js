@@ -39,13 +39,14 @@ server.listen(PORT, () => {
 // Socket
 let player_count = 0;
 io.on('connection', (socket) => {
-    if(player_count <= 0) {
-        player_count++;
+    player_count++;
+    if(player_count <= 2) {
         console.log(`${player_count} player active`);
     }else{
         console.log("User rejected due to full lobby!");
-        socket.emit("redirect", "https://google.com");
+        socket.emit("redirect", "https://www.youtube.com/watch?v=dQw4w9WgXcQ");
         socket.disconnect(true);
+        player_count--;
     }
 
     /* Start game

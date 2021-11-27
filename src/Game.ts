@@ -8,11 +8,19 @@ import {GazeController} from "./GazeController";
 import {VoiceController} from "./VoiceController";
 import {Controller} from "./Controller";
 import {WindowManager} from "./WindowManager";
+import {App} from "./App";
 
 /**
  * Game manages all modules necessary for a chess game
  */
 export default class Game {
+    get app(): App {
+        return this._app;
+    }
+
+    set app(value: App) {
+        this._app = value;
+    }
     get controller() : Controller{
         return this._controller;
     }
@@ -83,15 +91,15 @@ export default class Game {
     private _light: BABYLON.Light;
     private _xr: BABYLON.WebXRDefaultExperience;
     private _chessboard: ChessBoard;
-
+    private _app: App;
     private _controller: Controller;
     // ************************************************************************
     /**
      * Creates the whole Game environment
      * @constructor
      */
-    constructor(){
-        // Made in initiation
+    constructor(app: App){
+        this.app = app;
     }
 
     /**

@@ -142,6 +142,13 @@ export class ChessState {
         this.toNextPlayer();
     }
 
+    public makeOtherPlayerMove(){
+        this.game.app.connection.socket.on("move", (data) => {
+            this.selected_field = data.from;
+            this.makeHumanMove(data.to);
+        })
+    }
+
     /**
      * Proceeds with all actions involved in a move made by an AI
      */
@@ -196,6 +203,11 @@ export class ChessState {
         // Make moves if Ai
         if (!this.current_player.human) {
             this.makeAIMove();
+        }
+
+        // Waits for the other player input
+        if(this.current_player !== this.my_player){
+            this.makeOtherPlayerMove(); // Todo maybe let flow "run out" and make listener in app which activates this function and reactivates the flow
         }
     }
 
