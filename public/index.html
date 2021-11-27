@@ -43,8 +43,8 @@
         </div>
 
         <!-- Color -->
-        <div class="mb-3"><br>
-            <label for="player_color" class="form-label">Color</label>
+        <div class="mb-3">
+            <label for="player_color" class="form-label">Color</label><br>
             <div id="player_color" class="btn-group" role="group" aria-label="Basic radio toggle button group">
                 <input type="radio" class="btn-check" name="color" id="white" autocomplete="off" checked>
                 <label class="btn btn-outline-primary" for="white">White</label>
@@ -56,25 +56,29 @@
 
         <!-- Avatar -->
         <div class="mb-3">
-            <input type="radio" name="avatar" id="male_01" class="avatar_radio" checked>
-            <label for="male_01"><img src="./img/male_01.png" alt="Male 01" class="avatar_img"></label>
-            <input type="radio" name="avatar" id="male_02" class="avatar_radio">
-            <label for="male_02"><img src="./img/male_02.png" alt="Male 02" class="avatar_img"></label>
-            <input type="radio" name="avatar" id="male_03" class="avatar_radio">
-            <label for="male_03"><img src="./img/male_03.png" alt="Male 03" class="avatar_img"></label>
-            <input type="radio" name="avatar" id="female_01" class="avatar_radio">
-            <label for="female_01"><img src="./img/female_01.png" alt="Female 01" class="avatar_img"></label>
-            <input type="radio" name="avatar" id="female_02" class="avatar_radio">
-            <label for="female_02"><img src="./img/female_02.png" alt="Female 02" class="avatar_img"></label>
-            <input type="radio" name="avatar" id="female_03" class="avatar_radio">
-            <label for="female_03"><img src="./img/female_03.png" alt="Female 03" class="avatar_img"></label>
+            <label for="avatars" class="form-label">Avatar</label>
+            <div id="avatars" class="input-group">
+                <input type="radio" name="avatar" id="male_01" class="avatar_radio" checked>
+                <label for="male_01"><img src="./img/male_01.png" alt="Male 01" class="avatar_img"></label>
+                <input type="radio" name="avatar" id="male_02" class="avatar_radio">
+                <label for="male_02"><img src="./img/male_02.png" alt="Male 02" class="avatar_img"></label>
+                <input type="radio" name="avatar" id="male_03" class="avatar_radio">
+                <label for="male_03"><img src="./img/male_03.png" alt="Male 03" class="avatar_img"></label>
+                <input type="radio" name="avatar" id="female_01" class="avatar_radio">
+                <label for="female_01"><img src="./img/female_01.png" alt="Female 01" class="avatar_img"></label>
+                <input type="radio" name="avatar" id="female_02" class="avatar_radio">
+                <label for="female_02"><img src="./img/female_02.png" alt="Female 02" class="avatar_img"></label>
+                <input type="radio" name="avatar" id="female_03" class="avatar_radio">
+                <label for="female_03"><img src="./img/female_03.png" alt="Female 03" class="avatar_img"></label>
+            </div>
         </div>
 
         <!-- Controller -->
         <div class="mb-3">
             <label for="player_color" class="form-label">Controller Type</label><br>
             <div id="player_controller" class="btn-group" role="group" aria-label="Basic radio toggle button group">
-                <input type="radio" class="btn-check" name="controller" id="voice" autocomplete="off" aria-describedby="voice_help" checked>
+                <input type="radio" class="btn-check" name="controller" id="voice" autocomplete="off"
+                       aria-describedby="voice_help" checked>
                 <label class="btn btn-outline-primary" for="voice">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                          class="bi bi-megaphone-fill" viewBox="0 0 16 16">
@@ -82,7 +86,8 @@
                     </svg>
                     Voice</label>
 
-                <input type="radio" class="btn-check" name="controller" id="gaze" autocomplete="off" aria-describedby="gaze_help">
+                <input type="radio" class="btn-check" name="controller" id="gaze" autocomplete="off"
+                       aria-describedby="gaze_help">
                 <label class="btn btn-outline-primary" for="gaze">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                          class="bi bi-bullseye" viewBox="0 0 16 16">
@@ -94,13 +99,16 @@
                     Gaze</label>
             </div>
             <div id="voice_help" class="form-text">Control by saying for instance "Select A1", "Move to "A3"</div>
-            <div id="gaze_help" class="form-text no_display">Control by the VR-gaze by looking at a figure/field for a second</div>
+            <div id="gaze_help" class="form-text no_display">Control by the VR-gaze by looking at a figure/field for a
+                second
+            </div>
         </div>
 
         <!-- AI -->
         <div class="mb-3">
             <label for="player_color" class="form-label">AI difficulty</label><br>
-            <div id="ai_difficulty" class="btn-group" role="group" aria-label="Basic radio toggle button group" aria-describedby="ai_help">
+            <div id="ai_difficulty" class="btn-group" role="group" aria-label="Basic radio toggle button group"
+                 aria-describedby="ai_help">
                 <input type="radio" class="btn-check" name="ai" id="easy" autocomplete="off" checked>
                 <label class="btn btn-outline-primary" for="easy">Easy</label>
 
@@ -110,13 +118,16 @@
                 <input type="radio" class="btn-check" name="ai" id="expert" autocomplete="off">
                 <label class="btn btn-outline-primary" for="expert">Expert</label>
             </div>
-            <div id="ai_help" class="form-text">If no other player is in the lobby the game is played against an AI</div>
+            <div id="ai_help" class="form-text">If no other player is in the lobby the game is played against an AI
+            </div>
         </div>
 
         <!-- Lobby -->
         <div class="mb-3">
-            <ul id="lobby" class="list-group">
-
+            <label class="form-label" for="lobby">Lobby</label>
+            <ul id="lobby" class="list-group-numbered">
+                <li id="player_1-lobby" class="list-group-item"></li>
+                <li id="player_2-lobby" class="list-group-item"></li>
             </ul>
         </div>
 
