@@ -39,7 +39,7 @@
         <!-- Name -->
         <div class="mb-3">
             <label for="player_name" class="form-label">Player Name</label>
-            <input type="text" class="form-control" id="player_name" required>
+            <input type="text" class="form-control" id="player_name" value="Player" required>
         </div>
 
         <!-- Color -->
@@ -126,14 +126,14 @@
         <div class="mb-3">
             <label class="form-label" for="lobby">Lobby</label>
             <ul id="lobby" class="list-group-numbered">
-                <li id="player_1-lobby" class="list-group-item"></li>
-                <li id="player_2-lobby" class="list-group-item"></li>
+                <li id="player_1-lobby" class="list-group-item">[HUMAN][WHITE] Player</li>
+                <li id="player_2-lobby" class="list-group-item">[AI][BLACK] easy</li>
             </ul>
         </div>
 
         <!-- Ready -->
         <div class="mb-3">
-            <button id="ready_btn" type="submit" class="btn btn-success" disabled>I am Ready!</button>
+            <button id="ready_btn" type="submit" class="btn btn-success">I am Ready!</button>
         </div>
     </form>
 </div>

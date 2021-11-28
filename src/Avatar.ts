@@ -13,12 +13,11 @@ export class Avatar {
     /**
      *
      * @param player_side The playing side ("white" | "black")
-     * @param gender The gender of the avatar ("male" | "female")
-     * @param no The number of the selected avatar (1 | 2)
+     * @param file_name
      */
-    constructor(player_side, gender, no) {
-        this.rootURL = `/meshes/${gender}_0${no}/`;
-        this.filename = `${gender}_0${no}.glb`;
+    constructor(player_side: "white" | "black", file_name) {
+        this.rootURL = `/meshes/${file_name}/`;
+        this.filename = `${file_name}.glb`;
         this.position = Avatar._getPlayerSidePosition(player_side);
         this.rotation = Avatar._getRotation(player_side);
         this.scale = new BABYLON.Vector3(100, 100, 100);

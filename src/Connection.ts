@@ -1,4 +1,5 @@
 import {App} from "./App";
+import {IPlayerData} from "./IPlayerData";
 
 export class Connection{
     get app(): App {
@@ -23,4 +24,17 @@ export class Connection{
         this.socket = io();
         this.app = app;
     }
+
+    public emitPlayerData(data: IPlayerData){
+        this.socket.emit("player change in", data);
+    }
+
+    public emitPlayerReadiness(){
+        this.socket.emit("player ready")
+    }
+
+    public emitPlayerMove(data){
+        this.socket.emit("player move", data)
+    }
+
 }

@@ -12,13 +12,14 @@ import Game from "./Game";
  * ... -> next Player (begin) -> select move -> make move -> next Player -> ... -> Game Over
  */
 export class ChessState {
-    get my_player(): ChessPlayer {
-        return this._my_player;
+    get own_player(): ChessPlayer {
+        return this._own_player;
     }
 
-    set my_player(value: ChessPlayer) {
-        this._my_player = value;
+    set own_player(value: ChessPlayer) {
+        this._own_player = value;
     }
+
     get game(): Game {
         return this._game;
     }
@@ -77,18 +78,18 @@ export class ChessState {
 
     private _logic: Chess;
     private _current_player: ChessPlayer;
-    private _my_player: ChessPlayer;
+    private _own_player: ChessPlayer;
     private _white: ChessPlayer;
     private _black: ChessPlayer;
     private _selected_field: ChessField | null;
     private _moves: Array<Move>;
     private _game: Game;
 
-    constructor(game: Game, my_color: "white" | "black") {
+    constructor(game: Game, own_color: "white" | "black", white_player_human: boolean, black_player_human: boolean, ai: "easy" | "intermediate" | "expert") {
         this.logic = new Chess();
-        this.white = new ChessPlayer(true, "white", this); // TODO Player selection
-        this.black = new ChessPlayer(false, "black", this);
-        this.my_player = my_color === "white" ? this.white : this.black;
+        this.white = new ChessPlayer(white_player_human, "white", ai, this); // TODO Player selection
+        this.black = new ChessPlayer(black_player_human, "black", ai, this);
+        this.own_player = own_color === "white" ? this.white : this.black;
         this.current_player = this.white;
         this.selected_field = null;
         this.moves = [];
@@ -103,11 +104,12 @@ export class ChessState {
      * @param clicked_field
      */
     public processClick(clicked_field: ChessField) {
+        console.log(clicked_field.id, this);
         // Field without figure and which is not part of a move -> No reset
         const is_unplayable_field = clicked_field.figure === null && !this.isPartOfMove(clicked_field);
-        const is_not_my_turn = this.my_player !== this.current_player;
+        const is_not_my_turn = this.own_player !== this.current_player;
 
-        if(is_unplayable_field || is_not_my_turn){
+        if (is_unplayable_field || is_not_my_turn) {
             return;
         }
 
@@ -138,15 +140,17 @@ export class ChessState {
      * @param clicked_field
      */
     public makeHumanMove(clicked_field: ChessField) {
-        this.makeMove(this.getMove(clicked_field), this.selected_field.figure);
+        const move = this.getMove(clicked_field);
+        this.submitMove(move);
+        this.makeMove(move, this.selected_field.figure);
         this.toNextPlayer();
     }
 
-    public makeOtherPlayerMove(){
-        this.game.app.connection.socket.on("move", (data) => {
-            this.selected_field = data.from;
-            this.makeHumanMove(data.to);
-        })
+    public makeOtherPlayerMove(move: Move) {
+        console.log(move);
+        this.selected_field = this.game.chessboard.getField(move.from);
+        this.makeMove(move, this.selected_field.figure);
+        this.toNextPlayer();
     }
 
     /**
@@ -162,7 +166,7 @@ export class ChessState {
         setTimeout(() => {
             this.makeMove(move, this.selected_field.figure);
             this.toNextPlayer();
-        }, 10000);
+        }, 2000);
     }
 
     /**
@@ -206,9 +210,9 @@ export class ChessState {
         }
 
         // Waits for the other player input
-        if(this.current_player !== this.my_player){
+        /*if(this.current_player !== this.own_player){
             this.makeOtherPlayerMove(); // Todo maybe let flow "run out" and make listener in app which activates this function and reactivates the flow
-        }
+        }*/
     }
 
     /**
@@ -449,6 +453,10 @@ export class ChessState {
             to: to_field
         };
 
+    }
+
+    private submitMove(data) {
+        this.game.app.connection.emitPlayerMove(data)
     }
 
 }

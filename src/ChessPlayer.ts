@@ -42,11 +42,11 @@ export class ChessPlayer {
     private _state: ChessState;
     private _ai: AI | null;
 
-    constructor(human: boolean, color: "white" | "black", state: ChessState) {
+    constructor(human: boolean, color: "white" | "black", ai: "easy" | "intermediate" | "expert", state: ChessState) {
         this.human = human;
         this.color = color;
         this.state = state;
-        this.ai = human ? null : new AI(this.state, "easy"); // TODO
+        this.ai = human ? null : new AI(this.state, ai); // TODO
     }
 
 }

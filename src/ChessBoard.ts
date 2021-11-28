@@ -48,11 +48,15 @@ export class ChessBoard {
     /**
      * Constructs a complex chessboard with its figures from the meshes
      * @param meshes The imported meshes
+     * @param own_color
+     * @param white_player_human
+     * @param black_player_human
+     * @param ai
      * @param game The game the board is bounded to
      */
-    constructor(meshes: Array<BABYLON.AbstractMesh>, game: Game) {
+    constructor(meshes: Array<BABYLON.AbstractMesh>, own_color: "white" | "black", white_player_human: boolean, black_player_human: boolean, ai: "easy" | "intermediate" | "expert",game: Game) {
         this.game = game;
-        this.state = new ChessState(game, "white"); // TODO
+        this.state = new ChessState(game, own_color, white_player_human, black_player_human, ai);
         this.figures = ChessFigure.extractFigures(meshes, this);
         this.fields = ChessBoard.extractFields(meshes, this);
     }

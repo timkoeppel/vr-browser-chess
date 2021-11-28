@@ -7,8 +7,9 @@ import {ChessBoard} from "./ChessBoard";
 import {GazeController} from "./GazeController";
 import {VoiceController} from "./VoiceController";
 import {Controller} from "./Controller";
-import {WindowManager} from "./WindowManager";
+import {DOM} from "./DOM";
 import {App} from "./App";
+import {IPlayerData} from "./IPlayerData";
 
 /**
  * Game manages all modules necessary for a chess game
@@ -105,17 +106,20 @@ export default class Game {
     /**
      * Parametrizes the game
      */
-    public async initiate() {
-        WindowManager.switchToGameScreen();
+    public async initiate(data: Array<IPlayerData>) {
+        const own_player_data: IPlayerData = data[0];
+        const other_player_data: IPlayerData = data[1];
+
         this.initiateHTMLCanvas();
         this.initiateEngine();
         this.initiateBabylonScene();
         this.initiateLights();
-        this.initiateCamera();
-        await this.initiateMeshes();
-        await this.initiateAvatars("male", 1, "female", 1);
+        this.initiateCamera(/* TODO */);
+        await this.initiateMeshes(own_player_data.color, other_player_data.name, own_player_data.ai);
+        await this.initiateAvatars(own_player_data.color, own_player_data.avatar, other_player_data.avatar);
         await this.initiateXR();
-        await this.initiateController("gaze");
+        await this.initiateController(own_player_data.controller);
+        await this.startGameWithAIMove();
     }
 
     /**
@@ -155,10 +159,12 @@ export default class Game {
     /**
      * Initiates all meshes and imports the whole 3D scene from Blender into the BABYLON Scene
      */
-    public async initiateMeshes() {
+    public async initiateMeshes(own_color: "white" | "black", other_name: string, ai: "easy" | "intermediate" | "expert") {
         await BABYLON.SceneLoader.AppendAsync("./meshes/", "scene.glb",  this.scene).then(scene => {
             this.scene = scene;
-            this.chessboard = new ChessBoard(scene.meshes, this);
+            const is_white_human = own_color === "white" || other_name !== "AI";
+            const is_black_human = own_color === "black" || other_name !== "AI";
+            this.chessboard = new ChessBoard(scene.meshes, own_color, is_white_human, is_black_human, ai, this);
         }).catch(error => {
             console.log(error);
         });
@@ -182,9 +188,9 @@ export default class Game {
     /**
      * Initiates the Avatars by importing and positioning them
      */
-    public async initiateAvatars(white_gender: "male" | "female", white_ava_no: number, black_gender: "male" | "female", black_ava_no: number){
-        const avatar_white = new Avatar("white", white_gender, white_ava_no);
-        const avatar_black = new Avatar("black", black_gender, black_ava_no);
+    public async initiateAvatars(own_color: "white" | "black", own_avatar_name: string, other_avatar_name: string){
+        const avatar_white = own_color === "white" ? new Avatar("white", own_avatar_name) : new Avatar("white", other_avatar_name);
+        const avatar_black = own_color === "black" ? new Avatar("black", own_avatar_name) : new Avatar("black", other_avatar_name);
         this.LoadAvatar(avatar_white);
         this.LoadAvatar(avatar_black);
     }
@@ -203,7 +209,7 @@ export default class Game {
         this.xr.input.xrCamera.position = this.camera.position;
 
         this.xr.baseExperience.onInitialXRPoseSetObservable.add(xrCamera => {
-            //xrCamera.position = this.camera.position;
+            xrCamera.position = this.camera.position;
         });
 
         this.xr.baseExperience.onStateChangedObservable.add((xrs, xre) => {
@@ -231,7 +237,7 @@ export default class Game {
      * Starts the game chain by making the first move for white
      * (necessary if white is AI)
      */
-    public startGame(): void {
+    public async startGameWithAIMove(): Promise<void> {
         if (this.chessboard.state.current_player.color === "white" && !this.chessboard.state.current_player.human) {
             this.chessboard.state.makeAIMove();
         }
@@ -246,7 +252,7 @@ export default class Game {
         // Fps management
         let fps_element = document.getElementById("fps");
         if(show_fps) {
-            WindowManager.showElement(fps_element)
+            this.app.dom.showElement(fps_element)
         }
 
         // run the main render loop

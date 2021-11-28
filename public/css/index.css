@@ -37,7 +37,6 @@ canvas {
     padding: 4px;
     width: 150px;
     cursor: pointer;
-    margin: 2px;
 }
 
 /* CHECKED STYLES */
@@ -47,4 +46,8 @@ canvas {
     box-shadow: 0 0 0 2px var(--bs-blue);
     outline: none;
     transition: .2s;
+}
+
+.avatar_radio + label{
+    margin: 5px;
 }
