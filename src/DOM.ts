@@ -67,6 +67,10 @@ export class DOM {
     }
 
     public switchToGameScreen(): void {
+        let viewportmeta = document.querySelector('meta[name="viewport"]');
+        if (viewportmeta) {
+            viewportmeta.setAttribute('content', 'width=device-width, maximum-scale=1.0, initial-scale=1.0');
+        }
         this.showElement(this.game_canvas);
         this.hideElement(this.game_menu);
     }

@@ -147,7 +147,6 @@ export class ChessState {
     }
 
     public makeOtherPlayerMove(move: Move) {
-        console.log(move);
         this.selected_field = this.game.chessboard.getField(move.from);
         this.makeMove(move, this.selected_field.figure);
         this.toNextPlayer();

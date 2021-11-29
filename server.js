@@ -46,10 +46,12 @@ io.on('connection', (socket) => {
     if (player_count <= 2) {
         if (!isActive(player_1)) {
             connectPlayer(socket, player_1, 1);
+            console.log(`Player 1 registred`);
         } else if (!isActive(player_2)) {
             connectPlayer(socket, player_2, 2);
+            console.log(`Player 2 registred`);
         }
-        console.log(`${player_count} player active`);
+        console.log(`${player_count} player active`, player_1, player_2);
     } else {
         console.log("User rejected due to full lobby!");
         socket.emit("redirect", "https://www.youtube.com/watch?v=dQw4w9WgXcQ");
@@ -86,7 +88,7 @@ io.on('connection', (socket) => {
             io.to(player_1.id).emit("start", [data_player_1, data_player_2, true]);
         } else if (player_2.ready && !isActive(player_1)) {
             data_player_2 = transformToIPlayerData(player_2);
-            data_player_1 = createAIPlayerData(data_player_1.ai, data_player_1.color);
+            data_player_1 = createAIPlayerData(data_player_2.ai, data_player_1.color);
 
             io.to(player_2.id).emit("start", [data_player_2, data_player_1, true]);
         }
@@ -111,8 +113,10 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => {
         if (socket.id === player_1.id) {
             disconnectPlayer(player_1)
-        } else {
-            disconnectPlayer(player_2)
+            console.log(`Player 1 disconnected`, player_1)
+        } else if (socket.id === player_2.id) {
+            disconnectPlayer(player_2);
+            console.log(`Player 2 disconnected`, player_2)
         }
         player_count--;
         console.log(`${player_count} player active`);
@@ -152,7 +156,11 @@ function connectPlayer(socket, player, enu) {
 
 function disconnectPlayer(player) {
     console.log(`${player.name} disconnected!`);
-    player = {};
+    if(player.id === player_1.id){
+        player_1 = {}
+    }else if(player.id === player_2.id){
+        player_2 = {}
+    }
 }
 
 function getOtherPlayer(player) {

@@ -114,7 +114,7 @@ export default class Game {
         this.initiateEngine();
         this.initiateBabylonScene();
         this.initiateLights();
-        this.initiateCamera(/* TODO */);
+        this.initiateCamera(own_player_data.color);
         await this.initiateMeshes(own_player_data.color, other_player_data.name, own_player_data.ai);
         await this.initiateAvatars(own_player_data.color, own_player_data.avatar, other_player_data.avatar);
         await this.initiateXR();
@@ -173,10 +173,11 @@ export default class Game {
     /**
      * Initiates the camera which is used
      */
-    public initiateCamera() {
+    public initiateCamera(own_color: "white" | "black") {
+        const z_pos = own_color === "white" ? 20 : -20;
         this.camera = new BABYLON.FreeCamera(
-            "camera_white",
-            new BABYLON.Vector3(0, 51.5, 20), // general eye position
+            "camera",
+            new BABYLON.Vector3(0, 51.5, z_pos), // TODO general eye position
             this.scene
         );
         this.scene.activeCamera = this.camera;
@@ -205,8 +206,6 @@ export default class Game {
                 sessionMode: "immersive-vr",
             },
         });
-
-        this.xr.input.xrCamera.position = this.camera.position;
 
         this.xr.baseExperience.onInitialXRPoseSetObservable.add(xrCamera => {
             xrCamera.position = this.camera.position;
