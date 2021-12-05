@@ -8,5 +8,6 @@
     <orderEntry type="library" name="babylonjs.loaders" level="application" />
     <orderEntry type="library" name="pep" level="application" />
     <orderEntry type="library" name="bootstrap" level="application" />
+    <orderEntry type="library" name="babylon.gui" level="application" />
   </component>
 </module>

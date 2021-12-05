@@ -13,20 +13,12 @@ export class ChessPlayer {
         this._state = value;
     }
 
-    get ai(): AI | null {
-        return this._ai;
+    get type(): "human" | AI {
+        return this._type;
     }
 
-    set ai(value: AI | null) {
-        this._ai = value;
-    }
-
-    get human(): boolean {
-        return this._human;
-    }
-
-    set human(value: boolean) {
-        this._human = value;
+    set type(value: "human" | AI) {
+        this._type = value;
     }
 
     get color(): "white" | "black" {
@@ -37,16 +29,16 @@ export class ChessPlayer {
         this._color = value;
     }
 
-    private _human: boolean;
+    private _type: "human" | AI;
     private _color: "white" | "black";
     private _state: ChessState;
-    private _ai: AI | null;
 
-    constructor(human: boolean, color: "white" | "black", ai: "easy" | "intermediate" | "expert", state: ChessState) {
-        this.human = human;
+    constructor(type: "human" | "easy" | "intermediate" | "expert", color: "white" |"black", state: ChessState) {
+        if(type !== "human") {
+            this.type = new AI(this.state, type);
+        }
         this.color = color;
         this.state = state;
-        this.ai = human ? null : new AI(this.state, ai); // TODO
     }
 
 }

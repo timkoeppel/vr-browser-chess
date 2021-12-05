@@ -6,6 +6,7 @@ import {ChessPlayer} from "./ChessPlayer";
 import {Position} from "./Position";
 import {Action} from "./Action";
 import Game from "./Game";
+import {AI} from "./AI";
 
 /**
  * ChessState manages the game state, logic and move management
@@ -85,10 +86,10 @@ export class ChessState {
     private _moves: Array<Move>;
     private _game: Game;
 
-    constructor(game: Game, own_color: "white" | "black", white_player_human: boolean, black_player_human: boolean, ai: "easy" | "intermediate" | "expert") {
+    constructor(game: Game, own_color: "white" | "black", black_player_type: "human" | "easy" | "intermediate" | "expert") {
         this.logic = new Chess();
-        this.white = new ChessPlayer(white_player_human, "white", ai, this); // TODO Player selection
-        this.black = new ChessPlayer(black_player_human, "black", ai, this);
+        this.white = new ChessPlayer("human", "white", this); // TODO Player selection
+        this.black = new ChessPlayer(black_player_type, "black", this);
         this.own_player = own_color === "white" ? this.white : this.black;
         this.current_player = this.white;
         this.selected_field = null;
@@ -157,7 +158,8 @@ export class ChessState {
      */
     public makeAIMove() {
         // Change State
-        const move = this.current_player.ai.getMove();
+        let ai = this.current_player.type as AI;
+        const move = ai.getMove();
         this.selected_field = this.game.chessboard.getField(move.from);
 
         // Wait 2 seconds
@@ -204,14 +206,9 @@ export class ChessState {
         this.passToNextPlayer();
 
         // Make moves if Ai
-        if (!this.current_player.human) {
+        if (!this.current_player.type) {
             this.makeAIMove();
         }
-
-        // Waits for the other player input
-        /*if(this.current_player !== this.own_player){
-            this.makeOtherPlayerMove(); // Todo maybe let flow "run out" and make listener in app which activates this function and reactivates the flow
-        }*/
     }
 
     /**

@@ -32,6 +32,8 @@
     "webpack-hot-middleware": "^2.25.1"
   },
   "dependencies": {
+    "babylonjs": "^4.2.0",
+    "babylonjs-gui": "^4.2.0",
     "chess.ts": "^0.16.2",
     "express": "^4.17.1",
     "nodemon": "^2.0.15",

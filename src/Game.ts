@@ -15,6 +15,20 @@ import {IPlayerData} from "./IPlayerData";
  * Game manages all modules necessary for a chess game
  */
 export default class Game {
+    get own_color(): "white" | "black" {
+        return this._own_color;
+    }
+
+    set own_color(value: "white" | "black") {
+        this._own_color = value;
+    }
+    get dom(): DOM {
+        return this._dom;
+    }
+
+    set dom(value: DOM) {
+        this._dom = value;
+    }
     get app(): App {
         return this._app;
     }
@@ -94,39 +108,43 @@ export default class Game {
     private _chessboard: ChessBoard;
     private _app: App;
     private _controller: Controller;
+    private _dom: DOM;
+    private _own_color: "white" | "black";
     // ************************************************************************
     /**
      * Creates the whole Game environment
      * @constructor
      */
-    constructor(app: App){
+    constructor(own_color: "white" | "black", app: App){
         this.app = app;
+        this.canvas = document.getElementById("gameCanvas") as HTMLCanvasElement;
+        this.engine = new BABYLON.Engine(this.canvas, true);
+        this.scene = new BABYLON.Scene(this.engine);
+        this.own_color = own_color;
+
+        this.initiateBabylonScene();
+        this.initiateLights();
+        this.initiateMenuCamera();
+        this.initiateMeshes().then(() => {});
+        this.initiateXR().then(() => {});
+        this.dom = new DOM(own_color, this, this.scene);
+        this.DoRender(false);
     }
 
     /**
      * Parametrizes the game
      */
-    public async initiate(data: Array<IPlayerData>) {
-        const own_player_data: IPlayerData = data[0];
-        const other_player_data: IPlayerData = data[1];
-
-        this.initiateHTMLCanvas();
-        this.initiateEngine();
-        this.initiateBabylonScene();
-        this.initiateLights();
-        this.initiateCamera(own_player_data.color);
-        await this.initiateMeshes(own_player_data.color, other_player_data.name, own_player_data.ai);
-        await this.initiateAvatars(own_player_data.color, own_player_data.avatar, other_player_data.avatar);
-        await this.initiateXR();
-        await this.initiateController(own_player_data.controller);
-        await this.startGameWithAIMove();
+    public async setupPlayerReady(data: IPlayerData) {
+        await this.initiatePlayerCamera(data.color);
+        await this.initiateAvatar(data.color, data.avatar);
+        await this.initiateController(data.controller);
     }
 
     /**
      * Initiates the HTML Canvas, which BABYLON uses to render everything in
      */
     public initiateHTMLCanvas(){
-        this.canvas = document.getElementById("gameCanvas") as HTMLCanvasElement;
+
 
     }
 
@@ -134,14 +152,14 @@ export default class Game {
      * Initiates the BABYLON Engine
      */
     public initiateEngine() {
-        this.engine = new BABYLON.Engine(this.canvas, true);
+
     }
 
     /**
      * Initiates the BABYLON Scene environment
      */
     public initiateBabylonScene() {
-        this.scene = new BABYLON.Scene(this.engine);
+
     }
 
     /**
@@ -153,33 +171,36 @@ export default class Game {
             new BABYLON.Vector3(0, 40, 0),
             this.scene
         );
-        this.light.intensity = 0.8;
+        this.light.intensity = 1;
     }
 
     /**
      * Initiates all meshes and imports the whole 3D scene from Blender into the BABYLON Scene
      */
-    public async initiateMeshes(own_color: "white" | "black", other_name: string, ai: "easy" | "intermediate" | "expert") {
+    public async initiateMeshes() {
         await BABYLON.SceneLoader.AppendAsync("./meshes/", "scene.glb",  this.scene).then(scene => {
             this.scene = scene;
-            const is_white_human = own_color === "white" || other_name !== "AI";
-            const is_black_human = own_color === "black" || other_name !== "AI";
-            this.chessboard = new ChessBoard(scene.meshes, own_color, is_white_human, is_black_human, ai, this);
+            this.chessboard = new ChessBoard(scene.meshes, this);
         }).catch(error => {
             console.log(error);
         });
     }
 
+    public initiateMenuCamera(): void{
+        this.camera = new BABYLON.FreeCamera(
+            "camera",
+            new BABYLON.Vector3(100, 50, 0),
+            this.scene
+        );
+        this.camera.setTarget(new BABYLON.Vector3(0,50, 0));
+    }
+
     /**
      * Initiates the camera which is used
      */
-    public initiateCamera(own_color: "white" | "black") {
+    public initiatePlayerCamera(own_color: "white" | "black") {
         const z_pos = own_color === "white" ? 20 : -20;
-        this.camera = new BABYLON.FreeCamera(
-            "camera",
-            new BABYLON.Vector3(0, 51.5, z_pos), // TODO general eye position
-            this.scene
-        );
+        this.camera.position = new BABYLON.Vector3(0, 51.5, z_pos); // TODO general eye position
         this.scene.activeCamera = this.camera;
         this.camera.setTarget(BABYLON.Vector3.Zero());
         this.camera.attachControl(this.canvas, true);
@@ -189,11 +210,9 @@ export default class Game {
     /**
      * Initiates the Avatars by importing and positioning them
      */
-    public async initiateAvatars(own_color: "white" | "black", own_avatar_name: string, other_avatar_name: string){
-        const avatar_white = own_color === "white" ? new Avatar("white", own_avatar_name) : new Avatar("white", other_avatar_name);
-        const avatar_black = own_color === "black" ? new Avatar("black", own_avatar_name) : new Avatar("black", other_avatar_name);
-        this.LoadAvatar(avatar_white);
-        this.LoadAvatar(avatar_black);
+    public async initiateAvatar(color: "white" | "black", file_name: string){
+        const avatar = new Avatar("white", file_name);
+        this.LoadAvatar(avatar);
     }
 
 
@@ -233,16 +252,6 @@ export default class Game {
     }
 
     /**
-     * Starts the game chain by making the first move for white
-     * (necessary if white is AI)
-     */
-    public async startGameWithAIMove(): Promise<void> {
-        if (this.chessboard.state.current_player.color === "white" && !this.chessboard.state.current_player.human) {
-            this.chessboard.state.makeAIMove();
-        }
-    }
-
-    /**
      * Handles the Rendering of the scene
      * @constructor
      */
@@ -251,7 +260,7 @@ export default class Game {
         // Fps management
         let fps_element = document.getElementById("fps");
         if(show_fps) {
-            this.app.dom.showElement(fps_element)
+            this.app.game.dom.showHTMLElement(fps_element)
         }
 
         // run the main render loop

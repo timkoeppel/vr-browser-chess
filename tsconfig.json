@@ -9,7 +9,11 @@
     "preserveConstEnums":true,
     "lib": [
       "dom",
-      "es6"
+      "es2020"
+    ],
+    "types": [
+      "babylonjs",
+      "babylonjs-gui"
     ],
     "rootDir": "src",
     "outDir": "dist",
@@ -17,6 +21,6 @@
     "moduleResolution": "Node",
     "emitDeclarationOnly": false,
     "listEmittedFiles": true,
-    "watch": true,
+    "watch": true
   }
 }
