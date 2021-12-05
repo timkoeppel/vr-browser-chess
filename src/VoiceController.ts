@@ -41,7 +41,7 @@ export class VoiceController extends Controller {
     public initiate() {
         this.initiateGrammar();
         this.initiateClient();
-        this.client.start()
+        this.client.start();
 
         // ON RESULT
         this.client.onresult = (event) => {
@@ -57,19 +57,19 @@ export class VoiceController extends Controller {
                 // SELECT
                 if (transcript.includes("select") || transcript.includes("move")) {
                     const pos = VoiceController.extractPosition(transcript);
-                    if (pos !== "") {
+                    if (pos !== "" && this.game.chessboard.state !== undefined) {
                         const chess_field = this.game.chessboard.getField(pos);
                         this.game.chessboard.state.processClick(chess_field);
                     }
                 }
             })
-        }
+        };
 
         // PREVENT LISTENING STOP (After a time the recording mode stops)
         this.client.onend = (event) => {
             this.client.start();
-        }
-
+        };
+        console.log(`Voice Controller initiated!`);
     }
 
     // ************************************************************************
@@ -90,7 +90,7 @@ export class VoiceController extends Controller {
                     chess_fields.push(letter + j);
                 }
             }
-        })
+        });
         return chess_fields;
     }
 
@@ -100,7 +100,7 @@ export class VoiceController extends Controller {
      */
     private initiateGrammar() {
         let fields_and_commands = ['select', 'move to'].concat(VoiceController.getAllChessFieldNames());
-        let grammar = '#JSGF V1.0; grammar fields; public <fields> = ' + fields_and_commands.join(' | ') + ' ;'
+        let grammar = '#JSGF V1.0; grammar fields; public <fields> = ' + fields_and_commands.join(' | ') + ' ;';
 
         this.grammar.addFromString(grammar, 1);
         this.grammar.grammars = this.grammar;
@@ -142,7 +142,7 @@ export class VoiceController extends Controller {
             if (transcript.includes(pos)) {
                 result = pos.toUpperCase();
             }
-        })
+        });
         return result;
     }
 

@@ -56,7 +56,7 @@ export class ChessBoard {
         this.fields = ChessBoard.extractFields(meshes, this);
     }
 
-    initiate(own_color: "white" | "black", black_player: "human" | "easy" | "intermediate" | "expert"): void{
+    public startChessGame(own_color: "white" | "black", black_player: "human" | "easy" | "intermediate" | "expert"): void{
         this.state = new ChessState(this.game, own_color, black_player);
     }
 

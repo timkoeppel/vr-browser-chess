@@ -1,6 +1,5 @@
 import Game from "./Game";
 import {Connection} from "./Connection";
-import {DOM} from "./DOM";
 import {IPlayerData} from "./IPlayerData";
 
 /**
@@ -34,9 +33,13 @@ export class App {
         this.game = new Game(own_color, this);
     }
 
-    public startGame(data: Array<IPlayerData>): void {
-        //this.dom.switchToGameScreen();
+    public async makeGameReady(data: IPlayerData):Promise<void>{
+        this.game.dom.hideGameMenu();
+        this.game.setupPlayerReady(data).then(() => console.log(`Player ${data.color} ready!`));
+    }
 
+    public async startGame(data: Array<IPlayerData>): Promise<void> {
+        await this.game.startChessGame(data[0], data[1]);
     }
 }
 

@@ -105,7 +105,6 @@ export class ChessState {
      * @param clicked_field
      */
     public processClick(clicked_field: ChessField) {
-        console.log(clicked_field.id, this);
         // Field without figure and which is not part of a move -> No reset
         const is_unplayable_field = clicked_field.figure === null && !this.isPartOfMove(clicked_field);
         const is_not_my_turn = this.own_player !== this.current_player;
@@ -161,6 +160,7 @@ export class ChessState {
         let ai = this.current_player.type as AI;
         const move = ai.getMove();
         this.selected_field = this.game.chessboard.getField(move.from);
+        console.log(move);
 
         // Wait 2 seconds
         // (If moves too fast --> bad UX & physical move corrupts by capture)
@@ -206,7 +206,7 @@ export class ChessState {
         this.passToNextPlayer();
 
         // Make moves if Ai
-        if (!this.current_player.type) {
+        if (this.current_player.type !== "human") {
             this.makeAIMove();
         }
     }

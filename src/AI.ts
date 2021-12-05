@@ -23,7 +23,7 @@ export class AI {
     private _chess_state: ChessState;
     private _difficulty: "easy" | "intermediate" | "expert";
 
-    constructor(state: ChessState, difficulty: "easy" | "intermediate" | "expert") {
+    constructor(difficulty: "easy" | "intermediate" | "expert", state: ChessState) {
         this.chess_state = state;
         this.difficulty = difficulty;
     }

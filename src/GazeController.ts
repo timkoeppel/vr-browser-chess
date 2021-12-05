@@ -26,6 +26,7 @@ export class GazeController extends Controller{
             this.setupHoverOut(field);
             this.setupSelection(field);
         });
+        console.log(`Gaze Controller initiated!`);
     }
     /**
      * Sets up the selection of a field
