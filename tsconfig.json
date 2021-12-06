@@ -1,17 +1,26 @@
 {
   "compilerOptions": {
-    "target": "ES6",
+    "target": "es6",
     "module": "commonjs",
     "noResolve": false,
     "noImplicitAny": false,
+    "noEmit": false,
     "sourceMap": true,
     "preserveConstEnums":true,
     "lib": [
-      "es6",
-      "dom"
+      "dom",
+      "es2020"
+    ],
+    "types": [
+      "babylonjs",
+      "babylonjs-gui"
     ],
     "rootDir": "src",
-    "declaration": true,
-    "moduleResolution": "Node"
+    "outDir": "dist",
+    "declaration": false,
+    "moduleResolution": "Node",
+    "emitDeclarationOnly": false,
+    "listEmittedFiles": true,
+    "watch": true
   }
 }

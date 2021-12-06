@@ -7,11 +7,35 @@ import {ChessBoard} from "./ChessBoard";
 import {GazeController} from "./GazeController";
 import {VoiceController} from "./VoiceController";
 import {Controller} from "./Controller";
+import {DOM} from "./DOM";
+import {App} from "./App";
+import {IPlayerData} from "./IPlayerData";
 
 /**
  * Game manages all modules necessary for a chess game
  */
 export default class Game {
+    get own_color(): "white" | "black" {
+        return this._own_color;
+    }
+
+    set own_color(value: "white" | "black") {
+        this._own_color = value;
+    }
+    get dom(): DOM {
+        return this._dom;
+    }
+
+    set dom(value: DOM) {
+        this._dom = value;
+    }
+    get app(): App {
+        return this._app;
+    }
+
+    set app(value: App) {
+        this._app = value;
+    }
     get controller() : Controller{
         return this._controller;
     }
@@ -82,51 +106,49 @@ export default class Game {
     private _light: BABYLON.Light;
     private _xr: BABYLON.WebXRDefaultExperience;
     private _chessboard: ChessBoard;
-
+    private _app: App;
     private _controller: Controller;
+    private _dom: DOM;
+    private _own_color: "white" | "black";
+
     // ************************************************************************
     /**
      * Creates the whole Game environment
      * @constructor
      */
-    constructor(){
-        this.initiateHTMLScene();
-        this.initiateEngine();
-        this.initiateBabylonScene();
+    constructor(own_color: "white" | "black", app: App){
+        this.app = app;
+        this.initiateBabylon();
+        this.own_color = own_color;
+
         this.initiateLights();
-        this.initiateCamera();
+        this.initiateMenuCamera();
+        this.initiateMeshes().then(() => {});
+        this.initiateXR().then(() => {});
+        this.dom = new DOM(own_color, this, this.scene);
+        this.DoRender(false);
     }
 
-    /**
-     * Parametrizes the game
-     */
-    public async initiate() {
-        await this.initiateMeshes();
-        await this.initiateAvatars("male", 1, "female", 1);
-        await this.initiateXR();
-        await this.initiateController("voice");
+    public async setupPlayerReady(data: IPlayerData) {
+        await this.initiatePlayerCamera(data.color);
+        await this.initiateAvatar(data.color, data.avatar);
+        await this.initiateController(data.controller);
     }
 
-    /**
-     * Initiates the HTML Canvas, which BABYLON uses to render everything in
-     */
-    public initiateHTMLScene(){
+    public async startChessGame(own_player, other_player){
+        const own_color = own_player.color;
+        const black_player = (own_player.color === "white") ? other_player.player_type : own_player.player_type;
+
+        await this.initiateAvatar(other_player.color, other_player.avatar);
+        this.chessboard.startChessGame(own_color, black_player);
+        console.log(`Starting the chess game ...`);
+    }
+
+    public initiateBabylon(){
         this.canvas = document.getElementById("gameCanvas") as HTMLCanvasElement;
-
-    }
-
-    /**
-     * Initiates the BABYLON Engine
-     */
-    public initiateEngine() {
         this.engine = new BABYLON.Engine(this.canvas, true);
-    }
-
-    /**
-     * Initiates the BABYLON Scene environment
-     */
-    public initiateBabylonScene() {
         this.scene = new BABYLON.Scene(this.engine);
+        console.log(`Initiating Babylon JS ...`);
     }
 
     /**
@@ -138,44 +160,59 @@ export default class Game {
             new BABYLON.Vector3(0, 40, 0),
             this.scene
         );
-        this.light.intensity = 0.8;
+        this.light.intensity = 1;
+        console.log(`Initiating Lights ...`);
     }
 
     /**
      * Initiates all meshes and imports the whole 3D scene from Blender into the BABYLON Scene
      */
     public async initiateMeshes() {
+        console.log(`Initiating all meshes ...`);
         await BABYLON.SceneLoader.AppendAsync("./meshes/", "scene.glb",  this.scene).then(scene => {
-            //this.scene = scene;
+            this.scene = scene;
             this.chessboard = new ChessBoard(scene.meshes, this);
+            console.log(`Meshes initiated.`);
         }).catch(error => {
             console.log(error);
         });
+
+    }
+
+    public initiateMenuCamera(): void{
+        console.log(`Initiating initial camera ...`);
+        this.camera = new BABYLON.FreeCamera(
+            "camera",
+            new BABYLON.Vector3(100, 50, 0),
+            this.scene
+        );
+        this.camera.setTarget(new BABYLON.Vector3(0,50, 0));
+        this.camera.attachControl(this.canvas, true);
+        this.camera.angularSensibility = 10000;
+        console.log(`Initial camera initiated.`);
     }
 
     /**
      * Initiates the camera which is used
      */
-    public initiateCamera() {
-        this.camera = new BABYLON.FreeCamera(
-            "camera_white",
-            new BABYLON.Vector3(0, 51.5, 20), // general eye position
-            this.scene
-        );
-        this.scene.activeCamera = this.camera;
+    public initiatePlayerCamera(own_color: "white" | "black") {
+        console.log(`Initiating player camera ...`);
+        const z_pos = own_color === "white" ? 20 : -20;
+        const eye_position = new BABYLON.Vector3(0, 51.5, z_pos); // TODO
+
+        this.camera.position = eye_position;
+        this.camera.rotation = new BABYLON.Vector3(90,0,0);
         this.camera.setTarget(BABYLON.Vector3.Zero());
-        this.camera.attachControl(this.canvas, true);
-        this.camera.angularSensibility = 10000;
+        console.log(`Player camera initiated.`);
     }
 
     /**
      * Initiates the Avatars by importing and positioning them
      */
-    public async initiateAvatars(white_gender: "male" | "female", white_ava_no: number, black_gender: "male" | "female", black_ava_no: number){
-        const avatar_white = new Avatar("white", white_gender, white_ava_no);
-        const avatar_black = new Avatar("black", black_gender, black_ava_no);
-        this.LoadAvatar(avatar_white);
-        this.LoadAvatar(avatar_black);
+    public async initiateAvatar(color: "white" | "black", file_name: string){
+        console.log(`Initiating ${color} avatar ...`);
+        const avatar = new Avatar(color, file_name);
+        this.LoadAvatar(avatar, color);
     }
 
 
@@ -183,46 +220,48 @@ export default class Game {
      * Initiates the Babylon XR Experience for mobile devices
      */
     public async initiateXR() {
+        let xr_camera;
+        console.log(`Initiating XR ...`);
+        let camera_level = BABYLON.MeshBuilder.CreatePlane("ground", {
+            size: 250,
+            height: this.camera.position.y
+        }, this.scene);
+        camera_level.visibility = 0;
+
         this.xr = await this.scene.createDefaultXRExperienceAsync({
+            //floorMeshes: [camera_level],
             uiOptions: {
                 sessionMode: "immersive-vr",
             },
         });
 
-        this.xr.input.xrCamera.position = this.camera.position;
-
         this.xr.baseExperience.onInitialXRPoseSetObservable.add(xrCamera => {
-            //xrCamera.position = this.camera.position;
+            xrCamera.setTransformationFromNonVRCamera(this.camera);
+            xrCamera.position = this.camera.position;
+            xrCamera.setTarget(BABYLON.Vector3.Zero());
+            xrCamera.applyGravity = false;
+            xr_camera = xrCamera;
+            this.camera = xrCamera;
         });
 
         this.xr.baseExperience.onStateChangedObservable.add((xrs, xre) => {
             if (xrs === 2) {
-                this.xr.pointerSelection.displayLaserPointer = true;
-                this.xr.pointerSelection.displaySelectionMesh = true;
-                this.xr.pointerSelection.disableSelectionMeshLighting = true;
+                this.camera = xr_camera
             }
-        })
+        });
+        console.log(`XR initiated`);
     }
 
     public async initiateController(type: "gaze" | "voice"){
+        console.log(`Initiating ${type} controller ...`);
         if(type === "gaze"){
-            const controller = new GazeController(this);
+            let controller = new GazeController(this);
             controller.initiateGazeInteractions();
             this.controller = controller;
-        }else{
-            const controller = new VoiceController(this);
+        }else {
+            let controller = new VoiceController(this);
             controller.initiate();
             this.controller = controller;
-        }
-    }
-
-    /**
-     * Starts the game chain by making the first move for white
-     * (necessary if white is AI)
-     */
-    public startGame(): void {
-        if (this.chessboard.state.current_player.color === "w") {
-            this.chessboard.state.makeAIMove();
         }
     }
 
@@ -230,12 +269,17 @@ export default class Game {
      * Handles the Rendering of the scene
      * @constructor
      */
-    private divFps = document.getElementById("fps");
 
-    public DoRender(): void {
+    public DoRender(show_fps: boolean): void {
+        // Fps management
+        let fps_element = document.getElementById("fps");
+        if(show_fps) {
+            this.app.game.dom.showHTMLElement(fps_element)
+        }
+
         // run the main render loop
         this.engine.runRenderLoop(() => {
-            this.divFps.innerHTML = this.engine.getFps().toFixed() + " fps";
+            fps_element.innerHTML = this.engine.getFps().toFixed() + " fps";
             this.scene.render();
         });
 
@@ -251,14 +295,16 @@ export default class Game {
     /**
      * Loads the specified avatar
      * @param avatar
+     * @param color
      * @constructor
      */
-    private LoadAvatar(avatar: Avatar): void {
+    private LoadAvatar(avatar: Avatar, color: "white" | "black"): void {
         BABYLON.SceneLoader.ImportMeshAsync("", avatar.rootURL, avatar.filename, this.scene).then(result => {
             avatar.scene = result;
             avatar.stopAnimations();
             avatar.placeAvatar();
             avatar.seatAvatar();
+            console.log(`Avatar ${color} initiated.`);
         });
     }
 

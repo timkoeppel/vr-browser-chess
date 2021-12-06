@@ -5,11 +5,11 @@ import {ChessState} from "./ChessState";
  * AI manages all AI related movements
  */
 export class AI {
-    get difficulty(): "easy" | "advanced" | "expert" {
+    get difficulty(): "easy" | "intermediate" | "expert" {
         return this._difficulty;
     }
 
-    set difficulty(value: "easy" | "advanced" | "expert") {
+    set difficulty(value: "easy" | "intermediate" | "expert") {
         this._difficulty = value;
     }
     get chess_state(): ChessState {
@@ -21,9 +21,9 @@ export class AI {
     }
 
     private _chess_state: ChessState;
-    private _difficulty: "easy" | "advanced" | "expert";
+    private _difficulty: "easy" | "intermediate" | "expert";
 
-    constructor(state: ChessState, difficulty: "easy" | "advanced" | "expert") {
+    constructor(difficulty: "easy" | "intermediate" | "expert", state: ChessState) {
         this.chess_state = state;
         this.difficulty = difficulty;
     }
@@ -33,7 +33,7 @@ export class AI {
         switch(this.difficulty){
             case "easy":
                 return this.getRandomMove();
-            case "advanced":
+            case "intermediate":
                 return this.getAlphaBetaMove();
             case "expert":
                 return this.getExpertAIMove();
@@ -44,7 +44,7 @@ export class AI {
      * Gets random available move
      */
     private getRandomMove(): Move {
-        const available_moves = ChessState.toUpperNotation(this.chess_state.logic.moves({verbose: true}));
+        const available_moves = ChessState.toUpperNotationMulti(this.chess_state.logic.moves({verbose: true}));
         let chosen_move = available_moves[Math.floor(Math.random() * available_moves.length)];
 
         // If capture move

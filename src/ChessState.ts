@@ -3,17 +3,24 @@ import {ChessFigure} from "./ChessFigure";
 import {ChessField} from "./ChessField";
 import {Chess, Move} from "chess.ts";
 import {ChessPlayer} from "./ChessPlayer";
-import {ChessBoard} from "./ChessBoard";
 import {Position} from "./Position";
 import {Action} from "./Action";
 import Game from "./Game";
-import {GazeController} from "./GazeController";
+import {AI} from "./AI";
 
 /**
  * ChessState manages the game state, logic and move management
  * ... -> next Player (begin) -> select move -> make move -> next Player -> ... -> Game Over
  */
 export class ChessState {
+    get own_player(): ChessPlayer {
+        return this._own_player;
+    }
+
+    set own_player(value: ChessPlayer) {
+        this._own_player = value;
+    }
+
     get game(): Game {
         return this._game;
     }
@@ -72,16 +79,18 @@ export class ChessState {
 
     private _logic: Chess;
     private _current_player: ChessPlayer;
+    private _own_player: ChessPlayer;
     private _white: ChessPlayer;
     private _black: ChessPlayer;
     private _selected_field: ChessField | null;
     private _moves: Array<Move>;
     private _game: Game;
 
-    constructor(game: Game) {
+    constructor(game: Game, own_color: "white" | "black", black_player_type: "human" | "easy" | "intermediate" | "expert") {
         this.logic = new Chess();
-        this.white = new ChessPlayer(true, "w", this); // TODO Player selection
-        this.black = new ChessPlayer(false, "b", this);
+        this.white = new ChessPlayer("human", "white", this); // TODO Player selection
+        this.black = new ChessPlayer(black_player_type, "black", this);
+        this.own_player = own_color === "white" ? this.white : this.black;
         this.current_player = this.white;
         this.selected_field = null;
         this.moves = [];
@@ -97,7 +106,10 @@ export class ChessState {
      */
     public processClick(clicked_field: ChessField) {
         // Field without figure and which is not part of a move -> No reset
-        if(clicked_field.figure === null && !this.isPartOfMove(clicked_field)){
+        const is_unplayable_field = clicked_field.figure === null && !this.isPartOfMove(clicked_field);
+        const is_not_my_turn = this.own_player !== this.current_player;
+
+        if (is_unplayable_field || is_not_my_turn) {
             return;
         }
 
@@ -128,7 +140,15 @@ export class ChessState {
      * @param clicked_field
      */
     public makeHumanMove(clicked_field: ChessField) {
-        this.makeMove(this.getMove(clicked_field), this.selected_field.figure);
+        const move = this.getMove(clicked_field);
+        this.submitMove(move);
+        this.makeMove(move, this.selected_field.figure);
+        this.toNextPlayer();
+    }
+
+    public makeOtherPlayerMove(move: Move) {
+        this.selected_field = this.game.chessboard.getField(move.from);
+        this.makeMove(move, this.selected_field.figure);
         this.toNextPlayer();
     }
 
@@ -137,7 +157,9 @@ export class ChessState {
      */
     public makeAIMove() {
         // Change State
-        const move = this.current_player.ai.getMove();
+        let ai = this.current_player.type as AI;
+        const move = ChessState.toUpperNotationSingle(ai.getMove());
+        console.log(move);
         this.selected_field = this.game.chessboard.getField(move.from);
 
         // Wait 2 seconds
@@ -154,8 +176,8 @@ export class ChessState {
      */
     public toMoveSelection(clicked_field: ChessField) {
         // Change State
-        const moves = this.logic.moves({square: clicked_field.id, verbose: true})
-        this.moves = ChessState.toUpperNotation(moves);
+        const moves = this.logic.moves({square: clicked_field.id, verbose: true});
+        this.moves = ChessState.toUpperNotationMulti(moves);
         this.selected_field = clicked_field;
 
         // Change Materials
@@ -184,7 +206,7 @@ export class ChessState {
         this.passToNextPlayer();
 
         // Make moves if Ai
-        if (!this.current_player.human) {
+        if (this.current_player.type !== "human") {
             this.makeAIMove();
         }
     }
@@ -241,7 +263,7 @@ export class ChessState {
         moves.forEach(m => {
             const playable_field = this.game.chessboard.fields.find(f => f.id === m.to);
             playable_fields.push(playable_field);
-        })
+        });
 
         return playable_fields;
     }
@@ -272,7 +294,7 @@ export class ChessState {
         let move_targets = [];
         this.moves.forEach(m => {
             move_targets.push(m.to);
-        })
+        });
         return move_targets;
     }
 
@@ -294,7 +316,13 @@ export class ChessState {
     private makePhysicalMove(move: Move, fig_to_move: ChessFigure): void {
         // Capture case
         if (ChessState.isCapture(move)) {
-            let captured_fig = this.game.chessboard.getField(move.to).figure;
+            let captured_fig: ChessFigure;
+            if(ChessState.isEnPassantCapture(move)){
+                const en_passant_field = ChessState.getEnPassantField(move);
+                captured_fig = this.game.chessboard.getField(en_passant_field).figure;
+            }else{
+                captured_fig = this.game.chessboard.getField(move.to).figure;
+            }
             captured_fig.capture();
         }
         // Animate
@@ -344,7 +372,7 @@ export class ChessState {
      * @private
      */
     private passToNextPlayer(): void {
-        if (this.current_player.color === "w") {
+        if (this.current_player.color === "white") {
             this.current_player = this.black;
         } else {
             this.current_player = this.white;
@@ -355,19 +383,24 @@ export class ChessState {
      * Changes all Move properties to upper letters
      * @param moves
      */
-    public static toUpperNotation(moves: Array<Move>): Array<Move> {
-        let new_moves = []
+    public static toUpperNotationMulti(moves: Array<Move>): Array<Move> {
+        let new_moves = [];
         moves.forEach(m => {
-            let new_move = Object.assign(m);
-            for (let [key, value] of Object.entries(m)) {
-                if (typeof value === "string") {
-                    new_move[key] = value.toUpperCase();
-                }
-            }
+            let new_move = this.toUpperNotationSingle(m);
             new_moves.push(new_move);
-        })
+        });
 
         return new_moves;
+    }
+
+    public static toUpperNotationSingle(move: Move): Move{
+        let new_move = Object.assign(move);
+        for (let [key, value] of Object.entries(move)) {
+            if (typeof value === "string") {
+                new_move[key] = value.toUpperCase();
+            }
+        }
+        return new_move;
     }
 
     /**
@@ -375,9 +408,20 @@ export class ChessState {
      * @param move
      * @private
      */
-    public static isCapture(move: Move) {
+    public static isCapture(move: Move):boolean{
         return move.flags.includes("C") || move.flags.includes("E");
     }
+
+    private static isEnPassantCapture(move: Move):boolean{
+        return move.flags.includes("E");
+    }
+
+    private static getEnPassantField(move: Move):string{
+        const x_pos_chess = move.to.charAt(0);
+        const y_pos_chess = parseInt(move.to.charAt(1));
+        const addition = (move.color === "w") ? 1 : -1;
+        return x_pos_chess + (y_pos_chess + addition).toString();
+    };
 
     /**
      * Checks if the given move is a castling move
@@ -394,7 +438,7 @@ export class ChessState {
      * @private
      */
     private static getOffBoardPosition(fig: ChessFigure): BABYLON.Vector3 {
-        const pos_add = fig.color === "w" ? 5 : -5
+        const pos_add = fig.color === "white" ? 5 : -5;
 
         const x = fig.original_position.scene_pos.z + pos_add;
         const y = 24.95;
@@ -427,6 +471,10 @@ export class ChessState {
             to: to_field
         };
 
+    }
+
+    private submitMove(data) {
+        this.game.app.connection.emitPlayerMove(data)
     }
 
 }

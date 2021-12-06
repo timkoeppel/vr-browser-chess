@@ -52,9 +52,12 @@ export class ChessBoard {
      */
     constructor(meshes: Array<BABYLON.AbstractMesh>, game: Game) {
         this.game = game;
-        this.state = new ChessState(game);
         this.figures = ChessFigure.extractFigures(meshes, this);
         this.fields = ChessBoard.extractFields(meshes, this);
+    }
+
+    public startChessGame(own_color: "white" | "black", black_player: "human" | "easy" | "intermediate" | "expert"): void{
+        this.state = new ChessState(this.game, own_color, black_player);
     }
 
     // ************************************************************************
@@ -132,7 +135,7 @@ export class ChessBoard {
             if (same_pos) {
                 result = fig;
             }
-        })
+        });
         return result;
     }
 }

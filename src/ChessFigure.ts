@@ -30,11 +30,11 @@ export class ChessFigure {
         this._on_field = value;
     }
 
-    get color(): "b" | "w" {
+    get color(): "white" | "black" {
         return this._color;
     }
 
-    set color(value: "b" | "w") {
+    set color(value: "white" | "black") {
         this._color = value;
     }
 
@@ -66,12 +66,12 @@ export class ChessFigure {
     private _position: Position;
     private _original_position: Position;
     private _mesh: BABYLON.AbstractMesh;
-    private _color: "b" | "w";
+    private _color: "white" | "black";
     private _on_field: boolean;
     private _board: ChessBoard;
 
 
-    constructor(id: string, pos: Position, mesh: BABYLON.AbstractMesh, color: "b" | "w", on_field: boolean, board: ChessBoard) {
+    constructor(id: string, pos: Position, mesh: BABYLON.AbstractMesh, color: "white" | "black", on_field: boolean, board: ChessBoard) {
         this.id = id;
         this.position = pos;
         this.original_position = pos;
@@ -120,8 +120,9 @@ export class ChessFigure {
      * @param mesh
      * @private
      */
-    private static getColor(mesh: BABYLON.AbstractMesh): "b" | "w" {
-        return <"b" | "w">mesh.id.slice(-2, -1);
+    private static getColor(mesh: BABYLON.AbstractMesh): "white" | "black" {
+        const color_short = <"b" | "w">mesh.id.slice(-2, -1);
+        return color_short === "w" ? "white" : "black";
     }
 
 }
