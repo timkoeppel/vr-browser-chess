@@ -137,6 +137,7 @@ function startWhiteGame(socket, data) {
     // Black should be played by an AI
     if (black.player_type !== "human") {
         player_limit = 1;
+        const is_black_player_in_lobby = Object.keys(black).length > 3;
 
         // Black AI creation
         Object.assign(black, createAIData(black));
@@ -144,7 +145,7 @@ function startWhiteGame(socket, data) {
         startGameIfBothReady(socket);
 
         // A person is already in as black player --> redirect
-        if (Object.keys(black).length > 3) {
+        if (is_black_player_in_lobby) {
             redirect(getSocketById(black.id))
         }
     }else{

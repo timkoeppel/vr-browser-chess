@@ -316,7 +316,13 @@ export class ChessState {
     private makePhysicalMove(move: Move, fig_to_move: ChessFigure): void {
         // Capture case
         if (ChessState.isCapture(move)) {
-            let captured_fig = this.game.chessboard.getField(move.to).figure;
+            let captured_fig: ChessFigure;
+            if(ChessState.isEnPassantCapture(move)){
+                const en_passant_field = ChessState.getEnPassantField(move);
+                captured_fig = this.game.chessboard.getField(en_passant_field).figure;
+            }else{
+                captured_fig = this.game.chessboard.getField(move.to).figure;
+            }
             captured_fig.capture();
         }
         // Animate
@@ -402,9 +408,20 @@ export class ChessState {
      * @param move
      * @private
      */
-    public static isCapture(move: Move) {
+    public static isCapture(move: Move):boolean{
         return move.flags.includes("C") || move.flags.includes("E");
     }
+
+    private static isEnPassantCapture(move: Move):boolean{
+        return move.flags.includes("E");
+    }
+
+    private static getEnPassantField(move: Move):string{
+        const x_pos_chess = move.to.charAt(0);
+        const y_pos_chess = parseInt(move.to.charAt(1));
+        const addition = (move.color === "w") ? 1 : -1;
+        return x_pos_chess + (y_pos_chess + addition).toString();
+    };
 
     /**
      * Checks if the given move is a castling move
