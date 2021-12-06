@@ -44,7 +44,7 @@ export class AI {
      * Gets random available move
      */
     private getRandomMove(): Move {
-        const available_moves = ChessState.toUpperNotation(this.chess_state.logic.moves({verbose: true}));
+        const available_moves = ChessState.toUpperNotationMulti(this.chess_state.logic.moves({verbose: true}));
         let chosen_move = available_moves[Math.floor(Math.random() * available_moves.length)];
 
         // If capture move

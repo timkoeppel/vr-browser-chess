@@ -39,6 +39,7 @@ export class App {
     }
 
     public async startGame(data: Array<IPlayerData>): Promise<void> {
+        console.log("Data received:", data);
         await this.game.startChessGame(data[0], data[1]);
     }
 }

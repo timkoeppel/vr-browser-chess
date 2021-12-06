@@ -57,6 +57,7 @@ export class VoiceController extends Controller {
                 // SELECT
                 if (transcript.includes("select") || transcript.includes("move")) {
                     const pos = VoiceController.extractPosition(transcript);
+                    console.log(pos !== "" && this.game.chessboard.state !== undefined);
                     if (pos !== "" && this.game.chessboard.state !== undefined) {
                         const chess_field = this.game.chessboard.getField(pos);
                         this.game.chessboard.state.processClick(chess_field);
@@ -68,6 +69,12 @@ export class VoiceController extends Controller {
         // PREVENT LISTENING STOP (After a time the recording mode stops)
         this.client.onend = (event) => {
             this.client.start();
+        };
+
+        this.client.onerror = (event) => {
+            if(event.error !== "no-speech"){
+                console.log(event);
+            }
         };
         console.log(`Voice Controller initiated!`);
     }

@@ -57,20 +57,20 @@ io.on('connect', socket => {
 
     // Ready
     socket.on('player_ready', (data) => {
-        if(socket.id === white.id){
+        if (socket.id === white.id) {
             startWhiteGame(socket, data);
-        }else{
+        } else {
             startBlackGame(socket, data);
         }
     })
 
     // Move
     socket.on('player_move', (data) => {
-        if(socket.id === white.id && black.player_type === "human"){
+        if (socket.id === white.id && black.player_type === "human") {
             console.log(`White player made move from ${data.from} to ${data.to}.`);
             io.to(black.id).emit('other_player_move', (data));
             console.log(`Send move to black player ...`);
-        }else if (socket.id === black.id){
+        } else if (socket.id === black.id) {
             console.log(`Black player made move from ${data.from} to ${data.to}.`);
             io.to(white.id).emit('other_player_move', (data));
             console.log(`Send move to white player ...`);
@@ -96,86 +96,85 @@ function connectPlayer(socket, player, color) {
     console.log(`${player_count}/${player_limit} player active`);
 }
 
-function disconnectPlayer(socket){
-    if(socket.id === white.id){
+function disconnectPlayer(socket) {
+    if (socket.id === white.id) {
         disconnected_player = white;
         white = {}
-        if(game_started && black.player_type === "human"){
+        if (game_started && black.player_type === "human") {
             io.to(black.id).emit('game_reset', "white");
         }
-    }else{
-        io.to(white.id).emit('game_reset', "black");
+    } else {
+        if (game_started && white.other_player === "human") {
+            io.to(white.id).emit('game_reset', "black");
+        }
         disconnected_player = black;
         black = {}
     }
-    socket.disconnect()
+    socket.disconnect();
     console.log(`Player ${disconnected_player.color} disconnected!`);
     player_count--;
     console.log(`${player_count}/${player_limit} player active.`);
 
-    if(player_count == 0){
+    if (player_count == 0) {
         resetApp();
     }
 }
 
-function redirect(socket){
+function redirect(socket) {
     socket.emit("redirect", "https://www.youtube.com/watch?v=dQw4w9WgXcQ");
     socket.disconnect();
-    player_count--;
     console.log("Full Lobby. Connected Player rejected!")
 }
 
-function startWhiteGame(socket, data){
+function startWhiteGame(socket, data) {
     Object.assign(white, data);
     white.ready = true;
-    black.player_type = white.other_player;
+    console.log(`Player ${white.color} is ready!`);
+    socket.emit('ready', toIPlayerData(white));
 
-    if(black.player_type !== "human"){
+    black.player_type = white.other_player;
+    console.log(black);
+    // Black should be played by an AI
+    if (black.player_type !== "human") {
         player_limit = 1;
-        if(Object.keys(black).length > 3){
+
+        // Black AI creation
+        Object.assign(black, createAIData(black));
+        console.log(`Player black is played by an ${black.player_type} AI!`);
+        startGameIfBothReady(socket);
+
+        // A person is already in as black player --> redirect
+        if (Object.keys(black).length > 3) {
             redirect(getSocketById(black.id))
         }
-        white = toIPlayerData(white);
-        black = createAIData(black);
-        console.log(`Player ${white.color} is ready!`, white)
-        socket.emit('ready', white);
-        console.log(`Player black is played by an ${black.player_type} AI!`)
-        socket.emit('start', [white, black])
-        console.log(`Starting game ...`)
     }else{
-        socket.emit("ready", toIPlayerData(white))
-        if(white.ready && black.ready){
-            socket.emit('start', [toIPlayerData(white), toIPlayerData(black)]);
-            console.log(`Starting game ...`)
-        }
+        startGameIfBothReady(socket);
     }
 }
 
-function startBlackGame(socket, data){
+function startBlackGame(socket, data) {
     Object.assign(black, data);
     black.ready = true;
-    socket.emit("ready", toIPlayerData(black));
-    console.log(`Player ${black.color} is ready!`)
+    socket.emit('ready', toIPlayerData(black));
+    console.log(`Player ${black.color} is ready!`);
 
-    if(white.ready && black.ready){
-        console.log(`Starting game ...`)
-        socket.emit("start", [toIPlayerData(black), toIPlayerData(white)]);
-    }
+    startGameIfBothReady(socket);
 }
 
-function getSocketById(id){
-    io.sockets.sockets.get(id)
+function getSocketById(id) {
+    return io.sockets.sockets.get(id)
 }
 
-function toIPlayerData(player){
+function toIPlayerData(player) {
     let data = Object.assign({}, player);
     delete data.id;
     delete data.ready;
     return data
 }
 
-function createAIData(player){
+function createAIData(player) {
     const data = {
+        ready: true,
         color: "black",
         controller: "gaze",
         avatar: "female_01", //TODO
@@ -184,10 +183,27 @@ function createAIData(player){
     return Object.assign({}, data);
 }
 
-function resetApp(){
+function resetApp() {
     white = {};
     black = {};
     player_limit = 2;
+    game_started = false;
     console.log(`No player in the game anymore. Resetting the game ...`)
+}
+
+function startGameIfBothReady(socket) {
+    if (socket.id === black.id && white.ready && black.ready) {
+        console.log(`Starting game ...`)
+        socket.emit('start', [toIPlayerData(black), toIPlayerData(white)]);
+        io.to(white.id).emit('start', [toIPlayerData(white), toIPlayerData(black)]);
+        game_started = true;
+        console.log([toIPlayerData(white), toIPlayerData(black)]);
+    } else if (socket.id === white.id && white.ready && black.ready) {
+        console.log(`Starting game ...`)
+        socket.emit('start', [toIPlayerData(white), toIPlayerData(black)]);
+        io.to(black.id).emit('start', [toIPlayerData(black), toIPlayerData(white)]);
+        game_started = true;
+        console.log([toIPlayerData(white), toIPlayerData(black)]);
+    }
 }
 

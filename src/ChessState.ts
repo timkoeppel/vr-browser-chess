@@ -158,9 +158,9 @@ export class ChessState {
     public makeAIMove() {
         // Change State
         let ai = this.current_player.type as AI;
-        const move = ai.getMove();
-        this.selected_field = this.game.chessboard.getField(move.from);
+        const move = ChessState.toUpperNotationSingle(ai.getMove());
         console.log(move);
+        this.selected_field = this.game.chessboard.getField(move.from);
 
         // Wait 2 seconds
         // (If moves too fast --> bad UX & physical move corrupts by capture)
@@ -177,7 +177,7 @@ export class ChessState {
     public toMoveSelection(clicked_field: ChessField) {
         // Change State
         const moves = this.logic.moves({square: clicked_field.id, verbose: true});
-        this.moves = ChessState.toUpperNotation(moves);
+        this.moves = ChessState.toUpperNotationMulti(moves);
         this.selected_field = clicked_field;
 
         // Change Materials
@@ -377,19 +377,24 @@ export class ChessState {
      * Changes all Move properties to upper letters
      * @param moves
      */
-    public static toUpperNotation(moves: Array<Move>): Array<Move> {
+    public static toUpperNotationMulti(moves: Array<Move>): Array<Move> {
         let new_moves = [];
         moves.forEach(m => {
-            let new_move = Object.assign(m);
-            for (let [key, value] of Object.entries(m)) {
-                if (typeof value === "string") {
-                    new_move[key] = value.toUpperCase();
-                }
-            }
+            let new_move = this.toUpperNotationSingle(m);
             new_moves.push(new_move);
         });
 
         return new_moves;
+    }
+
+    public static toUpperNotationSingle(move: Move): Move{
+        let new_move = Object.assign(move);
+        for (let [key, value] of Object.entries(move)) {
+            if (typeof value === "string") {
+                new_move[key] = value.toUpperCase();
+            }
+        }
+        return new_move;
     }
 
     /**
