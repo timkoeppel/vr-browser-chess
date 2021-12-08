@@ -67,13 +67,9 @@ io.on('connect', socket => {
     // Move
     socket.on('player_move', (data) => {
         if (socket.id === white.id && black.player_type === "human") {
-            console.log(`White player made move from ${data.from} to ${data.to}.`);
-            io.to(black.id).emit('other_player_move', (data));
-            console.log(`Send move to black player ...`);
+            makeMove(data, white, black)
         } else if (socket.id === black.id) {
-            console.log(`Black player made move from ${data.from} to ${data.to}.`);
-            io.to(white.id).emit('other_player_move', (data));
-            console.log(`Send move to white player ...`);
+            makeMove(data, black, white)
         }
     })
 
@@ -133,7 +129,6 @@ function startWhiteGame(socket, data) {
     socket.emit('ready', toIPlayerData(white));
 
     black.player_type = white.other_player;
-    console.log(black);
     // Black should be played by an AI
     if (black.player_type !== "human") {
         player_limit = 1;
@@ -174,11 +169,12 @@ function toIPlayerData(player) {
 }
 
 function createAIData(player) {
+    const avatars = ["male_01", "male_02", "male_03", "female_01", "female_02", "female_03"];
     const data = {
         ready: true,
         color: "black",
         controller: "gaze",
-        avatar: "female_01", //TODO
+        avatar: "female_01", //TODO avatars[Math.floor(Math.random() * avatars.length)];
         player_type: player.player_type
     }
     return Object.assign({}, data);
@@ -198,13 +194,17 @@ function startGameIfBothReady(socket) {
         socket.emit('start', [toIPlayerData(black), toIPlayerData(white)]);
         io.to(white.id).emit('start', [toIPlayerData(white), toIPlayerData(black)]);
         game_started = true;
-        console.log([toIPlayerData(white), toIPlayerData(black)]);
     } else if (socket.id === white.id && white.ready && black.ready) {
         console.log(`Starting game ...`)
         socket.emit('start', [toIPlayerData(white), toIPlayerData(black)]);
         io.to(black.id).emit('start', [toIPlayerData(black), toIPlayerData(white)]);
         game_started = true;
-        console.log([toIPlayerData(white), toIPlayerData(black)]);
     }
+}
+
+function makeMove(data, from_player, to_player){
+    console.log(`Player ${from_player.color} made move from ${data.from} to ${data.to}.`);
+    io.to(to_player.id).emit('other_player_move', (data));
+    console.log(`Send move to ${to_player.color} player ...`);
 }
 
