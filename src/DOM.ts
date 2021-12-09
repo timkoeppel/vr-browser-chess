@@ -5,6 +5,14 @@ import Game from "./Game";
 import {Avatar} from "./Avatar";
 
 export class DOM {
+    get loading_screen(): GUI.Rectangle {
+        return this._loading_screen;
+    }
+
+    set loading_screen(value: GUI.Rectangle) {
+        this._loading_screen = value;
+    }
+
     get main_panel(): GUI.Grid {
         return this._main_panel;
     }
@@ -67,8 +75,15 @@ export class DOM {
     private _avatar: GUI.Button;
     private _other_player: GUI.RadioButton;
     private _game_menu: BABYLON.AbstractMesh;
+    private _loading_screen: GUI.Rectangle;
     private _main_panel: GUI.Grid;
 
+    /**
+     * Initiates the 3D DOM for the game
+     * @param own_color important for not showing the other-player-choice
+     * @param game
+     * @param scene
+     */
     constructor(own_color, game: Game, scene: BABYLON.Scene) {
         this.game = game;
         this.scene = scene;
@@ -79,15 +94,27 @@ export class DOM {
         this.initiateGameMenu(own_color);
     }
 
+    /**
+     * Shows an HTML element
+     * @param element
+     */
     public showHTMLElement(element: HTMLElement) {
         element.classList.remove("no_display");
     }
 
+    /**
+     * Redirect method if lobby is full
+     * @param location
+     */
     public lobbyFullRedirect(location: string) {
         alert("Lobby is full!");
         window.location.href = location
     }
 
+    /**
+     * Refresh method when the other player disconnected (prevents dysfunctional game with no other player)
+     * @param other_player_color
+     */
     public refreshThroughOtherPlayerDisconnect(other_player_color: "white" | "black"): void {
         alert(`Player ${other_player_color} has disconnected.`);
         window.location.reload();
@@ -108,6 +135,10 @@ export class DOM {
     private static SECONDARY_COLOR = "grey";
     private static BACKGROUND_COLOR = "transparent";
 
+    /**
+     * Creates the game menu for the
+     * @param player_color
+     */
     public initiateGameMenu(player_color: "white" | "black") {
         this.initiateGameMenuMesh();
         this.initiateGrid(player_color);
@@ -125,16 +156,52 @@ export class DOM {
         this.addSubmitButton(this.main_panel, submit_row, 1);
     }
 
+    /**
+     * Hides the Game Menu
+     */
     public hideGameMenu(): void {
         this.game_menu.visibility = 0;
     }
 
+    /**
+     * Hides the waiting-for-other-player screen
+     */
+    public hideWaitingScreen() {
+        this.loading_screen.isVisible = false;
+    }
+
+    /**
+     * Initiates the waiting screen after player ready
+     */
+    public initiateWaitingScreen(): void {
+        // @ts-ignore
+        let texture = GUI.AdvancedDynamicTexture.CreateFullscreenUI("loading", true, this.scene);
+        this.loading_screen = new GUI.Rectangle("waiting_panel");
+        this.loading_screen.background = DOM.PRIMARY_COLOR;
+        this.loading_screen.width = "300px";
+        this.loading_screen.height = "50px";
+        this.loading_screen.cornerRadius = DOM.CORNER_RADIUS;
+        texture.addControl(this.loading_screen);
+        let text = new GUI.TextBlock("wait", "Waiting for the other player ...");
+        text.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
+        text.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
+        text.color = "black";
+        this.loading_screen.addControl(text);
+    }
+
+    /**
+     * Initiates the game menu mesh
+     */
     public initiateGameMenuMesh(): void {
         this.game_menu = BABYLON.MeshBuilder.CreatePlane("plane", {height: 50, width: 40}) as BABYLON.AbstractMesh;
         this.game_menu.position = new BABYLON.Vector3(60, 45, 0);
         this.game_menu.rotate(new BABYLON.Vector3(0, 1, 0), -Math.PI / 2);
     }
 
+    /**
+     * Initiates the grid on which the game menu is based
+     * @param player_color
+     */
     public initiateGrid(player_color: "white" | "black"): void {
         // Grid Panel Init
         this.main_panel = new GUI.Grid();
@@ -161,23 +228,41 @@ export class DOM {
         DOM.addRows(this.main_panel, DOM.BUTTON_ROW_HEIGHT, 1); // Submit
     }
 
+    /**
+     * Creates the Controller choice panel
+     * @param panel
+     * @param start_row
+     * @private
+     */
     private createControllerChoice(panel: GUI.Grid, start_row: number) {
         DOM.addChoiceTitle("Controller:", start_row, 1, panel);
         this.addRadioButton("Voice", "controller", panel, start_row + 1, 1, true);
         this.addRadioButton("Gaze", "controller", panel, start_row + 2, 1);
     }
 
+    /**
+     * Creates the Avatar choice panel
+     * @param panel
+     * @param start_row
+     * @private
+     */
     private createAvatarChoice(panel: GUI.Grid, start_row: number) {
         DOM.addChoiceTitle("Avatar:", start_row, 1, panel);
 
-        this.addImageRadio("male_01", Avatar.MALE_01_PATH, panel, start_row + 1, 0, true);
-        this.addImageRadio("male_02", Avatar.MALE_02_PATH, panel, start_row + 1, 1);
-        this.addImageRadio("male_03", Avatar.MALE_03_PATH, panel, start_row + 1, 2);
-        this.addImageRadio("female_01", Avatar.FEMALE_01_PATH, panel, start_row + 2, 0);
-        this.addImageRadio("female_02", Avatar.FEMALE_02_PATH, panel, start_row + 2, 1);
-        this.addImageRadio("female_03", Avatar.FEMALE_03_PATH, panel, start_row + 2, 2);
+        this.addAvatarImageRadio("male_01", Avatar.MALE_01_PATH, panel, start_row + 1, 0, true);
+        this.addAvatarImageRadio("male_02", Avatar.MALE_02_PATH, panel, start_row + 1, 1);
+        this.addAvatarImageRadio("male_03", Avatar.MALE_03_PATH, panel, start_row + 1, 2);
+        this.addAvatarImageRadio("female_01", Avatar.FEMALE_01_PATH, panel, start_row + 2, 0);
+        this.addAvatarImageRadio("female_02", Avatar.FEMALE_02_PATH, panel, start_row + 2, 1);
+        this.addAvatarImageRadio("female_03", Avatar.FEMALE_03_PATH, panel, start_row + 2, 2);
     }
 
+    /**
+     * Creates the other-player choice panel (white only)
+     * @param panel
+     * @param start_row
+     * @private
+     */
     private createAIOrHumanChoice(panel: GUI.Grid, start_row: number) {
         DOM.addChoiceTitle("Other Player:", start_row, 1, panel);
         this.addRadioButton("Human", "other_player", panel, start_row + 1, 1, true);
@@ -186,7 +271,17 @@ export class DOM {
         this.addRadioButton("Expert", "other_player", panel, start_row + 4, 1);
     }
 
-    private addImageRadio(name: string, path: string, parent: GUI.Grid, row: number, column: number, active?: boolean) {
+    /**
+     * Adds an avatar image radio button to a grid
+     * @param name
+     * @param path The image path
+     * @param parent The parent grid
+     * @param row The row in the grid
+     * @param column The column in the grid
+     * @param active If radio button should be the active one in the group
+     * @private
+     */
+    private addAvatarImageRadio(name: string, path: string, parent: GUI.Grid, row: number, column: number, active?: boolean) {
         let button: GUI.Button = GUI.Button.CreateImageOnlyButton(name, path);
         button.name = name.toLowerCase();
         button.width = `${DOM.IMAGE_WIDTH}px`;
@@ -206,6 +301,16 @@ export class DOM {
         parent.addControl(button, row, column);
     }
 
+    /**
+     * Adds a default Radio button choice to the given grid
+     * @param text
+     * @param group
+     * @param parent
+     * @param row
+     * @param col
+     * @param checked
+     * @private
+     */
     private addRadioButton(text: string, group: string, parent: GUI.Grid, row: number, col: number, checked = false) {
         let button = new GUI.RadioButton();
         button.name = text.toLowerCase();
@@ -242,6 +347,14 @@ export class DOM {
         parent.addControl(header, row, col);
     }
 
+    /**
+     * Adds a title for the following choice to the given grid
+     * @param text
+     * @param row
+     * @param col
+     * @param panel
+     * @private
+     */
     private static addChoiceTitle(text: string, row: number, col: number, panel: GUI.Grid) {
         let textblock = new GUI.TextBlock();
         textblock.height = `${DOM.TITLE_ROW_HEIGHT}px`;
@@ -252,11 +365,18 @@ export class DOM {
         panel.addControl(textblock, row, col);
     }
 
+    /**
+     * Adds a submit button to the given grid
+     * @param panel
+     * @param row
+     * @param col
+     * @private
+     */
     private addSubmitButton(panel: GUI.Grid, row, col) {
         let button = GUI.Button.CreateSimpleButton("submit", "Start Game!");
         button.width = `${DOM.BUTTON_WIDTH}px`;
         button.height = `${DOM.BUTTON_ROW_HEIGHT - DOM.PADDING}px`;
-        button.color = DOM.SECONDARY_COLOR;
+        button.color = "black";
         button.fontSize = `${DOM.FONT_SIZE_TEXT}px`;
         button.cornerRadius = DOM.CORNER_RADIUS;
         button.background = DOM.PRIMARY_COLOR;
@@ -266,17 +386,34 @@ export class DOM {
         panel.addControl(button, row, col);
     }
 
+    /**
+     * Adds several rows for the grid initialization
+     * @param panel
+     * @param height
+     * @param amount
+     * @private
+     */
     private static addRows(panel: GUI.Grid, height: number, amount: number) {
         for (let i = 0; i < amount; i++) {
             panel.addRowDefinition(height, true)
         }
     }
 
-    private setControllerChoice(button: GUI.RadioButton) {
+    /**
+     * Sets the controller choice (active radio) variable ready for fetching
+     * @param button
+     * @private
+     */
+    private setControllerChoice(button: GUI.RadioButton): void {
         this.controller = button;
     }
 
-    private setAvatarChoice(button: GUI.Button) {
+    /**
+     * Sets the avatar choice (active radio) variable ready for fetching
+     * @param button
+     * @private
+     */
+    private setAvatarChoice(button: GUI.Button): void {
         if (this.avatar !== null) {
             this.avatar.background = DOM.BACKGROUND_COLOR;
         }
@@ -284,22 +421,39 @@ export class DOM {
         button.background = DOM.PRIMARY_COLOR;
     }
 
-    private setOtherPlayerChoice(button: GUI.RadioButton) {
+    /**
+     * Sets the other player choice (active radio) variable ready for fetching
+     * @param button
+     * @private
+     */
+    private setOtherPlayerChoice(button: GUI.RadioButton): void {
         this.other_player = button;
     }
 
+    /**
+     * Fetches the needed data to the PlayerData interface
+     * @private
+     */
     private fetchPlayerData(): IPlayerData {
         return (this.game.own_color === "white")
             ? new IPlayerData(this.game.own_color, this.controller.name, this.avatar.name, "human", this.other_player.name)
             : new IPlayerData(this.game.own_color, this.controller.name, this.avatar.name, "human");
     }
 
+    /**
+     * Submits the ready player
+     * @private
+     */
     private submitReadyPlayer() {
         const data: IPlayerData = this.fetchPlayerData();
         this.emitPlayerData(data);
     }
 
-
+    /**
+     * Emits the ready player to the server
+     * @param data
+     * @private
+     */
     private emitPlayerData(data: IPlayerData) {
         this.game.app.connection.emitPlayerData(data);
     }

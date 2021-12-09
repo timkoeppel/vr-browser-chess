@@ -22,6 +22,7 @@ export default class Game {
     set own_color(value: "white" | "black") {
         this._own_color = value;
     }
+
     get dom(): DOM {
         return this._dom;
     }
@@ -29,6 +30,7 @@ export default class Game {
     set dom(value: DOM) {
         this._dom = value;
     }
+
     get app(): App {
         return this._app;
     }
@@ -36,13 +38,15 @@ export default class Game {
     set app(value: App) {
         this._app = value;
     }
-    get controller() : Controller{
+
+    get controller(): Controller {
         return this._controller;
     }
 
     set controller(value: Controller) {
         this._controller = value;
     }
+
     get chessboard(): ChessBoard {
         return this._chessboard;
     }
@@ -116,26 +120,37 @@ export default class Game {
      * Creates the whole Game environment
      * @constructor
      */
-    constructor(own_color: "white" | "black", app: App){
+    constructor(own_color: "white" | "black", app: App) {
         this.app = app;
         this.initiateBabylon();
         this.own_color = own_color;
 
         this.initiateLights();
         this.initiateMenuCamera();
-        this.initiateMeshes().then(() => {});
-        this.initiateXR().then(() => {});
+        this.initiateMeshes().then(() => {
+        });
+        this.initiateXR().then(() => {
+        });
         this.dom = new DOM(own_color, this, this.scene);
         this.DoRender(false);
     }
 
+    /**
+     * Initiates the players avatar, controller and changes to the camera
+     * @param data
+     */
     public async setupPlayerReady(data: IPlayerData) {
-        await this.initiatePlayerCamera(data.color);
+        await this.changeToPlayerCamera(data.color);
         await this.initiateAvatar(data.color, data.avatar);
         await this.initiateController(data.controller);
     }
 
-    public async startChessGame(own_player, other_player){
+    /**
+     * Starts the chess game by initiating the other player and start the logic engine
+     * @param own_player
+     * @param other_player
+     */
+    public async startChessGame(own_player: IPlayerData, other_player: IPlayerData) {
         const own_color = own_player.color;
         const black_player = (own_player.color === "white") ? other_player.player_type : own_player.player_type;
 
@@ -144,24 +159,29 @@ export default class Game {
         console.log(`Starting the chess game ...`);
     }
 
-    public initiateBabylon(){
+    /**
+     * Initiates the canvas, engine and the scene (Babylon stuff)
+     */
+    public initiateBabylon() {
+        console.log(`Initiating Babylon JS ...`);
         this.canvas = document.getElementById("gameCanvas") as HTMLCanvasElement;
         this.engine = new BABYLON.Engine(this.canvas, true);
         this.scene = new BABYLON.Scene(this.engine);
-        console.log(`Initiating Babylon JS ...`);
+        console.log(`Babylon JS initiated.`);
     }
 
     /**
      * Initiates the Lights over the table
      */
     public initiateLights() {
+        console.log(`Initiating Lights ...`);
         this.light = new BABYLON.HemisphericLight(
             "main_light",
-            new BABYLON.Vector3(0, 40, 0),
+            new BABYLON.Vector3(0, 100, 0),
             this.scene
         );
         this.light.intensity = 1;
-        console.log(`Initiating Lights ...`);
+        console.log(`Lights initiated.`);
     }
 
     /**
@@ -169,7 +189,7 @@ export default class Game {
      */
     public async initiateMeshes() {
         console.log(`Initiating all meshes ...`);
-        await BABYLON.SceneLoader.AppendAsync("./meshes/", "scene.glb",  this.scene).then(scene => {
+        await BABYLON.SceneLoader.AppendAsync("./meshes/", "scene.glb", this.scene).then(scene => {
             this.scene = scene;
             this.chessboard = new ChessBoard(scene.meshes, this);
             console.log(`Meshes initiated.`);
@@ -179,37 +199,40 @@ export default class Game {
 
     }
 
-    public initiateMenuCamera(): void{
+    /**
+     * Initiates the camera which looks at the chess scene with the game menu in the foreground
+     */
+    public initiateMenuCamera(): void {
         console.log(`Initiating initial camera ...`);
         this.camera = new BABYLON.FreeCamera(
             "camera",
             new BABYLON.Vector3(100, 50, 0),
             this.scene
         );
-        this.camera.setTarget(new BABYLON.Vector3(0,50, 0));
+        this.camera.setTarget(new BABYLON.Vector3(0, 50, 0));
         this.camera.attachControl(this.canvas, true);
         this.camera.angularSensibility = 10000;
         console.log(`Initial camera initiated.`);
     }
 
     /**
-     * Initiates the camera which is used
+     * Changes to the correlating camera of the player
      */
-    public initiatePlayerCamera(own_color: "white" | "black") {
+    public changeToPlayerCamera(own_color: "white" | "black") {
         console.log(`Initiating player camera ...`);
         const z_pos = own_color === "white" ? 20 : -20;
         const eye_position = new BABYLON.Vector3(0, 51.5, z_pos); // TODO
 
-        this.camera.position = eye_position;
-        this.camera.rotation = new BABYLON.Vector3(90,0,0);
-        this.camera.setTarget(BABYLON.Vector3.Zero());
+        this.camera.position.set(eye_position.x, eye_position.y, eye_position.z);
+        this.camera.setTarget(new BABYLON.Vector3(0,25,0));
+        this.camera.applyGravity = false;
         console.log(`Player camera initiated.`);
     }
 
     /**
      * Initiates the Avatars by importing and positioning them
      */
-    public async initiateAvatar(color: "white" | "black", file_name: string){
+    public async initiateAvatar(color: "white" | "black", file_name: string) {
         console.log(`Initiating ${color} avatar ...`);
         const avatar = new Avatar(color, file_name);
         this.LoadAvatar(avatar, color);
@@ -220,45 +243,31 @@ export default class Game {
      * Initiates the Babylon XR Experience for mobile devices
      */
     public async initiateXR() {
-        let xr_camera;
         console.log(`Initiating XR ...`);
-        let camera_level = BABYLON.MeshBuilder.CreatePlane("ground", {
-            size: 250,
-            height: this.camera.position.y
-        }, this.scene);
-        camera_level.visibility = 0;
-
         this.xr = await this.scene.createDefaultXRExperienceAsync({
-            //floorMeshes: [camera_level],
             uiOptions: {
                 sessionMode: "immersive-vr",
             },
         });
 
-        this.xr.baseExperience.onInitialXRPoseSetObservable.add(xrCamera => {
-            xrCamera.setTransformationFromNonVRCamera(this.camera);
-            xrCamera.position = this.camera.position;
-            xrCamera.setTarget(BABYLON.Vector3.Zero());
-            xrCamera.applyGravity = false;
-            xr_camera = xrCamera;
-            this.camera = xrCamera;
+        this.xr.baseExperience.onInitialXRPoseSetObservable.add( (cam)=> {
+            cam.position = this.camera.position;
         });
 
-        this.xr.baseExperience.onStateChangedObservable.add((xrs, xre) => {
-            if (xrs === 2) {
-                this.camera = xr_camera
-            }
-        });
         console.log(`XR initiated`);
     }
 
-    public async initiateController(type: "gaze" | "voice"){
+    /**
+     * Initiates the selected controller for the player
+     * @param type "gaze" | "voice"
+     */
+    public async initiateController(type: "gaze" | "voice") {
         console.log(`Initiating ${type} controller ...`);
-        if(type === "gaze"){
+        if (type === "gaze") {
             let controller = new GazeController(this);
             controller.initiateGazeInteractions();
             this.controller = controller;
-        }else {
+        } else {
             let controller = new VoiceController(this);
             controller.initiate();
             this.controller = controller;
@@ -269,11 +278,10 @@ export default class Game {
      * Handles the Rendering of the scene
      * @constructor
      */
-
     public DoRender(show_fps: boolean): void {
         // Fps management
         let fps_element = document.getElementById("fps");
-        if(show_fps) {
+        if (show_fps) {
             this.app.game.dom.showHTMLElement(fps_element)
         }
 

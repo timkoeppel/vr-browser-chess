@@ -55,13 +55,11 @@ export class VoiceController extends Controller {
             VoiceController.optimizeTranscript(current_transcript).then(transcript => {
                 console.log("You said:", transcript);
                 // SELECT
-                if (transcript.includes("select") || transcript.includes("move")) {
-                    const pos = VoiceController.extractPosition(transcript);
-                    console.log(pos !== "" && this.game.chessboard.state !== undefined);
-                    if (pos !== "" && this.game.chessboard.state !== undefined) {
-                        const chess_field = this.game.chessboard.getField(pos);
-                        this.game.chessboard.state.processClick(chess_field);
-                    }
+                const pos = VoiceController.extractPosition(transcript);
+                console.log(pos !== "" && this.game.chessboard.state !== undefined);
+                if (pos !== "" && this.game.chessboard.state !== undefined) {
+                    const chess_field = this.game.chessboard.getField(pos);
+                    this.game.chessboard.state.processClick(chess_field);
                 }
             })
         };
@@ -163,6 +161,7 @@ export class VoiceController extends Controller {
         "EH": "A",
         "be ": "B",
         "by ": "B",
+        "V": "B",
         "see ": "C",
         "the": "D",
         "Die ": "D",

@@ -28,7 +28,9 @@ export class AI {
         this.difficulty = difficulty;
     }
 
-
+    /**
+     * Gets the move according to the AI difficulty
+     */
     public getMove(): Move {
         switch(this.difficulty){
             case "easy":

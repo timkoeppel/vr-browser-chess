@@ -25,22 +25,38 @@ export class App {
     private _connection: Connection;
     private _game: Game;
 
+    /**
+     * The connection to the server will be initiated as first action
+     */
     constructor() {
         this.connection = new Connection(this);
     }
 
+    /**
+     * Sets up the logical base for the game
+     * @param own_color
+     */
     public initiateGame(own_color: "white" | "black"){
         this.game = new Game(own_color, this);
     }
 
+    /**
+     * Hides the GameMenu, shows the wait for other player loading screen and makes the player ready
+     * @param data
+     */
     public async makeGameReady(data: IPlayerData):Promise<void>{
         this.game.dom.hideGameMenu();
+        this.game.dom.initiateWaitingScreen();
         this.game.setupPlayerReady(data).then(() => console.log(`Player ${data.color} ready!`));
     }
 
+    /**
+     * Starts the game by hiding the loading screen and starting the game in Game class
+     * @param data
+     */
     public async startGame(data: Array<IPlayerData>): Promise<void> {
-        console.log("Data received:", data);
         await this.game.startChessGame(data[0], data[1]);
+        this.game.dom.hideWaitingScreen();
     }
 }
 
