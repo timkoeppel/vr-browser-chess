@@ -174,7 +174,7 @@ function createAIData(player) {
         ready: true,
         color: "black",
         controller: "gaze",
-        avatar: "female_01", //TODO avatars[Math.floor(Math.random() * avatars.length)];
+        avatar: avatars[Math.floor(Math.random() * avatars.length)],
         player_type: player.player_type
     }
     return Object.assign({}, data);

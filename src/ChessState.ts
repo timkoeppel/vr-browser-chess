@@ -308,7 +308,7 @@ export class ChessState {
     }
 
     /**
-     * Manages the physical move of a figure in the encironment
+     * Manages the physical move of a figure in the environment
      * @param move
      * @param fig_to_move
      * @private

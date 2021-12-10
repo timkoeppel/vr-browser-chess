@@ -2,6 +2,13 @@ import * as BABYLON from "@babylonjs/core";
 import {Pose} from "./Pose";
 
 export class Avatar {
+    get pose(): Pose {
+        return this._pose;
+    }
+
+    set pose(value: Pose) {
+        this._pose = value;
+    }
     // Properties
     public rootURL: string;
     public filename: string;
@@ -9,6 +16,7 @@ export class Avatar {
     public rotation: BABYLON.Vector3;
     public scale: BABYLON.Vector3;
     public scene: BABYLON.ISceneLoaderAsyncResult;
+    private _pose: Pose;
 
     /**
      *
@@ -16,11 +24,12 @@ export class Avatar {
      * @param file_name
      */
     constructor(player_side: "white" | "black", file_name) {
+        const scale = 40;
         this.rootURL = `/meshes/${file_name}/`;
         this.filename = `${file_name}.glb`;
         this.position = Avatar._getPlayerSidePosition(player_side);
         this.rotation = Avatar._getRotation(player_side);
-        this.scale = new BABYLON.Vector3(100, 100, 100);
+        this.scale = new BABYLON.Vector3(scale, scale, scale);
     }
 
     public static MALE_01_PATH = "./img/male_01.png";
@@ -87,9 +96,9 @@ export class Avatar {
      * @private
      */
     private static _getRotation(player_side: string): BABYLON.Vector3 {
-        const x_rot = 3 * Math.PI / 2;
-        const y_rot = (player_side === "white") ? 0 : Math.PI;
-        const z_rot = Math.PI;
+        const x_rot = 0;//3 * Math.PI / 2;
+        const y_rot = (player_side === "white") ? Math.PI : 0;
+        const z_rot = 0;//Math.PI;
 
         return new BABYLON.Vector3(x_rot, y_rot, z_rot);
     }

@@ -10,11 +10,28 @@ import {Controller} from "./Controller";
 import {DOM} from "./DOM";
 import {App} from "./App";
 import {IPlayerData} from "./IPlayerData";
+import {Pose} from "./Pose";
 
 /**
  * Game manages all modules necessary for a chess game
  */
 export default class Game {
+    get other_avatar(): Avatar {
+        return this._other_avatar;
+    }
+
+    set other_avatar(value: Avatar) {
+        this._other_avatar = value;
+    }
+
+    get own_avatar(): Avatar {
+        return this._own_avatar;
+    }
+
+    set own_avatar(value: Avatar) {
+        this._own_avatar = value;
+    }
+
     get own_color(): "white" | "black" {
         return this._own_color;
     }
@@ -114,6 +131,8 @@ export default class Game {
     private _controller: Controller;
     private _dom: DOM;
     private _own_color: "white" | "black";
+    private _own_avatar: Avatar;
+    private _other_avatar: Avatar;
 
     // ************************************************************************
     /**
@@ -140,8 +159,8 @@ export default class Game {
      * @param data
      */
     public async setupPlayerReady(data: IPlayerData) {
-        await this.changeToPlayerCamera(data.color);
         await this.initiateAvatar(data.color, data.avatar);
+        await this.changeToPlayerCamera(data.color);
         await this.initiateController(data.controller);
     }
 
@@ -221,10 +240,12 @@ export default class Game {
     public changeToPlayerCamera(own_color: "white" | "black") {
         console.log(`Initiating player camera ...`);
         const z_pos = own_color === "white" ? 20 : -20;
-        const eye_position = new BABYLON.Vector3(0, 51.5, z_pos); // TODO
+        const y_pos = 52.5; //this.own_avatar.pose.eye_l.position.y;
+        const eye_position = new BABYLON.Vector3(0, y_pos, z_pos); // TODO
+        console.log(eye_position);
 
         this.camera.position.set(eye_position.x, eye_position.y, eye_position.z);
-        this.camera.setTarget(new BABYLON.Vector3(0,25,0));
+        this.camera.setTarget(new BABYLON.Vector3(0, 25, 0));
         this.camera.applyGravity = false;
         console.log(`Player camera initiated.`);
     }
@@ -235,7 +256,12 @@ export default class Game {
     public async initiateAvatar(color: "white" | "black", file_name: string) {
         console.log(`Initiating ${color} avatar ...`);
         const avatar = new Avatar(color, file_name);
-        this.LoadAvatar(avatar, color);
+        if (color === this.own_color) {
+            this.own_avatar = avatar;
+        } else {
+            this.other_avatar = avatar;
+        }
+        await this.LoadAvatar(avatar, color);
     }
 
 
@@ -250,7 +276,7 @@ export default class Game {
             },
         });
 
-        this.xr.baseExperience.onInitialXRPoseSetObservable.add( (cam)=> {
+        this.xr.baseExperience.onInitialXRPoseSetObservable.add((cam) => {
             cam.position = this.camera.position;
         });
 
@@ -306,9 +332,10 @@ export default class Game {
      * @param color
      * @constructor
      */
-    private LoadAvatar(avatar: Avatar, color: "white" | "black"): void {
-        BABYLON.SceneLoader.ImportMeshAsync("", avatar.rootURL, avatar.filename, this.scene).then(result => {
+    private async LoadAvatar(avatar: Avatar, color: "white" | "black"): Promise<void> {
+        await BABYLON.SceneLoader.ImportMeshAsync("", avatar.rootURL, avatar.filename, this.scene).then(result => {
             avatar.scene = result;
+            avatar.pose = new Pose(result.transformNodes);
             avatar.stopAnimations();
             avatar.placeAvatar();
             avatar.seatAvatar();

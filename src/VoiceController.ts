@@ -56,7 +56,6 @@ export class VoiceController extends Controller {
                 console.log("You said:", transcript);
                 // SELECT
                 const pos = VoiceController.extractPosition(transcript);
-                console.log(pos !== "" && this.game.chessboard.state !== undefined);
                 if (pos !== "" && this.game.chessboard.state !== undefined) {
                     const chess_field = this.game.chessboard.getField(pos);
                     this.game.chessboard.state.processClick(chess_field);

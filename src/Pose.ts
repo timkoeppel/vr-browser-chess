@@ -22,6 +22,7 @@ export class Pose {
     public calf_r: BABYLON.TransformNode;
     public foot_l: BABYLON.TransformNode;
     public foot_r: BABYLON.TransformNode;
+    public eye_l: BABYLON.TransformNode;
 
     /**
      * IDs according to Microsoft RocketBox Avatars
@@ -45,7 +46,8 @@ export class Pose {
         id_calf_r: "Bip01 R Calf",
         id_foot_l: "Bip01 L Foot",
         id_foot_r: "Bip01 R Foot",
-    }
+        id_eye_l: "Bip01 LEyeNub"
+    };
 
     constructor(tnodes: Array<BABYLON.TransformNode>) {
         this.head = tnodes.find(b => b.id === this.ids["id_head"]);
@@ -66,6 +68,7 @@ export class Pose {
         this.calf_r = tnodes.find(b => b.id === this.ids["id_calf_r"]);
         this.foot_l = tnodes.find(b => b.id === this.ids["id_foot_l"]);
         this.foot_r = tnodes.find(b => b.id === this.ids["id_foot_r"]);
+        this.eye_l = tnodes.find(b => b.id === this.ids["id_eye_l"]);
     }
 
     /**

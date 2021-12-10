@@ -36,7 +36,7 @@ export class ChessPlayer {
     constructor(type: "human" | "easy" | "intermediate" | "expert", color: "white" |"black", state: ChessState) {
         this.color = color;
         this.state = state;
-        this._type = (type !== "human") ?  new AI(type, this.state,) : "human";
+        this.type = (type !== "human") ?  new AI(type, this.state,) : "human";
     }
 
 }
