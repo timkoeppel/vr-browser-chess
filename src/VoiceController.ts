@@ -59,6 +59,11 @@ export class VoiceController extends Controller {
                 if (pos !== "" && this.game.chessboard.state !== undefined) {
                     const chess_field = this.game.chessboard.getField(pos);
                     this.game.chessboard.state.processClick(chess_field);
+                }else if(pos === "" && this.game.chessboard.state !== undefined){
+                    this.game.dom.displayMessage(`Invalid command. You said: "${transcript}"`, "warning");
+                    setTimeout(() => {
+                        this.game.dom.hideScreen(this.game.dom.message_screen);
+                    }, 2000)
                 }
             })
         };

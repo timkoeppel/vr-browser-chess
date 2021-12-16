@@ -13,13 +13,45 @@ export class Action {
      */
     public static moveFigure(fig_mesh: BABYLON.AbstractMesh, start_pos: BABYLON.Vector3, end_pos: BABYLON.Vector3) {
         BABYLON.Animation.CreateAndStartAnimation(
-            "anim",
+            "move_figure",
             fig_mesh,
             "position",
             100,
             100,
             start_pos,
             end_pos,
-            BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+            BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+        );
+    }
+
+
+    public static moveHands(hand_node: BABYLON.TransformNode, start_pos: BABYLON.Vector3, end_pos: BABYLON.Vector3, ori_pos?: BABYLON.Vector3) {
+        //let s_pos = new BABYLON.Vector3(start_pos.z,start_pos.y, start_pos.x);
+        BABYLON.Animation.CreateAndStartAnimation(
+            "move_hands_to",
+            hand_node,
+            "position",
+            100,
+            100,
+            start_pos,
+            end_pos,
+            BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+        );
+
+        if(ori_pos !== undefined){
+            setTimeout(() => {
+                BABYLON.Animation.CreateAndStartAnimation(
+                    "move_hands_back",
+                    hand_node,
+                    "position",
+                    100,
+                    50,
+                    end_pos,
+                    ori_pos,
+                    BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+                );
+            }, 1000)
+
+        }
     }
 }

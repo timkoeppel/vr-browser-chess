@@ -4,6 +4,13 @@ import * as BABYLON from "@babylonjs/core";
  * Pose manages the stature/pose of the avatars
  */
 export class Pose {
+    get hand_r_original(): BABYLON.TransformNode {
+        return this._hand_r_original;
+    }
+
+    set hand_r_original(value: BABYLON.TransformNode) {
+        this._hand_r_original = value;
+    }
     public head: BABYLON.TransformNode;
     public neck: BABYLON.TransformNode;
     public spine_2: BABYLON.TransformNode;
@@ -23,6 +30,7 @@ export class Pose {
     public foot_l: BABYLON.TransformNode;
     public foot_r: BABYLON.TransformNode;
     public eye_l: BABYLON.TransformNode;
+    private _hand_r_original: BABYLON.TransformNode;
 
     /**
      * IDs according to Microsoft RocketBox Avatars
@@ -60,7 +68,7 @@ export class Pose {
         this.upperarm_r = tnodes.find(b => b.id === this.ids["id_upperarm_r"]);
         this.forearm_l = tnodes.find(b => b.id === this.ids["id_forearm_l"]);
         this.forearm_r = tnodes.find(b => b.id === this.ids["id_forearm_r"]);
-        this.hand_l = tnodes.find(b => b.id === this.ids["id_hand_l"])
+        this.hand_l = tnodes.find(b => b.id === this.ids["id_hand_l"]);
         this.hand_r = tnodes.find(b => b.id === this.ids["id_hand_r"]);
         this.thigh_l = tnodes.find(b => b.id === this.ids["id_thigh_l"]);
         this.thigh_r = tnodes.find(b => b.id === this.ids["id_thigh_r"]);
@@ -69,6 +77,7 @@ export class Pose {
         this.foot_l = tnodes.find(b => b.id === this.ids["id_foot_l"]);
         this.foot_r = tnodes.find(b => b.id === this.ids["id_foot_r"]);
         this.eye_l = tnodes.find(b => b.id === this.ids["id_eye_l"]);
+        this.hand_r_original = Pose.clone(this.hand_r);
     }
 
     /**
@@ -83,6 +92,12 @@ export class Pose {
         this.thigh_r.rotate(new BABYLON.Vector3(0, 0, Math.PI), 1.35);
         this.calf_l.rotate(new BABYLON.Vector3(0, 0, -Math.PI), 1.1);
         this.calf_r.rotate(new BABYLON.Vector3(0, 0, -Math.PI), 1.1);
+    }
+
+    private static clone<T>(instance: BABYLON.TransformNode): BABYLON.TransformNode{
+        const copy = new (instance.constructor as { new (): BABYLON.TransformNode })();
+        Object.assign(copy, instance);
+        return copy;
     }
 
 

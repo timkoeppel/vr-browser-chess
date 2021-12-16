@@ -7,12 +7,20 @@ import {Position} from "./Position";
 import {Action} from "./Action";
 import Game from "./Game";
 import {AI} from "./AI";
+import {Avatar} from "./Avatar";
 
 /**
  * ChessState manages the game state, logic and move management
  * ... -> next Player (begin) -> select move -> make move -> next Player -> ... -> Game Over
  */
 export class ChessState {
+    get is_game_running(): boolean {
+        return this._is_game_running;
+    }
+
+    set is_game_running(value: boolean) {
+        this._is_game_running = value;
+    }
     get own_player(): ChessPlayer {
         return this._own_player;
     }
@@ -85,14 +93,19 @@ export class ChessState {
     private _selected_field: ChessField | null;
     private _moves: Array<Move>;
     private _game: Game;
+    private _is_game_running: boolean;
 
-    constructor(game: Game, own_color: "white" | "black", black_player_type: "human" | "easy" | "intermediate" | "expert") {
+    constructor(game: Game, own_color: "white" | "black", black_player_type: "human" | "easy" | "intermediate" | "expert", own_avatar: Avatar, other_avatar: Avatar) {
+        const white_avatar = (own_color === "white") ? own_avatar : other_avatar;
+        const black_avatar = (own_color === "black") ? own_avatar : other_avatar;
+
         this.logic = new Chess();
-        this.white = new ChessPlayer("human", "white", this); // TODO Player selection
-        this.black = new ChessPlayer(black_player_type, "black", this);
+        this.white = new ChessPlayer("human", "white", white_avatar, this); // TODO Player selection
+        this.black = new ChessPlayer(black_player_type, "black", black_avatar, this);
         this.own_player = own_color === "white" ? this.white : this.black;
         this.current_player = this.white;
         this.selected_field = null;
+        this.is_game_running = true;
         this.moves = [];
         this.game = game;
     }
@@ -105,11 +118,12 @@ export class ChessState {
      * @param clicked_field
      */
     public processClick(clicked_field: ChessField) {
+        console.log(clicked_field.mesh.position);
         // Field without figure and which is not part of a move -> No reset
         const is_unplayable_field = clicked_field.figure === null && !this.isPartOfMove(clicked_field);
         const is_not_my_turn = this.own_player !== this.current_player;
 
-        if (is_unplayable_field || is_not_my_turn) {
+        if (is_unplayable_field || is_not_my_turn || !this.is_game_running) {
             return;
         }
 
@@ -162,8 +176,15 @@ export class ChessState {
         console.log(move);
         this.selected_field = this.game.chessboard.getField(move.from);
 
-        // Wait 2 seconds
-        // (If moves too fast --> bad UX & physical move corrupts by capture)
+        // Wait 2 seconds to make experience not to stressed
+        // Action
+        const hand_rel = this.current_player.avatar.pose.hand_r.position;
+        const field_abs = this.selected_field.mesh.absolutePosition;
+
+        const target_pos = Position.getLocalFromGlobal(this.current_player.avatar.pose.hand_r, field_abs);
+        setTimeout(() => {
+            Action.moveHands(this.current_player.avatar.pose.hand_r, hand_rel, target_pos);
+        }, 1000);
         setTimeout(() => {
             this.makeMove(move, this.selected_field.figure);
             this.toNextPlayer();
@@ -183,7 +204,14 @@ export class ChessState {
         // Change Materials
         const playable_fields = this.getPlayableFields(this.moves);
         this.game.controller.setFieldAsSelected(this.selected_field);
-        this.game.controller.setFieldsAsPlayable(playable_fields)
+        this.game.controller.setFieldsAsPlayable(playable_fields);
+
+        // Action
+        const hand_rel = this.current_player.avatar.pose.hand_r.position;
+        const field_abs = this.selected_field.mesh.absolutePosition;
+
+        const target_pos = Position.getLocalFromGlobal(this.current_player.avatar.pose.hand_r, field_abs);
+        Action.moveHands(this.current_player.avatar.pose.hand_r, hand_rel, target_pos);
     }
 
     /**
@@ -216,7 +244,10 @@ export class ChessState {
      * @private
      */
     private toGameOver() {
-        console.log("GAME OVER!", this.current_player.color, "wins!");
+        const won_lost = (this.current_player === this.own_player) ? "won" : "lost";
+        const game_over_message: string = `GAME OVER: You ${won_lost}!`;
+        console.log(game_over_message);
+        this.game.dom.displayMessage(game_over_message, "important");
     }
 
     /**
@@ -248,6 +279,7 @@ export class ChessState {
         const new_pos = ChessState.getOffBoardPosition(captured_figure);
 
         Action.moveFigure(captured_figure.mesh, captured_figure.position.scene_pos, new_pos);
+        // TODO capture move hands
         captured_figure.position = new Position(new_pos);
     }
 
@@ -326,7 +358,12 @@ export class ChessState {
             captured_fig.capture();
         }
         // Animate
-        Action.moveFigure(fig_to_move.mesh, fig_to_move.position.scene_pos, Position.convertToScenePos(move.to, "figure"));
+        const hand_rel = this.current_player.avatar.pose.hand_r.position;
+        const field_abs = Position.getLocalFromGlobal(this.current_player.avatar.pose.hand_r, this.game.chessboard.getField(move.to).mesh.absolutePosition);
+        const ori_rel = this.current_player.avatar.pose.hand_r_original.position;
+
+        Action.moveHands(this.current_player.avatar.pose.hand_r, hand_rel, field_abs, ori_rel);
+        Action.moveFigure(fig_to_move.mesh, fig_to_move.mesh.position, Position.convertToScenePos(move.to, "figure"));
 
         // Rochade/Castling case
         if (ChessState.isCastling(move)) {

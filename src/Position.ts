@@ -20,7 +20,7 @@ export class Position {
     private _chess_pos: string;
     private _scene_pos: BABYLON.Vector3;
 
-    constructor(pos: BABYLON.Vector3 | string, obj?: string) {
+    constructor(pos: BABYLON.Vector3 | string, obj?: "figure" | "field") {
         let chess_pos;
         let scene_pos;
         if (typeof pos === "string") {
@@ -30,6 +30,7 @@ export class Position {
             chess_pos = Position.convertToChessPos(pos);
             scene_pos = Position._normalizeVector(pos);
         }
+
         this.chess_pos = chess_pos;
         this.scene_pos = scene_pos;
     }
@@ -40,7 +41,7 @@ export class Position {
      * @param obj The object mesh ("figure" | "field")
      * @private
      */
-    public static convertToScenePos(chess_pos: string, obj: string): BABYLON.Vector3 {
+    public static convertToScenePos(chess_pos: string, obj: "figure" | "field"): BABYLON.Vector3 {
         const x_chess = chess_pos.charAt(0);
         const z_chess = chess_pos.charAt(1);
 
@@ -80,8 +81,14 @@ export class Position {
         if (x_chess < 0){
             return "";
         }
-
         return x_letter + z_chess;
+    }
+
+
+    public static getLocalFromGlobal(node: BABYLON.TransformNode, global_pos: BABYLON.Vector3): BABYLON.Vector3{
+        let m = new BABYLON.Matrix();
+        node.computeWorldMatrix(true).invertToRef(m);
+        return BABYLON.Vector3.TransformCoordinates(global_pos, m);
     }
 
     /**

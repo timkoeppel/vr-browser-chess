@@ -161,7 +161,6 @@ export default class Game {
     public async setupPlayerReady(data: IPlayerData) {
         await this.initiateAvatar(data.color, data.avatar);
         await this.changeToPlayerCamera(data.color);
-        await this.initiateController(data.controller);
     }
 
     /**
@@ -174,7 +173,8 @@ export default class Game {
         const black_player = (own_player.color === "white") ? other_player.player_type : own_player.player_type;
 
         await this.initiateAvatar(other_player.color, other_player.avatar);
-        this.chessboard.startChessGame(own_color, black_player);
+        this.chessboard.startChessGame(own_color, black_player, this.own_avatar, this.other_avatar);
+        await this.initiateController(own_player.controller);
         console.log(`Starting the chess game ...`);
     }
 
@@ -186,6 +186,7 @@ export default class Game {
         this.canvas = document.getElementById("gameCanvas") as HTMLCanvasElement;
         this.engine = new BABYLON.Engine(this.canvas, true);
         this.scene = new BABYLON.Scene(this.engine);
+        //this.scene.useRightHandedSystem = true;
         console.log(`Babylon JS initiated.`);
     }
 
@@ -240,7 +241,7 @@ export default class Game {
     public changeToPlayerCamera(own_color: "white" | "black") {
         console.log(`Initiating player camera ...`);
         const z_pos = own_color === "white" ? 20 : -20;
-        const y_pos = 52.5; //this.own_avatar.pose.eye_l.position.y;
+        const y_pos = 52.5 ;//this.own_avatar.pose.eye_l.absolutePosition.y;
         const eye_position = new BABYLON.Vector3(0, y_pos, z_pos); // TODO
         console.log(eye_position);
 

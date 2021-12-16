@@ -4,6 +4,7 @@ import {ChessFigure} from "./ChessFigure";
 import {Position} from "./Position";
 import {ChessState} from "./ChessState";
 import Game from "./Game";
+import {Avatar} from "./Avatar";
 
 /**
  * ChessBoard manages all aspects bound to the chessboard
@@ -54,10 +55,11 @@ export class ChessBoard {
         this.game = game;
         this.figures = ChessFigure.extractFigures(meshes, this);
         this.fields = ChessBoard.extractFields(meshes, this);
+        console.log(this)
     }
 
-    public startChessGame(own_color: "white" | "black", black_player: "human" | "easy" | "intermediate" | "expert"): void{
-        this.state = new ChessState(this.game, own_color, black_player);
+    public startChessGame(own_color: "white" | "black", black_player: "human" | "easy" | "intermediate" | "expert", own_avatar: Avatar, other_avatar: Avatar): void{
+        this.state = new ChessState(this.game, own_color, black_player, own_avatar, other_avatar);
     }
 
     // ************************************************************************

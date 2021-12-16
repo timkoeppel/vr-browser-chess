@@ -51,7 +51,7 @@ io.on('connect', socket => {
         connectPlayer(socket, white, "white")
     } else if (player_count == player_limit) {
         connectPlayer(socket, black, "black")
-    } else {
+    } else if (socket !== undefined) {
         redirect(socket);
     }
 
@@ -174,7 +174,7 @@ function createAIData(player) {
         ready: true,
         color: "black",
         controller: "gaze",
-        avatar: avatars[Math.floor(Math.random() * avatars.length)],
+        avatar: "male_03",//avatars[Math.floor(Math.random() * avatars.length)],
         player_type: player.player_type
     }
     return Object.assign({}, data);

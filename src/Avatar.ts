@@ -29,7 +29,7 @@ export class Avatar {
         this.filename = `${file_name}.glb`;
         this.position = Avatar._getPlayerSidePosition(player_side);
         this.rotation = Avatar._getRotation(player_side);
-        this.scale = new BABYLON.Vector3(scale, scale, scale);
+        this.scale = new BABYLON.Vector3(-scale, scale, scale);
     }
 
     public static MALE_01_PATH = "./img/male_01.png";
@@ -46,23 +46,19 @@ export class Avatar {
      * Places the avatar in its respective chair
      */
     public placeAvatar(): void {
-        let meshes = this.scene.meshes;
+        let root_node = this.scene.meshes[0];
 
-        meshes.forEach(mesh => {
-            mesh.position = this.position;
-            mesh.rotation = this.rotation;
-            mesh.scaling = this.scale;
-        });
+        // meshes[0] is the root node
+        root_node.rotation = this.rotation;
+        root_node.scaling = this.scale;
+        root_node.setAbsolutePosition(this.position);
     }
 
     /**
      * Rotates the bones (transformNodes with .glb) to a seating position
      */
     public seatAvatar(): void {
-        let bones = this.scene.transformNodes;
-        let pose = new Pose(bones);
-
-        pose.makeSeatPose();
+        this.pose.makeSeatPose();
     }
 
     /**

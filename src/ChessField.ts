@@ -23,38 +23,6 @@ export class ChessField {
         this._original_material = value;
     }
 
-    /*get playable_material(): BABYLON.Material {
-        return this._playable_material;
-    }
-
-    set playable_material(value: BABYLON.Material) {
-        this._playable_material = value;
-    }
-
-    get selection_material(): BABYLON.Material {
-        return this._selection_material;
-    }
-
-    set selection_material(value: BABYLON.Material) {
-        this._selection_material = value;
-    }
-
-    get hover_material(): BABYLON.Material {
-        return this._hover_material;
-    }
-
-    set hover_material(value: BABYLON.Material) {
-        this._hover_material = value;
-    }
-
-    get capture_material(): BABYLON.Material {
-        return this._capture_material;
-    }
-
-    set capture_material(value: BABYLON.Material) {
-        this._capture_material = value;
-    }*/
-
     get mesh(): BABYLON.AbstractMesh {
         return this._mesh;
     }
@@ -93,10 +61,6 @@ export class ChessField {
     private _mesh: BABYLON.AbstractMesh;
     private _board: ChessBoard;
     private _original_material: BABYLON.Material;
-    /*private _hover_material: BABYLON.Material;
-    private _selection_material: BABYLON.Material;
-    private _playable_material: BABYLON.Material;
-    private _capture_material: BABYLON.Material;*/
 
     /**
      * Constructs a Chess field

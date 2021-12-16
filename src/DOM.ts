@@ -5,20 +5,20 @@ import Game from "./Game";
 import {Avatar} from "./Avatar";
 
 export class DOM {
-    get loading_screen(): GUI.Rectangle {
-        return this._loading_screen;
+    get message_screen(): GUI.Rectangle {
+        return this._message_screen;
     }
 
-    set loading_screen(value: GUI.Rectangle) {
-        this._loading_screen = value;
+    set message_screen(value: GUI.Rectangle) {
+        this._message_screen = value;
     }
 
-    get main_panel(): GUI.Grid {
-        return this._main_panel;
+    get game_menu_grid(): GUI.Grid {
+        return this._game_menu_grid;
     }
 
-    set main_panel(value: GUI.Grid) {
-        this._main_panel = value;
+    set game_menu_grid(value: GUI.Grid) {
+        this._game_menu_grid = value;
     }
 
     get game_menu(): BABYLON.AbstractMesh {
@@ -74,9 +74,10 @@ export class DOM {
     private _controller: GUI.RadioButton;
     private _avatar: GUI.Button;
     private _other_player: GUI.RadioButton;
+    private _message_screen: GUI.Rectangle;
     private _game_menu: BABYLON.AbstractMesh;
-    private _loading_screen: GUI.Rectangle;
-    private _main_panel: GUI.Grid;
+    private _game_menu_grid: GUI.Grid;
+    private _game_over_menu: GUI.StackPanel;
 
     /**
      * Initiates the 3D DOM for the game
@@ -116,8 +117,10 @@ export class DOM {
      * @param other_player_color
      */
     public refreshThroughOtherPlayerDisconnect(other_player_color: "white" | "black"): void {
-        alert(`Player ${other_player_color} has disconnected.`);
-        window.location.reload();
+        this.displayMessage(`Player ${other_player_color} has disconnected.`, "important");
+        setTimeout(() => {
+            window.location.reload();
+        }, 2000);
     }
 
     // Constants
@@ -134,6 +137,7 @@ export class DOM {
     private static PRIMARY_COLOR = "white";
     private static SECONDARY_COLOR = "grey";
     private static BACKGROUND_COLOR = "transparent";
+    private static WARNING_COLOR = "red";
 
     /**
      * Creates the game menu for the
@@ -141,52 +145,63 @@ export class DOM {
      */
     public initiateGameMenu(player_color: "white" | "black") {
         this.initiateGameMenuMesh();
-        this.initiateGrid(player_color);
+        this.initiateGameMenuGrid(player_color);
 
         // Menu building
-        let avatar_row = 3;
-        let submit_row = 6;
-        this.createControllerChoice(this.main_panel, 0);
+        let avatar_row: number = 3;
+        let submit_row: number = 6;
+        this.createControllerChoice(this.game_menu_grid, 0);
         if (player_color === "white") {
             avatar_row = 8;
             submit_row = 11;
-            this.createAIOrHumanChoice(this.main_panel, 3);
+            this.createAIOrHumanChoice(this.game_menu_grid, 3);
         }
-        this.createAvatarChoice(this.main_panel, avatar_row);
-        this.addSubmitButton(this.main_panel, submit_row, 1);
+        this.createAvatarChoice(this.game_menu_grid, avatar_row);
+        this.addSubmitButton(this.game_menu_grid,"Start Game!", submit_row, 1);
     }
 
     /**
      * Hides the Game Menu
      */
-    public hideGameMenu(): void {
-        this.game_menu.visibility = 0;
+    public hidePanel(panel: BABYLON.AbstractMesh): void {
+        panel.visibility = 0;
+        panel.setEnabled(false);
     }
 
-    /**
-     * Hides the waiting-for-other-player screen
-     */
-    public hideWaitingScreen() {
-        this.loading_screen.isVisible = false;
+
+    public hideScreen(screen: GUI.Rectangle) {
+        screen.isVisible = false;
+    }
+
+    public showScreen(screen: GUI.Rectangle){
+        screen.isVisible = true;
     }
 
     /**
      * Initiates the waiting screen after player ready
      */
-    public initiateWaitingScreen(): void {
+    public displayMessage(message: string, type: "warning" | "important"): void {
         // @ts-ignore
         let texture = GUI.AdvancedDynamicTexture.CreateFullscreenUI("loading", true, this.scene);
-        this.loading_screen = new GUI.Rectangle("waiting_panel");
-        this.loading_screen.background = DOM.PRIMARY_COLOR;
-        this.loading_screen.width = "300px";
-        this.loading_screen.height = "50px";
-        this.loading_screen.cornerRadius = DOM.CORNER_RADIUS;
-        texture.addControl(this.loading_screen);
-        let text = new GUI.TextBlock("wait", "Waiting for the other player ...");
-        text.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
-        text.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
-        text.color = "black";
-        this.loading_screen.addControl(text);
+        this.message_screen = new GUI.Rectangle("waiting_panel");
+        this.message_screen.width = "500px";
+        this.message_screen.height = "50px";
+        this.message_screen.cornerRadius = DOM.CORNER_RADIUS;
+        texture.addControl(this.message_screen);
+        let text = new GUI.TextBlock("message", message);
+
+        if(type === "warning"){
+            this.message_screen.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
+            this.message_screen.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
+            this.message_screen.background = DOM.WARNING_COLOR;
+            text.color = DOM.PRIMARY_COLOR;
+        }else if (type === "important") {
+            this.message_screen.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+            this.message_screen.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_CENTER;
+            this.message_screen.background = DOM.PRIMARY_COLOR;
+            text.color = "black";
+        }
+        this.message_screen.addControl(text);
     }
 
     /**
@@ -202,30 +217,30 @@ export class DOM {
      * Initiates the grid on which the game menu is based
      * @param player_color
      */
-    public initiateGrid(player_color: "white" | "black"): void {
+    public initiateGameMenuGrid(player_color: "white" | "black"): void {
         // Grid Panel Init
-        this.main_panel = new GUI.Grid();
-        this.main_panel.background = DOM.BACKGROUND_COLOR;
-        this.main_panel.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_CENTER;
-        this.main_panel.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+        this.game_menu_grid = new GUI.Grid();
+        this.game_menu_grid.background = DOM.BACKGROUND_COLOR;
+        this.game_menu_grid.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_CENTER;
+        this.game_menu_grid.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
 
         // @ts-ignore
         let advancedTexture = GUI.AdvancedDynamicTexture.CreateForMesh(this.game_menu, 1024, 1024);
-        advancedTexture.addControl(this.main_panel);
+        advancedTexture.addControl(this.game_menu_grid);
 
         // Layout
-        this.main_panel.addColumnDefinition(0.25);
-        this.main_panel.addColumnDefinition(0.5);
-        this.main_panel.addColumnDefinition(0.25);
-        DOM.addRows(this.main_panel, DOM.TITLE_ROW_HEIGHT, 1); // Controller title
-        DOM.addRows(this.main_panel, DOM.RADIO_ROW_HEIGHT, 2); // Controller
+        this.game_menu_grid.addColumnDefinition(0.25);
+        this.game_menu_grid.addColumnDefinition(0.5);
+        this.game_menu_grid.addColumnDefinition(0.25);
+        DOM.addRows(this.game_menu_grid, DOM.TITLE_ROW_HEIGHT, 1); // Controller title
+        DOM.addRows(this.game_menu_grid, DOM.RADIO_ROW_HEIGHT, 2); // Controller
         if (player_color === "white") {
-            DOM.addRows(this.main_panel, DOM.TITLE_ROW_HEIGHT, 1); // Other player title
-            DOM.addRows(this.main_panel, DOM.RADIO_ROW_HEIGHT, 4); // Other player
+            DOM.addRows(this.game_menu_grid, DOM.TITLE_ROW_HEIGHT, 1); // Other player title
+            DOM.addRows(this.game_menu_grid, DOM.RADIO_ROW_HEIGHT, 4); // Other player
         }
-        DOM.addRows(this.main_panel, DOM.TITLE_ROW_HEIGHT, 1); // Avatars title
-        DOM.addRows(this.main_panel, DOM.IMAGE_ROW_HEIGHT, 2); // Avatars
-        DOM.addRows(this.main_panel, DOM.BUTTON_ROW_HEIGHT, 1); // Submit
+        DOM.addRows(this.game_menu_grid, DOM.TITLE_ROW_HEIGHT, 1); // Avatars title
+        DOM.addRows(this.game_menu_grid, DOM.IMAGE_ROW_HEIGHT, 2); // Avatars
+        DOM.addRows(this.game_menu_grid, DOM.BUTTON_ROW_HEIGHT, 1); // Submit
     }
 
     /**
@@ -368,12 +383,13 @@ export class DOM {
     /**
      * Adds a submit button to the given grid
      * @param panel
+     * @param text
      * @param row
      * @param col
      * @private
      */
-    private addSubmitButton(panel: GUI.Grid, row, col) {
-        let button = GUI.Button.CreateSimpleButton("submit", "Start Game!");
+    private addSubmitButton(panel: GUI.Grid, text:string, row: number, col:number) {
+        let button = GUI.Button.CreateSimpleButton("submit", text);
         button.width = `${DOM.BUTTON_WIDTH}px`;
         button.height = `${DOM.BUTTON_ROW_HEIGHT - DOM.PADDING}px`;
         button.color = "black";
