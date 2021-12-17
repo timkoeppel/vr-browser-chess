@@ -30,6 +30,7 @@ export class Pose {
     public foot_l: BABYLON.TransformNode;
     public foot_r: BABYLON.TransformNode;
     public eye_l: BABYLON.TransformNode;
+    public nose: BABYLON.TransformNode;
     private _hand_r_original: BABYLON.TransformNode;
 
     /**
@@ -54,7 +55,8 @@ export class Pose {
         id_calf_r: "Bip01 R Calf",
         id_foot_l: "Bip01 L Foot",
         id_foot_r: "Bip01 R Foot",
-        id_eye_l: "Bip01 LEyeNub"
+        id_eye_l: "Bip01 LEyeNub",
+        id_nose: "Bip01 MNoseNub",
     };
 
     constructor(tnodes: Array<BABYLON.TransformNode>) {
@@ -77,6 +79,7 @@ export class Pose {
         this.foot_l = tnodes.find(b => b.id === this.ids["id_foot_l"]);
         this.foot_r = tnodes.find(b => b.id === this.ids["id_foot_r"]);
         this.eye_l = tnodes.find(b => b.id === this.ids["id_eye_l"]);
+        this.nose = tnodes.find(b => b.id === this.ids["id_nose"]);
         this.hand_r_original = Pose.clone(this.hand_r);
     }
 

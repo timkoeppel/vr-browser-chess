@@ -2,13 +2,13 @@ import * as BABYLON from "@babylonjs/core";
 import {Pose} from "./Pose";
 
 export class Avatar {
-    get pose(): Pose {
+    /*get pose(): Pose {
         return this._pose;
     }
 
     set pose(value: Pose) {
         this._pose = value;
-    }
+    }*/
     // Properties
     public rootURL: string;
     public filename: string;
@@ -16,7 +16,7 @@ export class Avatar {
     public rotation: BABYLON.Vector3;
     public scale: BABYLON.Vector3;
     public scene: BABYLON.ISceneLoaderAsyncResult;
-    private _pose: Pose;
+    public pose: Pose;
 
     /**
      *

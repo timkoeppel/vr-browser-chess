@@ -160,7 +160,9 @@ export default class Game {
      */
     public async setupPlayerReady(data: IPlayerData) {
         await this.initiateAvatar(data.color, data.avatar);
-        await this.changeToPlayerCamera(data.color);
+        setTimeout( async ()  => {
+            this.changeToPlayerCamera();
+        }, 1)
     }
 
     /**
@@ -186,7 +188,6 @@ export default class Game {
         this.canvas = document.getElementById("gameCanvas") as HTMLCanvasElement;
         this.engine = new BABYLON.Engine(this.canvas, true);
         this.scene = new BABYLON.Scene(this.engine);
-        //this.scene.useRightHandedSystem = true;
         console.log(`Babylon JS initiated.`);
     }
 
@@ -238,12 +239,11 @@ export default class Game {
     /**
      * Changes to the correlating camera of the player
      */
-    public changeToPlayerCamera(own_color: "white" | "black") {
+    public changeToPlayerCamera() {
         console.log(`Initiating player camera ...`);
-        const z_pos = own_color === "white" ? 20 : -20;
-        const y_pos = 52.5 ;//this.own_avatar.pose.eye_l.absolutePosition.y;
-        const eye_position = new BABYLON.Vector3(0, y_pos, z_pos); // TODO
-        console.log(eye_position);
+        const z_pos = this.own_avatar.pose.nose.absolutePosition.z;
+        const y_pos = this.own_avatar.pose.eye_l.absolutePosition.y;
+        const eye_position = new BABYLON.Vector3(0, y_pos, z_pos);
 
         this.camera.position.set(eye_position.x, eye_position.y, eye_position.z);
         this.camera.setTarget(new BABYLON.Vector3(0, 25, 0));
@@ -256,13 +256,13 @@ export default class Game {
      */
     public async initiateAvatar(color: "white" | "black", file_name: string) {
         console.log(`Initiating ${color} avatar ...`);
-        const avatar = new Avatar(color, file_name);
+        let avatar = new Avatar(color, file_name);
+        await this.LoadAvatar(avatar, color);
         if (color === this.own_color) {
             this.own_avatar = avatar;
         } else {
             this.other_avatar = avatar;
         }
-        await this.LoadAvatar(avatar, color);
     }
 
 
@@ -336,10 +336,11 @@ export default class Game {
     private async LoadAvatar(avatar: Avatar, color: "white" | "black"): Promise<void> {
         await BABYLON.SceneLoader.ImportMeshAsync("", avatar.rootURL, avatar.filename, this.scene).then(result => {
             avatar.scene = result;
-            avatar.pose = new Pose(result.transformNodes);
             avatar.stopAnimations();
             avatar.placeAvatar();
+            avatar.pose = new Pose(result.transformNodes);
             avatar.seatAvatar();
+
             console.log(`Avatar ${color} initiated.`);
         });
     }
