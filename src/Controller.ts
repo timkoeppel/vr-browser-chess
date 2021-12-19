@@ -3,6 +3,13 @@ import * as BABYLON from "@babylonjs/core";
 import Game from "./Game";
 
 export class Controller{
+    get type(): "gaze" | "voice" {
+        return this._type;
+    }
+
+    set type(value: "gaze" | "voice") {
+        this._type = value;
+    }
     get game(): Game {
         return this._game;
     }
@@ -11,6 +18,7 @@ export class Controller{
         this._game = value;
     }
     private _game: Game;
+    private _type: "gaze" | "voice";
     public hover_material: BABYLON.Material;
     public selection_material: BABYLON.Material;
     public playable_material: BABYLON.Material;

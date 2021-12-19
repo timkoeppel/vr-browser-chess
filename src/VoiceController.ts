@@ -28,6 +28,7 @@ export class VoiceController extends Controller {
 
         super(game);
         this.game = game;
+        this.type = "voice";
         this.client = new webkitSpeechRecognition();
         this.grammar = new webkitSpeechGrammarList();
     }
@@ -122,7 +123,7 @@ export class VoiceController extends Controller {
     private initiateClient() {
         this.client.continuous = true;
         this.client.interimResults = false;
-        this.client.lang = "en-US";
+        this.client.lang = "en-GB";
     }
 
     /**
@@ -185,6 +186,7 @@ export class VoiceController extends Controller {
         "for": "4",
 
         // Both
+        "84": "A4",
         "ASICS": "A6",
         "before": "B4",
         "be4e": "B4",

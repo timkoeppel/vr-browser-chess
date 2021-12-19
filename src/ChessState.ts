@@ -8,6 +8,7 @@ import {Action} from "./Action";
 import Game from "./Game";
 import {AI} from "./AI";
 import {Avatar} from "./Avatar";
+import {VoiceController} from "./VoiceController";
 
 /**
  * ChessState manages the game state, logic and move management
@@ -162,19 +163,6 @@ export class ChessState {
 
     public makeOtherPlayerMove(move: Move) {
         this.selected_field = this.game.chessboard.getField(move.from);
-        this.makeMove(move, this.selected_field.figure);
-        this.toNextPlayer();
-    }
-
-    /**
-     * Proceeds with all actions involved in a move made by an AI
-     */
-    public makeAIMove() {
-        // Change State
-        let ai = this.current_player.type as AI;
-        const move = ChessState.toUpperNotationSingle(ai.getMove());
-        console.log(move);
-        this.selected_field = this.game.chessboard.getField(move.from);
 
         // Wait 2 seconds to make experience not to stressed
         // Action
@@ -233,9 +221,12 @@ export class ChessState {
         // Pass to next player
         this.passToNextPlayer();
 
+
         // Make moves if Ai
         if (this.current_player.type !== "human") {
-            this.makeAIMove();
+            let ai = this.current_player.type as AI;
+            const move = ChessState.toUpperNotationSingle(ai.getMove());
+            this.makeOtherPlayerMove(move);
         }
     }
 

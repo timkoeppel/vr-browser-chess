@@ -108,8 +108,10 @@ export class DOM {
      * @param location
      */
     public lobbyFullRedirect(location: string) {
-        alert("Lobby is full!");
-        window.location.href = location
+        this.displayMessage(`Lobby is full!`, "important");
+        setTimeout(() => {
+            window.location.href = location
+        }, 2000);
     }
 
     /**

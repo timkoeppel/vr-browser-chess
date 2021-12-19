@@ -162,7 +162,7 @@ export default class Game {
         await this.initiateAvatar(data.color, data.avatar);
         setTimeout( async ()  => {
             this.changeToPlayerCamera();
-        }, 1)
+        }, 100)
     }
 
     /**
@@ -244,7 +244,7 @@ export default class Game {
         const z_pos = this.own_avatar.pose.nose.absolutePosition.z;
         const y_pos = this.own_avatar.pose.eye_l.absolutePosition.y;
         const eye_position = new BABYLON.Vector3(0, y_pos, z_pos);
-
+        console.log(eye_position);
         this.camera.position.set(eye_position.x, eye_position.y, eye_position.z);
         this.camera.setTarget(new BABYLON.Vector3(0, 25, 0));
         this.camera.applyGravity = false;

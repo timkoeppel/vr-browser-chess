@@ -8,6 +8,7 @@ export class GazeController extends Controller{
         super(game);
 
         this.game = game;
+        this.type = "gaze";
     }
 
     /**

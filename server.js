@@ -96,11 +96,11 @@ function disconnectPlayer(socket) {
     if (socket.id === white.id) {
         disconnected_player = white;
         white = {}
-        if (game_started && black.player_type === "human") {
+        if (black.player_type === "human") {
             io.to(black.id).emit('game_reset', "white");
         }
     } else {
-        if (game_started && white.other_player === "human") {
+        if (white.other_player === "human") {
             io.to(white.id).emit('game_reset', "black");
         }
         disconnected_player = black;
@@ -174,7 +174,7 @@ function createAIData(player) {
         ready: true,
         color: "black",
         controller: "gaze",
-        avatar: "male_03",//avatars[Math.floor(Math.random() * avatars.length)],
+        avatar: avatars[Math.floor(Math.random() * avatars.length)],
         player_type: player.player_type
     }
     return Object.assign({}, data);
