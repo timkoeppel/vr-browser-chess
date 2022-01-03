@@ -79,8 +79,11 @@ export class AI {
     }
 
     private getExpertAIMove(): Move {
-        // TODO
-        return null
+        let game_copy: Chess = Object.assign(new Chess(), this.chess_state.logic);
+        const is_max_player = this.color === "black";
+        const minimax_result = this.minimax(game_copy, 4, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY, is_max_player, 0);
+
+        return minimax_result[0];
     }
 
     // ******************************************************************

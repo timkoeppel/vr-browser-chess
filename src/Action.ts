@@ -33,7 +33,7 @@ export class Action {
      */
     public static moveHands(hand_node: BABYLON.TransformNode, start_pos: BABYLON.Vector3, end_pos: BABYLON.Vector3, ori_pos?: BABYLON.Vector3) {
         //let s_pos = new BABYLON.Vector3(start_pos.z,start_pos.y, start_pos.x);
-        BABYLON.Animation.CreateAndStartAnimation(
+        /*BABYLON.Animation.CreateAndStartAnimation(
             "move_hands_to",
             hand_node,
             "position",
@@ -59,5 +59,7 @@ export class Action {
             }, 1000)
 
         }
+
+         */
     }
 }
