@@ -9,7 +9,7 @@ const options = {
     key: fs.readFileSync('./key.pem'),
     cert: fs.readFileSync('./cert.pem')
 };
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 8443;
 
 
 // start server
