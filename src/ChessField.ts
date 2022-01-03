@@ -81,6 +81,10 @@ export class ChessField {
         this.original_material = ori_material;
     }
 
+    // ************************************************************************
+    // MAIN METHODS
+    // ************************************************************************
+
     /**
      * Resets the selected fields by setting is_selected false and reinstalling the original texture
      */
@@ -92,6 +96,7 @@ export class ChessField {
     // ************************************************************************
     // HELPER METHODS
     // ************************************************************************
+
     /**
      * Checks id the given field is selected by communicating with the ChessState
      * @private

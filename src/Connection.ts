@@ -1,7 +1,10 @@
 import {App} from "./App";
 import {IPlayerData} from "./IPlayerData";
 
-export class Connection{
+/**
+ * Connection manages the interface to the server via socket connection
+ */
+export class Connection {
     get app(): App {
         return this._app;
     }
@@ -9,6 +12,7 @@ export class Connection{
     set app(value: App) {
         this._app = value;
     }
+
     get socket(): any {
         return this._socket;
     }
@@ -16,6 +20,7 @@ export class Connection{
     set socket(value: any) {
         this._socket = value;
     }
+
     private _socket: any;
     private _app: App;
 
@@ -25,7 +30,7 @@ export class Connection{
         this.app = app;
 
         // Initiate Receptions
-        this.socket.on("initiate", (own_color: "white" |"black") => this.app.initiateGame(own_color));
+        this.socket.on("initiate", (own_color: "white" | "black") => this.app.initiateGame(own_color));
         this.socket.on("redirect", (location: string) => this.app.game.dom.lobbyFullRedirect(location));
         this.socket.on("ready", (data: IPlayerData) => this.app.makeGameReady(data));
         this.socket.on("start", (data: Array<IPlayerData>) => this.app.startGame(data));
@@ -33,12 +38,22 @@ export class Connection{
         this.socket.on("game_reset", (other_player_color) => this.app.game.dom.refreshThroughOtherPlayerDisconnect(other_player_color));
     }
 
-    // EMISSIONS
-    public emitPlayerData(data: IPlayerData){
+    // ************************************************************************
+    // MAIN METHODS (Emissions)
+    // ************************************************************************
+    /**
+     * Emits the changed player data
+     * @param data The player data
+     */
+    public emitPlayerData(data: IPlayerData) {
         this.socket.emit("player_ready", data);
     }
 
-    public emitPlayerMove(data){
+    /**
+     * Emits the move the player has executed
+     * @param data
+     */
+    public emitPlayerMove(data) {
         this.socket.emit("player_move", data)
     }
 

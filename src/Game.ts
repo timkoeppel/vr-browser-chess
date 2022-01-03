@@ -134,7 +134,6 @@ export default class Game {
     private _own_avatar: Avatar;
     private _other_avatar: Avatar;
 
-    // ************************************************************************
     /**
      * Creates the whole Game environment
      * @constructor
@@ -154,6 +153,9 @@ export default class Game {
         this.DoRender(false);
     }
 
+    // ************************************************************************
+    // MAIN METHODS
+    // ************************************************************************
     /**
      * Initiates the own player avatar, controller and changes to the camera
      * @param data
@@ -239,7 +241,7 @@ export default class Game {
     /**
      * Changes to the correlating camera of the player
      */
-    public changeToPlayerCamera() {
+    public changeToPlayerCamera(): void {
         console.log(`Initiating player camera ...`);
         const z_pos = this.own_avatar.pose.nose.absolutePosition.z;
         const y_pos = this.own_avatar.pose.eye_l.absolutePosition.y;
@@ -254,7 +256,7 @@ export default class Game {
     /**
      * Initiates the Avatars by importing and positioning them
      */
-    public async initiateAvatar(color: "white" | "black", file_name: string) {
+    public async initiateAvatar(color: "white" | "black", file_name: string): Promise<void> {
         console.log(`Initiating ${color} avatar ...`);
         let avatar = new Avatar(color, file_name);
         await this.LoadAvatar(avatar, color);
@@ -269,7 +271,7 @@ export default class Game {
     /**
      * Initiates the Babylon XR Experience for mobile devices
      */
-    public async initiateXR() {
+    public async initiateXR(): Promise<void> {
         console.log(`Initiating XR ...`);
         this.xr = await this.scene.createDefaultXRExperienceAsync({
             uiOptions: {
@@ -288,7 +290,7 @@ export default class Game {
      * Initiates the selected controller for the player
      * @param type "gaze" | "voice"
      */
-    public async initiateController(type: "gaze" | "voice") {
+    public async initiateController(type: "gaze" | "voice"): Promise<void> {
         console.log(`Initiating ${type} controller ...`);
         if (type === "gaze") {
             let controller = new GazeController(this);

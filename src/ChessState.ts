@@ -8,7 +8,6 @@ import {Action} from "./Action";
 import Game from "./Game";
 import {AI} from "./AI";
 import {Avatar} from "./Avatar";
-import {VoiceController} from "./VoiceController";
 
 /**
  * ChessState manages the game state, logic and move management
@@ -22,6 +21,7 @@ export class ChessState {
     set is_game_running(value: boolean) {
         this._is_game_running = value;
     }
+
     get own_player(): ChessPlayer {
         return this._own_player;
     }
@@ -115,7 +115,7 @@ export class ChessState {
     // MAIN METHODS
     // ************************************************************************
     /**
-     * Manages a (gaze-)click from the user on a field
+     * Manages a gaze-click or "voice-click" from the user on a field
      * @param clicked_field
      */
     public processClick(clicked_field: ChessField) {
@@ -161,6 +161,10 @@ export class ChessState {
         this.toNextPlayer();
     }
 
+    /**
+     * Executes the move from the other player (AI or other human) in your browser
+     * @param move
+     */
     public makeOtherPlayerMove(move: Move) {
         this.selected_field = this.game.chessboard.getField(move.from);
 
@@ -180,7 +184,7 @@ export class ChessState {
     }
 
     /**
-     * Proceeds to stage 'make move'
+     * Proceeds to the move making process
      * @param clicked_field
      */
     public toMoveSelection(clicked_field: ChessField) {
@@ -220,7 +224,7 @@ export class ChessState {
         // Pass to next player
         this.passToNextPlayer();
 
-        // Make moves if Ai
+        // Make moves if Ai and continues the lifecycle
         if (this.current_player.type !== "human") {
             let ai = this.current_player.type as AI;
             const move = ChessState.toUpperNotationSingle(ai.getMove());
@@ -229,7 +233,7 @@ export class ChessState {
     }
 
     /**
-     * Ends the game chain
+     * Ends the game chain and initiates a game over
      * @private
      */
     private toGameOver() {
@@ -240,7 +244,7 @@ export class ChessState {
     }
 
     /**
-     * Manages the movement of a figure
+     * Manages the movement (physical and logical) of a figure
      * @param move
      * @param fig_to_move
      * @private
@@ -272,62 +276,6 @@ export class ChessState {
         captured_figure.position = new Position(new_pos);
     }
 
-    // ************************************************************************
-    // HELPER METHODS
-    // ************************************************************************
-    /**
-     * Uses the chess logic to determine possible moves for this figure
-     */
-    private getPlayableFields(moves: Array<Move>): Array<ChessField> {
-        let playable_fields = [];
-
-        moves.forEach(m => {
-            const playable_field = this.game.chessboard.fields.find(f => f.id === m.to);
-            playable_fields.push(playable_field);
-        });
-
-        return playable_fields;
-    }
-
-    /**
-     * Checks if a figure belongs to the current player
-     * @param fig
-     * @private
-     */
-    private isOwnFigure(fig: ChessFigure): boolean {
-        return fig.color === this.current_player.color;
-    }
-
-    /**
-     * Gets the involved move of a playable field
-     * @param field
-     * @private
-     */
-    private getMove(field: ChessField): Move {
-        return this.moves.find(m => m.to === field.id)
-    }
-
-    /**
-     * Gets the chess field positions of all available moves
-     * @private
-     */
-    private getMoveTargets(): Array<string> {
-        let move_targets = [];
-        this.moves.forEach(m => {
-            move_targets.push(m.to);
-        });
-        return move_targets;
-    }
-
-    /**
-     * Resets the necessary properties of the chess state
-     * @private
-     */
-    private resetMoveProperties(): void {
-        this.moves = [];
-        this.selected_field = null;
-    }
-
     /**
      * Manages the physical move of a figure in the environment
      * @param move
@@ -338,10 +286,10 @@ export class ChessState {
         // Capture case
         if (ChessState.isCapture(move)) {
             let captured_fig: ChessFigure;
-            if(ChessState.isEnPassantCapture(move)){
+            if (ChessState.isEnPassantCapture(move)) {
                 const en_passant_field = ChessState.getEnPassantField(move);
                 captured_fig = this.game.chessboard.getField(en_passant_field).figure;
-            }else{
+            } else {
                 captured_fig = this.game.chessboard.getField(move.to).figure;
             }
             captured_fig.capture();
@@ -406,6 +354,62 @@ export class ChessState {
         }
     }
 
+    // ************************************************************************
+    // HELPER METHODS
+    // ************************************************************************
+    /**
+     * Uses the chess logic to determine possible moves for this figure
+     */
+    private getPlayableFields(moves: Array<Move>): Array<ChessField> {
+        let playable_fields = [];
+
+        moves.forEach(m => {
+            const playable_field = this.game.chessboard.fields.find(f => f.id === m.to);
+            playable_fields.push(playable_field);
+        });
+
+        return playable_fields;
+    }
+
+    /**
+     * Checks if a figure belongs to the current player
+     * @param fig
+     * @private
+     */
+    private isOwnFigure(fig: ChessFigure): boolean {
+        return fig.color === this.current_player.color;
+    }
+
+    /**
+     * Gets the involved move of a playable field
+     * @param field
+     * @private
+     */
+    private getMove(field: ChessField): Move {
+        return this.moves.find(m => m.to === field.id)
+    }
+
+    /**
+     * Gets the chess field positions of all available moves
+     * @private
+     */
+    private getMoveTargets(): Array<string> {
+        let move_targets = [];
+        this.moves.forEach(m => {
+            move_targets.push(m.to);
+        });
+        return move_targets;
+    }
+
+    /**
+     * Resets the necessary properties of the chess state
+     * @private
+     */
+    private resetMoveProperties(): void {
+        this.moves = [];
+        this.selected_field = null;
+    }
+
     /**
      * Changes all Move properties to upper letters
      * @param moves
@@ -420,7 +424,7 @@ export class ChessState {
         return new_moves;
     }
 
-    public static toUpperNotationSingle(move: Move): Move{
+    public static toUpperNotationSingle(move: Move): Move {
         let new_move = Object.assign(move);
         for (let [key, value] of Object.entries(move)) {
             if (typeof value === "string") {
@@ -435,15 +439,25 @@ export class ChessState {
      * @param move
      * @private
      */
-    public static isCapture(move: Move):boolean{
+    public static isCapture(move: Move): boolean {
         return move.flags.includes("C") || move.flags.includes("E");
     }
 
-    private static isEnPassantCapture(move: Move):boolean{
+    /**
+     * Checks if the given move is an en passant move
+     * @param move
+     * @private
+     */
+    private static isEnPassantCapture(move: Move): boolean {
         return move.flags.includes("E");
     }
 
-    private static getEnPassantField(move: Move):string{
+    /**
+     * Gets the field of the figure involved in the en passant capture
+     * @param move
+     * @private
+     */
+    private static getEnPassantField(move: Move): string {
         const x_pos_chess = move.to.charAt(0);
         const y_pos_chess = parseInt(move.to.charAt(1));
         const addition = (move.color === "w") ? 1 : -1;
@@ -500,6 +514,11 @@ export class ChessState {
 
     }
 
+    /**
+     * Passes move to the server communication
+     * @param data
+     * @private
+     */
     private submitMove(data) {
         this.game.app.connection.emitPlayerMove(data)
     }

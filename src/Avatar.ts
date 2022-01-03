@@ -1,22 +1,74 @@
 import * as BABYLON from "@babylonjs/core";
 import {Pose} from "./Pose";
 
+/**
+ * Avatar manages everything avatar related
+ */
 export class Avatar {
-    /*get pose(): Pose {
+    get rootURL(): string {
+        return this._rootURL;
+    }
+
+    set rootURL(value: string) {
+        this._rootURL = value;
+    }
+
+    get filename(): string {
+        return this._filename;
+    }
+
+    set filename(value: string) {
+        this._filename = value;
+    }
+
+    get position(): BABYLON.Vector3 {
+        return this._position;
+    }
+
+    set position(value: BABYLON.Vector3) {
+        this._position = value;
+    }
+
+    get rotation(): BABYLON.Vector3 {
+        return this._rotation;
+    }
+
+    set rotation(value: BABYLON.Vector3) {
+        this._rotation = value;
+    }
+
+    get scale(): BABYLON.Vector3 {
+        return this._scale;
+    }
+
+    set scale(value: BABYLON.Vector3) {
+        this._scale = value;
+    }
+
+    get scene(): BABYLON.ISceneLoaderAsyncResult {
+        return this._scene;
+    }
+
+    set scene(value: BABYLON.ISceneLoaderAsyncResult) {
+        this._scene = value;
+    }
+
+    get pose(): Pose {
         return this._pose;
     }
 
     set pose(value: Pose) {
         this._pose = value;
-    }*/
-    // Properties
-    public rootURL: string;
-    public filename: string;
-    public position: BABYLON.Vector3;
-    public rotation: BABYLON.Vector3;
-    public scale: BABYLON.Vector3;
-    public scene: BABYLON.ISceneLoaderAsyncResult;
-    public pose: Pose;
+    }
+
+
+    private _rootURL: string;
+    private _filename: string;
+    private _position: BABYLON.Vector3;
+    private _rotation: BABYLON.Vector3;
+    private _scale: BABYLON.Vector3;
+    private _scene: BABYLON.ISceneLoaderAsyncResult;
+    private _pose: Pose;
 
     /**
      *
@@ -32,6 +84,9 @@ export class Avatar {
         this.scale = new BABYLON.Vector3(-scale, scale, scale);
     }
 
+    // ************************************************************************
+    // CONSTANTS
+    // ************************************************************************
     public static MALE_01_PATH = "./img/male_01.png";
     public static MALE_02_PATH = "./img/male_02.png";
     public static MALE_03_PATH = "./img/male_03.png";

@@ -32,6 +32,10 @@ export class App {
         this.connection = new Connection(this);
     }
 
+    // ************************************************************************
+    // MAIN METHODS
+    // ************************************************************************
+
     /**
      * Sets up the logical base for the game
      * @param own_color

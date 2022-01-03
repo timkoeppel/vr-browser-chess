@@ -115,6 +115,7 @@ export class ChessFigure {
     // ************************************************************************
     // HELPER METHODS
     // ************************************************************************
+
     /**
      * Gets the color of a figure mesh (second last character)
      * @param mesh
@@ -124,5 +125,4 @@ export class ChessFigure {
         const color_short = <"b" | "w">mesh.id.slice(-2, -1);
         return color_short === "w" ? "white" : "black";
     }
-
 }

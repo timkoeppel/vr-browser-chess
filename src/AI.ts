@@ -39,6 +39,11 @@ export class AI {
         this.color = color;
     }
 
+
+    // ************************************************************************
+    // MAIN METHODS
+    // ************************************************************************
+
     /**
      * Gets the move according to the AI difficulty
      */
@@ -47,14 +52,14 @@ export class AI {
             case "easy":
                 return this.getRandomMove();
             case "intermediate":
-                return this.getAlphaBetaMove();
+                return this.getAlphaBetaMove("intermediate");
             case "expert":
-                return this.getExpertAIMove();
+                return this.getAlphaBetaMove("expert");
         }
     }
 
     /**
-     * Gets random available move
+     * Gets random available move, capture moves are priotized (used for the wasy AI)
      */
     private getRandomMove(): Move {
         const available_moves = ChessState.toUpperNotationMulti(this.chess_state.logic.moves({verbose: true}));
@@ -70,46 +75,43 @@ export class AI {
         return chosen_move;
     }
 
-    private getAlphaBetaMove(): Move {
+    /**
+     * Gets the best move from the alpha-beta-pruning of the current board config depending on the difficulty
+     * intermediate depth: 2
+     * expert depth: 4
+     * @private
+     */
+    private getAlphaBetaMove(difficulty: "intermediate" | "expert"): Move {
         let game_copy: Chess = Object.assign(new Chess(), this.chess_state.logic);
         const is_max_player = this.color === "black";
-        const minimax_result = this.minimax(game_copy, 2, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY, is_max_player, 0);
+        const depth = (difficulty === "intermediate") ? 2 : 4;
+        const minimax_result = this.minimax(game_copy, depth, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY, is_max_player, 0);
 
         return minimax_result[0];
     }
-
-    private getExpertAIMove(): Move {
-        let game_copy: Chess = Object.assign(new Chess(), this.chess_state.logic);
-        const is_max_player = this.color === "black";
-        const minimax_result = this.minimax(game_copy, 4, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY, is_max_player, 0);
-
-        return minimax_result[0];
-    }
-
-    // ******************************************************************
 
     /**
-     * Evaluates the board
-     * @param move
+     * Evaluates the board dependent of the pieces on the board and its positions
+     * @param _move
      * @param prev_sum
      * @private
      */
-    private evaluate(move: Move, prev_sum: number): number {
-        move = ChessState.toUpperNotationSingle(move);
+    private evaluate(_move: Move, prev_sum: number): number {
+        let move = ChessState.toUpperNotationSingle(_move);
         let from = [8 - parseInt(move.from[1]), move.from.charCodeAt(0) - 'A'.charCodeAt(0)];
         let to = [8 - parseInt(move.to[1]), move.to.charCodeAt(0) - 'A'.charCodeAt(0)];
         // @ts-ignore
         let move_color = (move.color === "W") ? "white" : "black";
         let piece_weights = AI.FIGURE_WEIGHTS;
-        let own_field_weights = (this.color === "white") ? AI.FIGURE_FIELD_WEIGHTS_W : AI.FIGURE_FIELD_WEIGHTS_B;
-        let other_field_weights = (this.color === "white") ? AI.FIGURE_FIELD_WEIGHTS_B : AI.FIGURE_FIELD_WEIGHTS_W;
+        let own_field_weights = (this.color === "white") ? AI.FIELD_WEIGHTS_W : AI.FIELD_WEIGHTS_B;
+        let other_field_weights = (this.color === "white") ? AI.FIELD_WEIGHTS_B : AI.FIELD_WEIGHTS_W;
 
         if (ChessState.isCapture(move)) {
-            // Opponent piece was captured (good for us)
+            // Opponent piece was captured
             if (move_color === this.color) {
                 prev_sum += (piece_weights[move.captured] + own_field_weights[move.captured][to[0]][to[1]]);
             }
-            // Our piece was captured (bad for us)
+            // Our piece was captured
             else {
                 prev_sum -= (piece_weights[move.captured] + other_field_weights[move.captured][to[0]][to[1]]);
             }
@@ -120,12 +122,12 @@ export class AI {
             // @ts-ignore
             move.promotion = 'Q';
 
-            // Our piece was promoted (good for us)
+            // Promotion for max_player
             if (move_color === this.color) {
                 prev_sum -= (piece_weights[move.piece] + own_field_weights[move.piece][from[0]][from[1]]);
                 prev_sum += (piece_weights[move.promotion] + own_field_weights[move.promotion][to[0]][to[1]]);
             }
-            // Opponent piece was promoted (bad for us)
+            // Promotion for min_player
             else {
                 prev_sum += (piece_weights[move.piece] + own_field_weights[move.piece][from[0]][from[1]]);
                 prev_sum -= (piece_weights[move.promotion] + own_field_weights[move.promotion][to[0]][to[1]]);
@@ -144,6 +146,16 @@ export class AI {
         return prev_sum;
     }
 
+    /**
+     * Recursive Alpha-Beta Minimax for getting the best move
+     * @param game The current game state according to our chess.ts logic
+     * @param depth The depth the alpha-beta minimax should go (at least 2 recommended for max_player)
+     * @param alpha The alpha value to determine pruning
+     * @param beta The beta value to determine pruning
+     * @param is_max_player If the calculation serves the maximizing player or not
+     * @param sum The current recursive sum
+     * @private
+     */
     private minimax(game: Chess, depth: number, alpha: number, beta: number, is_max_player: boolean, sum: number): [Move, number] {
         let children = game.moves({verbose: true});
 
@@ -201,6 +213,14 @@ export class AI {
         }
     }
 
+    // ************************************************************************
+    // CONSTANTS
+    // ************************************************************************
+    /**
+     * The weight/value a figure itself has
+     * Note: weights are from stockfish
+     * @private
+     */
     private static FIGURE_WEIGHTS = {
         "P": 100,
         "R": 479,
@@ -210,7 +230,12 @@ export class AI {
         "K": 60000
     };
 
-    private static FIGURE_FIELD_WEIGHTS_W = {
+    /**
+     * The field weight for white every figure (Some figures are more valuable on special positions)
+     * Note: weights are from stockfish
+     * @private
+     */
+    private static FIELD_WEIGHTS_W = {
         'P': [
             [100, 100, 100, 100, 105, 100, 100, 100],
             [78, 83, 86, 73, 102, 82, 85, 90],
@@ -273,12 +298,17 @@ export class AI {
         ],
     };
 
-    private static FIGURE_FIELD_WEIGHTS_B = {
-        'P': AI.FIGURE_FIELD_WEIGHTS_W['P'].slice().reverse(),
-        'N': AI.FIGURE_FIELD_WEIGHTS_W['N'].slice().reverse(),
-        'B': AI.FIGURE_FIELD_WEIGHTS_W['B'].slice().reverse(),
-        'R': AI.FIGURE_FIELD_WEIGHTS_W['R'].slice().reverse(),
-        'Q': AI.FIGURE_FIELD_WEIGHTS_W['Q'].slice().reverse(),
-        'K': AI.FIGURE_FIELD_WEIGHTS_W['K'].slice().reverse(),
+    /**
+     * The field weight for black every figure (Some figures are more valuable on special positions)
+     * Note: weights are from stockfish
+     * @private
+     */
+    private static FIELD_WEIGHTS_B = {
+        'P': AI.FIELD_WEIGHTS_W['P'].slice().reverse(),
+        'N': AI.FIELD_WEIGHTS_W['N'].slice().reverse(),
+        'B': AI.FIELD_WEIGHTS_W['B'].slice().reverse(),
+        'R': AI.FIELD_WEIGHTS_W['R'].slice().reverse(),
+        'Q': AI.FIELD_WEIGHTS_W['Q'].slice().reverse(),
+        'K': AI.FIELD_WEIGHTS_W['K'].slice().reverse(),
     }
 }

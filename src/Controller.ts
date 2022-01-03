@@ -2,7 +2,10 @@ import {ChessField} from "./ChessField";
 import * as BABYLON from "@babylonjs/core";
 import Game from "./Game";
 
-export class Controller{
+/**
+ * Controller manage the interaction with the chess game
+ */
+export class Controller {
     get type(): "gaze" | "voice" {
         return this._type;
     }
@@ -10,6 +13,7 @@ export class Controller{
     set type(value: "gaze" | "voice") {
         this._type = value;
     }
+
     get game(): Game {
         return this._game;
     }
@@ -17,6 +21,7 @@ export class Controller{
     set game(value: Game) {
         this._game = value;
     }
+
     private _game: Game;
     private _type: "gaze" | "voice";
     public hover_material: BABYLON.Material;
@@ -49,6 +54,10 @@ export class Controller{
         this.capture_material = capture_material;
     }
 
+    // ************************************************************************
+    // MAIN METHODS
+    // ************************************************************************
+
     /**
      * Resets the field to the previous material
      * @private
@@ -65,6 +74,7 @@ export class Controller{
 
     /**
      * Sets the field to the given material
+     * @param field the material
      */
     public setFieldAsSelected(field: ChessField): void {
         field.mesh.material = this.selection_material;
@@ -73,7 +83,7 @@ export class Controller{
     /**
      * Sets field as playable and its logical consequences
      * @private
-     * @param playable_moves
+     * @param playable_moves List of playable moves
      */
     public setFieldsAsPlayable(playable_moves: Array<ChessField>): void {
         playable_moves.forEach(field => {
@@ -83,6 +93,11 @@ export class Controller{
             field.mesh.enableEdgesRendering();
         })
     }
+
+
+    // ************************************************************************
+    // HELPER METHODS
+    // ************************************************************************
 
     /**
      * Gets the move related material

@@ -3,7 +3,7 @@ import {ChessState} from "./ChessState";
 import {Avatar} from "./Avatar";
 
 /**
- * Manages the player
+ * ChessPlayer manages all things bound to a single player
  */
 export class ChessPlayer {
     get avatar(): Avatar {

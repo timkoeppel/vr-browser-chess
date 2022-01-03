@@ -1,7 +1,7 @@
 import * as BABYLON from "@babylonjs/core";
 
 /**
- * Pose manages the stature/pose of the avatars
+ * Pose manages the pose and bones(transform nodes) of the avatars
  */
 export class Pose {
     get hand_r_original(): BABYLON.TransformNode {
@@ -11,6 +11,7 @@ export class Pose {
     set hand_r_original(value: BABYLON.TransformNode) {
         this._hand_r_original = value;
     }
+
     public head: BABYLON.TransformNode;
     public neck: BABYLON.TransformNode;
     public spine_2: BABYLON.TransformNode;
@@ -32,6 +33,34 @@ export class Pose {
     public eye_l: BABYLON.TransformNode;
     public nose: BABYLON.TransformNode;
     private _hand_r_original: BABYLON.TransformNode;
+
+    constructor(tnodes: Array<BABYLON.TransformNode>) {
+        this.head = tnodes.find(b => b.id === this.ids["id_head"]);
+        this.neck = tnodes.find(b => b.id === this.ids["id_neck"]);
+        this.spine_2 = tnodes.find(b => b.id === this.ids["id_spine_2"]);
+        this.spine_1 = tnodes.find(b => b.id === this.ids["id_spine_1"]);
+        this.clavicle_l = tnodes.find(b => b.id === this.ids["id_clavicle_l"]);
+        this.clavicle_r = tnodes.find(b => b.id === this.ids["id_clavicle_r"]);
+        this.upperarm_l = tnodes.find(b => b.id === this.ids["id_upperarm_l"]);
+        this.upperarm_r = tnodes.find(b => b.id === this.ids["id_upperarm_r"]);
+        this.forearm_l = tnodes.find(b => b.id === this.ids["id_forearm_l"]);
+        this.forearm_r = tnodes.find(b => b.id === this.ids["id_forearm_r"]);
+        this.hand_l = tnodes.find(b => b.id === this.ids["id_hand_l"]);
+        this.hand_r = tnodes.find(b => b.id === this.ids["id_hand_r"]);
+        this.thigh_l = tnodes.find(b => b.id === this.ids["id_thigh_l"]);
+        this.thigh_r = tnodes.find(b => b.id === this.ids["id_thigh_r"]);
+        this.calf_l = tnodes.find(b => b.id === this.ids["id_calf_l"]);
+        this.calf_r = tnodes.find(b => b.id === this.ids["id_calf_r"]);
+        this.foot_l = tnodes.find(b => b.id === this.ids["id_foot_l"]);
+        this.foot_r = tnodes.find(b => b.id === this.ids["id_foot_r"]);
+        this.eye_l = tnodes.find(b => b.id === this.ids["id_eye_l"]);
+        this.nose = tnodes.find(b => b.id === this.ids["id_nose"]);
+        this.hand_r_original = Pose.clone(this.hand_r);
+    }
+
+    // ************************************************************************
+    // CONSTANTS
+    // ************************************************************************
 
     /**
      * IDs according to Microsoft RocketBox Avatars
@@ -59,34 +88,15 @@ export class Pose {
         id_nose: "Bip01 MNoseNub",
     };
 
-    constructor(tnodes: Array<BABYLON.TransformNode>) {
-        this.head = tnodes.find(b => b.id === this.ids["id_head"]);
-        this.neck = tnodes.find(b => b.id === this.ids["id_neck"]);
-        this.spine_2 = tnodes.find(b => b.id === this.ids["id_spine_2"]);
-        this.spine_1 = tnodes.find(b => b.id === this.ids["id_spine_1"]);
-        this.clavicle_l = tnodes.find(b => b.id === this.ids["id_clavicle_l"]);
-        this.clavicle_r = tnodes.find(b => b.id === this.ids["id_clavicle_r"]);
-        this.upperarm_l = tnodes.find(b => b.id === this.ids["id_upperarm_l"]);
-        this.upperarm_r = tnodes.find(b => b.id === this.ids["id_upperarm_r"]);
-        this.forearm_l = tnodes.find(b => b.id === this.ids["id_forearm_l"]);
-        this.forearm_r = tnodes.find(b => b.id === this.ids["id_forearm_r"]);
-        this.hand_l = tnodes.find(b => b.id === this.ids["id_hand_l"]);
-        this.hand_r = tnodes.find(b => b.id === this.ids["id_hand_r"]);
-        this.thigh_l = tnodes.find(b => b.id === this.ids["id_thigh_l"]);
-        this.thigh_r = tnodes.find(b => b.id === this.ids["id_thigh_r"]);
-        this.calf_l = tnodes.find(b => b.id === this.ids["id_calf_l"]);
-        this.calf_r = tnodes.find(b => b.id === this.ids["id_calf_r"]);
-        this.foot_l = tnodes.find(b => b.id === this.ids["id_foot_l"]);
-        this.foot_r = tnodes.find(b => b.id === this.ids["id_foot_r"]);
-        this.eye_l = tnodes.find(b => b.id === this.ids["id_eye_l"]);
-        this.nose = tnodes.find(b => b.id === this.ids["id_nose"]);
-        this.hand_r_original = Pose.clone(this.hand_r);
-    }
+
+    // ************************************************************************
+    // MAIN METHODS
+    // ************************************************************************
 
     /**
      * Brings the pose parts in a seating position
      */
-    public makeSeatPose() {
+    public makeSeatPose(): void {
         this.upperarm_l.rotate(new BABYLON.Vector3(0, +Math.PI, 0), 0.5);
         this.upperarm_r.rotate(new BABYLON.Vector3(0, -Math.PI, 0), 0.5);
         this.forearm_l.rotate(new BABYLON.Vector3(+Math.PI, 0, -Math.PI), 1.5);
@@ -97,8 +107,16 @@ export class Pose {
         this.calf_r.rotate(new BABYLON.Vector3(0, 0, -Math.PI), 1.1);
     }
 
-    private static clone<T>(instance: BABYLON.TransformNode): BABYLON.TransformNode{
-        const copy = new (instance.constructor as { new (): BABYLON.TransformNode })();
+    // ************************************************************************
+    // HELPER METHODS
+    // ************************************************************************
+    /**
+     * Clones an instance of a TransformNode
+     * @param instance
+     * @private
+     */
+    private static clone<T>(instance: BABYLON.TransformNode): BABYLON.TransformNode {
+        const copy = new (instance.constructor as { new(): BABYLON.TransformNode })();
         Object.assign(copy, instance);
         return copy;
     }

@@ -17,6 +17,7 @@ export class ChessBoard {
     set game(value: Game) {
         this._game = value;
     }
+
     get state(): ChessState {
         return this._state;
     }
@@ -55,16 +56,22 @@ export class ChessBoard {
         this.game = game;
         this.figures = ChessFigure.extractFigures(meshes, this);
         this.fields = ChessBoard.extractFields(meshes, this);
-        console.log(this)
-    }
-
-    public startChessGame(own_color: "white" | "black", black_player: "human" | "easy" | "intermediate" | "expert", own_avatar: Avatar, other_avatar: Avatar): void{
-        this.state = new ChessState(this.game, own_color, black_player, own_avatar, other_avatar);
     }
 
     // ************************************************************************
     // MAIN METHODS
     // ************************************************************************
+
+    /**
+     * The actual game gets started with its bounded logic by finalizing the iniation of the chessboard
+     * @param own_color The own color of the player using the browser
+     * @param black_player The type of the black/second player
+     * @param own_avatar The avatar you yourself use
+     * @param other_avatar The avatar the opponent player uses
+     */
+    public startChessGame(own_color: "white" | "black", black_player: "human" | "easy" | "intermediate" | "expert", own_avatar: Avatar, other_avatar: Avatar): void {
+        this.state = new ChessState(this.game, own_color, black_player, own_avatar, other_avatar);
+    }
 
     /**
      * Resets the material for all fields to their original black/white field material
@@ -84,18 +91,6 @@ export class ChessBoard {
         });
     }
 
-    /**
-     * Gets the ChessField by the given chess ID
-     * @param chess_pos
-     */
-    public getField(chess_pos: string): ChessField {
-        return this.fields.find(f => f.id === chess_pos);
-    }
-
-
-    // ************************************************************************
-    // HELPER METHODS
-    // ************************************************************************
     /**
      * Extracts all the Chessfields from imported meshes
      * @param meshes The imported chess meshes (board/fields, figures)
@@ -122,6 +117,18 @@ export class ChessBoard {
             fields.push(chess_field);
         });
         return fields;
+    }
+
+    // ************************************************************************
+    // HELPER METHODS
+    // ************************************************************************
+
+    /**
+     * Gets the ChessField by the given chess ID / chess position
+     * @param chess_pos
+     */
+    public getField(chess_pos: string): ChessField {
+        return this.fields.find(f => f.id === chess_pos);
     }
 
     /**

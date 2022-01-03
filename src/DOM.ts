@@ -4,6 +4,9 @@ import * as GUI from 'babylonjs-gui';
 import Game from "./Game";
 import {Avatar} from "./Avatar";
 
+/**
+ * DOM regulates the 3D GUI of the game screen
+ */
 export class DOM {
     get message_screen(): GUI.Rectangle {
         return this._message_screen;
@@ -95,13 +98,28 @@ export class DOM {
         this.initiateGameMenu(own_color);
     }
 
-    /**
-     * Shows an HTML element
-     * @param element
-     */
-    public showHTMLElement(element: HTMLElement) {
-        element.classList.remove("no_display");
-    }
+    // ************************************************************************
+    // CONSTANTS
+    // ************************************************************************
+    private static TITLE_ROW_HEIGHT = 55;
+    private static RADIO_ROW_HEIGHT = 50;
+    private static IMAGE_ROW_HEIGHT = 240;
+    private static BUTTON_ROW_HEIGHT = 90;
+    private static PADDING = 20;
+    private static IMAGE_WIDTH = 200;
+    private static BUTTON_WIDTH = 400;
+    private static CORNER_RADIUS = 20;
+    private static FONT_SIZE_TEXT = 30;
+    private static FONT_SIZE_TITLE = 40;
+    private static PRIMARY_COLOR = "white";
+    private static SECONDARY_COLOR = "grey";
+    private static BACKGROUND_COLOR = "transparent";
+    private static WARNING_COLOR = "red";
+
+
+    // ************************************************************************
+    // MAIN METHODS
+    // ************************************************************************
 
     /**
      * Redirect method if lobby is full
@@ -125,22 +143,6 @@ export class DOM {
         }, 2000);
     }
 
-    // Constants
-    private static TITLE_ROW_HEIGHT = 55;
-    private static RADIO_ROW_HEIGHT = 50;
-    private static IMAGE_ROW_HEIGHT = 240;
-    private static BUTTON_ROW_HEIGHT = 90;
-    private static PADDING = 20;
-    private static IMAGE_WIDTH = 200;
-    private static BUTTON_WIDTH = 400;
-    private static CORNER_RADIUS = 20;
-    private static FONT_SIZE_TEXT = 30;
-    private static FONT_SIZE_TITLE = 40;
-    private static PRIMARY_COLOR = "white";
-    private static SECONDARY_COLOR = "grey";
-    private static BACKGROUND_COLOR = "transparent";
-    private static WARNING_COLOR = "red";
-
     /**
      * Creates the game menu for the
      * @param player_color
@@ -159,7 +161,7 @@ export class DOM {
             this.createAIOrHumanChoice(this.game_menu_grid, 3);
         }
         this.createAvatarChoice(this.game_menu_grid, avatar_row);
-        this.addSubmitButton(this.game_menu_grid,"Start Game!", submit_row, 1);
+        this.addSubmitButton(this.game_menu_grid, "Start Game!", submit_row, 1);
     }
 
     /**
@@ -175,7 +177,7 @@ export class DOM {
         screen.isVisible = false;
     }
 
-    public showScreen(screen: GUI.Rectangle){
+    public showScreen(screen: GUI.Rectangle) {
         screen.isVisible = true;
     }
 
@@ -194,10 +196,10 @@ export class DOM {
         texture.addControl(this.message_screen);
         let text = new GUI.TextBlock("message", message);
 
-        if(type === "warning"){
+        if (type === "warning") {
             this.message_screen.background = DOM.WARNING_COLOR;
             text.color = DOM.PRIMARY_COLOR;
-        }else if (type === "important") {
+        } else if (type === "important") {
             this.message_screen.background = DOM.PRIMARY_COLOR;
             text.color = "black";
         }
@@ -285,6 +287,11 @@ export class DOM {
         this.addRadioButton("Intermediate", "other_player", panel, start_row + 3, 1);
         this.addRadioButton("Expert", "other_player", panel, start_row + 4, 1);
     }
+
+
+    // ************************************************************************
+    // HELPER METHODS
+    // ************************************************************************
 
     /**
      * Adds an avatar image radio button to a grid
@@ -388,7 +395,7 @@ export class DOM {
      * @param col
      * @private
      */
-    private addSubmitButton(panel: GUI.Grid, text:string, row: number, col:number) {
+    private addSubmitButton(panel: GUI.Grid, text: string, row: number, col: number) {
         let button = GUI.Button.CreateSimpleButton("submit", text);
         button.width = `${DOM.BUTTON_WIDTH}px`;
         button.height = `${DOM.BUTTON_ROW_HEIGHT - DOM.PADDING}px`;
@@ -444,6 +451,14 @@ export class DOM {
      */
     private setOtherPlayerChoice(button: GUI.RadioButton): void {
         this.other_player = button;
+    }
+
+    /**
+     * Shows an HTML element
+     * @param element
+     */
+    public showHTMLElement(element: HTMLElement) {
+        element.classList.remove("no_display");
     }
 
     /**
