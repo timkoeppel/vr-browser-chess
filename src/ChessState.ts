@@ -119,12 +119,12 @@ export class ChessState {
      * @param clicked_field
      */
     public processClick(clicked_field: ChessField) {
-        console.log(clicked_field.mesh.position);
         // Field without figure and which is not part of a move -> No reset
         const is_unplayable_field = clicked_field.figure === null && !this.isPartOfMove(clicked_field);
         const is_not_my_turn = this.own_player !== this.current_player;
+        const is_same_field = this.selected_field === clicked_field;
 
-        if (is_unplayable_field || is_not_my_turn || !this.is_game_running) {
+        if (is_unplayable_field || is_not_my_turn || !this.is_game_running || is_same_field) {
             return;
         }
 
@@ -164,12 +164,12 @@ export class ChessState {
     public makeOtherPlayerMove(move: Move) {
         this.selected_field = this.game.chessboard.getField(move.from);
 
-        // Wait 2 seconds to make experience not to stressed
+        // Wait 2 seconds to make experience not too stressed
         // Action
-        const hand_rel = this.current_player.avatar.pose.hand_r.position;
-        const field_abs = this.selected_field.mesh.absolutePosition;
+        let hand_rel = this.current_player.avatar.pose.hand_r.position;
+        let field_abs = this.selected_field.mesh.absolutePosition;
 
-        const target_pos = Position.getLocalFromGlobal(this.current_player.avatar.pose.hand_r, field_abs);
+        let target_pos = Position.getLocalFromGlobal(this.current_player.avatar.pose.hand_r, field_abs);
         setTimeout(() => {
             Action.moveHands(this.current_player.avatar.pose.hand_r, hand_rel, target_pos);
         }, 1000);
@@ -195,10 +195,9 @@ export class ChessState {
         this.game.controller.setFieldsAsPlayable(playable_fields);
 
         // Action
-        const hand_rel = this.current_player.avatar.pose.hand_r.position;
-        const field_abs = this.selected_field.mesh.absolutePosition;
-
-        const target_pos = Position.getLocalFromGlobal(this.current_player.avatar.pose.hand_r, field_abs);
+        let hand_rel = this.current_player.avatar.pose.hand_r.position;
+        let field_abs = this.selected_field.mesh.absolutePosition;
+        let target_pos = Position.getLocalFromGlobal(this.current_player.avatar.pose.hand_r, field_abs);
         Action.moveHands(this.current_player.avatar.pose.hand_r, hand_rel, target_pos);
     }
 
@@ -220,7 +219,6 @@ export class ChessState {
 
         // Pass to next player
         this.passToNextPlayer();
-
 
         // Make moves if Ai
         if (this.current_player.type !== "human") {
@@ -348,10 +346,11 @@ export class ChessState {
             }
             captured_fig.capture();
         }
+
         // Animate
-        const hand_rel = this.current_player.avatar.pose.hand_r.position;
-        const field_abs = Position.getLocalFromGlobal(this.current_player.avatar.pose.hand_r, this.game.chessboard.getField(move.to).mesh.absolutePosition);
-        const ori_rel = this.current_player.avatar.pose.hand_r_original.position;
+        let hand_rel = this.current_player.avatar.pose.hand_r.position;
+        let field_abs = Position.getLocalFromGlobal(this.current_player.avatar.pose.hand_r, this.game.chessboard.getField(move.to).mesh.absolutePosition);
+        let ori_rel = this.current_player.avatar.pose.hand_r_original.position;
 
         Action.moveHands(this.current_player.avatar.pose.hand_r, hand_rel, field_abs, ori_rel);
         Action.moveFigure(fig_to_move.mesh, fig_to_move.mesh.position, Position.convertToScenePos(move.to, "figure"));

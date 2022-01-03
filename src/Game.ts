@@ -155,14 +155,14 @@ export default class Game {
     }
 
     /**
-     * Initiates the players avatar, controller and changes to the camera
+     * Initiates the own player avatar, controller and changes to the camera
      * @param data
      */
     public async setupPlayerReady(data: IPlayerData) {
         await this.initiateAvatar(data.color, data.avatar);
-        setTimeout( async ()  => {
+        setTimeout(async () => {
             this.changeToPlayerCamera();
-        }, 100)
+        }, 500)
     }
 
     /**

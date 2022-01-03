@@ -189,17 +189,15 @@ export class DOM {
         this.message_screen.width = "500px";
         this.message_screen.height = "50px";
         this.message_screen.cornerRadius = DOM.CORNER_RADIUS;
+        this.message_screen.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+        this.message_screen.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_CENTER;
         texture.addControl(this.message_screen);
         let text = new GUI.TextBlock("message", message);
 
         if(type === "warning"){
-            this.message_screen.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
-            this.message_screen.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
             this.message_screen.background = DOM.WARNING_COLOR;
             text.color = DOM.PRIMARY_COLOR;
         }else if (type === "important") {
-            this.message_screen.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
-            this.message_screen.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_CENTER;
             this.message_screen.background = DOM.PRIMARY_COLOR;
             text.color = "black";
         }

@@ -46,7 +46,7 @@ export class ChessPlayer {
         this.color = color;
         this.state = state;
         this.avatar = avatar;
-        this.type = (type !== "human") ?  new AI(type, this.state,) : "human";
+        this.type = (type !== "human") ?  new AI(type, color, this.state,) : "human";
     }
 
 }
