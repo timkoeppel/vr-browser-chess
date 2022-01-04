@@ -286,11 +286,17 @@ export class ChessState {
 
     /**
      * Manages the processes involved when a figure is captured
+     * @param moved_fig
      * @param captured_figure
+     * @param captured_field
+     * @param is_en_passant
      */
-    public physicalCapture(captured_figure: ChessFigure): void {
-        // remove from chessboard physically TODO capture move hands
+    public capture(moved_fig: ChessFigure, captured_figure: ChessFigure, captured_field: ChessField, is_en_passant: boolean): void {
+        // logical capture
         captured_figure.on_field = false;
+        captured_field.figure = is_en_passant ? null : moved_fig;
+
+        // physical capture TODO capture move hands
         const new_pos = ChessState.getOffBoardPosition(captured_figure);
         this.actionmanager.moveFigure(captured_figure, captured_figure.position.scene_pos, new_pos);
         captured_figure.position = new Position(new_pos);
@@ -306,13 +312,20 @@ export class ChessState {
         // Capture case
         if (ChessState.isCapture(move)) {
             let captured_fig: ChessFigure;
+            let captured_field: ChessField;
+            let is_en_passant: boolean;
+
             if (ChessState.isEnPassantCapture(move)) {
                 const en_passant_field = ChessState.getEnPassantField(move);
-                captured_fig = this.game.chessboard.getField(en_passant_field).figure;
+                captured_field = this.game.chessboard.getField(en_passant_field);
+                captured_fig = captured_field.figure;
+                is_en_passant = true
             } else {
-                captured_fig = this.game.chessboard.getField(move.to).figure;
+                captured_field = this.game.chessboard.getField(move.to);
+                captured_fig = captured_field.figure;
+                is_en_passant = false;
             }
-            this.physicalCapture(captured_fig)
+            this.capture(fig_to_move, captured_fig, captured_field, is_en_passant)
         }
 
         // Animate
@@ -498,7 +511,7 @@ export class ChessState {
     private static getEnPassantField(move: Move): string {
         const x_pos_chess = move.to.charAt(0);
         const y_pos_chess = parseInt(move.to.charAt(1));
-        const addition = (move.color === "w") ? 1 : -1;
+        const addition = (move.color === "w") ? -1 : 1;
         return x_pos_chess + (y_pos_chess + addition).toString();
     };
 
