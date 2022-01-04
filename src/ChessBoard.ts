@@ -119,6 +119,14 @@ export class ChessBoard {
         return fields;
     }
 
+    public getPromotionQueen(color: "white" | "black"): ChessFigure{
+        const queen_index = this.game.chessboard.countQueens(color) + 1;
+        const color_abbr = color.charAt(0);
+        const queen_id = `fig_queen_${color_abbr}${queen_index}`;
+
+        return this.figures.find(fig => fig.id === queen_id);
+    }
+
     // ************************************************************************
     // HELPER METHODS
     // ************************************************************************
@@ -129,6 +137,12 @@ export class ChessBoard {
      */
     public getField(chess_pos: string): ChessField {
         return this.fields.find(f => f.id === chess_pos);
+    }
+
+    public countQueens(color: "white" | "black"): number {
+        const color_abbr = color.charAt(0);
+        const queens = this.figures.filter(fig => fig.id.includes(`fig_queen_${color_abbr}`) && fig.on_field);
+        return queens.length;
     }
 
     /**

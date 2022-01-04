@@ -147,7 +147,7 @@ export class AI {
     }
 
     /**
-     * Recursive Alpha-Beta Minimax for getting the best move
+     * Recursive Alpha-Beta Minimax for getting the best move (BLACK is maximizing-player)
      * @param game The current game state according to our chess.ts logic
      * @param depth The depth the alpha-beta minimax should go (at least 2 recommended for max_player)
      * @param alpha The alpha value to determine pruning
@@ -231,11 +231,12 @@ export class AI {
     };
 
     /**
-     * The field weight for white every figure (Some figures are more valuable on special positions)
+     * The field weight for black every figure (Some figures are more valuable on special positions)
+     * -> maximizing player
      * Note: weights are from stockfish
      * @private
      */
-    private static FIELD_WEIGHTS_W = {
+    private static FIELD_WEIGHTS_B = {
         'P': [
             [100, 100, 100, 100, 105, 100, 100, 100],
             [78, 83, 86, 73, 102, 82, 85, 90],
@@ -299,16 +300,17 @@ export class AI {
     };
 
     /**
-     * The field weight for black every figure (Some figures are more valuable on special positions)
+     * The field weight for white every figure (Some figures are more valuable on special positions)
+     * -> minimizing player
      * Note: weights are from stockfish
      * @private
      */
-    private static FIELD_WEIGHTS_B = {
-        'P': AI.FIELD_WEIGHTS_W['P'].slice().reverse(),
-        'N': AI.FIELD_WEIGHTS_W['N'].slice().reverse(),
-        'B': AI.FIELD_WEIGHTS_W['B'].slice().reverse(),
-        'R': AI.FIELD_WEIGHTS_W['R'].slice().reverse(),
-        'Q': AI.FIELD_WEIGHTS_W['Q'].slice().reverse(),
-        'K': AI.FIELD_WEIGHTS_W['K'].slice().reverse(),
+    private static FIELD_WEIGHTS_W = {
+        'P': AI.FIELD_WEIGHTS_B['P'].slice().reverse(),
+        'N': AI.FIELD_WEIGHTS_B['N'].slice().reverse(),
+        'B': AI.FIELD_WEIGHTS_B['B'].slice().reverse(),
+        'R': AI.FIELD_WEIGHTS_B['R'].slice().reverse(),
+        'Q': AI.FIELD_WEIGHTS_B['Q'].slice().reverse(),
+        'K': AI.FIELD_WEIGHTS_B['K'].slice().reverse(),
     }
 }

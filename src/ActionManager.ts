@@ -1,26 +1,64 @@
 import * as BABYLON from "@babylonjs/core";
+import {ChessState} from "./ChessState";
+import {ChessFigure} from "./ChessFigure";
 
 /**
  * Action manages all Actions/Animations including movements
  */
-export class Action {
+export class ActionManager {
+    get state(): ChessState {
+        return this._state;
+    }
+
+    set state(value: ChessState) {
+        this._state = value;
+    }
+    private _state: ChessState;
+
+    constructor(state: ChessState) {
+        this.state = state;
+    }
 
     /**
      * Moves a chess figure to the given 3D vector location
-     * @param fig_mesh The mesh of the figure
+     * @param fig
      * @param start_pos The starting 3D position of the animation (normally fig_mesh's location)
      * @param end_pos The ending 3D position of the animation
      */
-    public static moveFigure(fig_mesh: BABYLON.AbstractMesh, start_pos: BABYLON.Vector3, end_pos: BABYLON.Vector3) {
+    public moveFigure(fig: ChessFigure, start_pos: BABYLON.Vector3, end_pos: BABYLON.Vector3) {
         BABYLON.Animation.CreateAndStartAnimation(
             "move_figure",
-            fig_mesh,
+            fig.mesh,
             "position",
             100,
             100,
             start_pos,
             end_pos,
-            BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+            BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT,
+        );
+    }
+
+    /**
+     * Moves the figure and fulfills a promotion immediately afterwards
+     * @param fig
+     * @param start_pos
+     * @param end_pos
+     */
+    public moveFigureAndPromote(fig: ChessFigure, start_pos: BABYLON.Vector3, end_pos: BABYLON.Vector3){
+        const color = this.state.current_player.color;
+        BABYLON.Animation.CreateAndStartAnimation(
+            "move_figure",
+            fig.mesh,
+            "position",
+            100,
+            100,
+            start_pos,
+            end_pos,
+            BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT,
+            new BABYLON.CubicEase(),
+            () => {
+                this.state.physicalPromotion(fig, color)
+            }
         );
     }
 

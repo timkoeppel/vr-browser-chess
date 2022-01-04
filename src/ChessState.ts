@@ -4,16 +4,24 @@ import {ChessField} from "./ChessField";
 import {Chess, Move} from "chess.ts";
 import {ChessPlayer} from "./ChessPlayer";
 import {Position} from "./Position";
-import {Action} from "./Action";
+import {ActionManager} from "./ActionManager";
 import Game from "./Game";
 import {AI} from "./AI";
 import {Avatar} from "./Avatar";
+import {ChessBoard} from "./ChessBoard";
 
 /**
  * ChessState manages the game state, logic and move management
  * ... -> next Player (begin) -> select move -> make move -> next Player -> ... -> Game Over
  */
 export class ChessState {
+    get actionmanager(): ActionManager {
+        return this._actionmanager;
+    }
+
+    set actionmanager(value: ActionManager) {
+        this._actionmanager = value;
+    }
     get is_game_running(): boolean {
         return this._is_game_running;
     }
@@ -95,13 +103,14 @@ export class ChessState {
     private _moves: Array<Move>;
     private _game: Game;
     private _is_game_running: boolean;
+    private _actionmanager: ActionManager;
 
     constructor(game: Game, own_color: "white" | "black", black_player_type: "human" | "easy" | "intermediate" | "expert", own_avatar: Avatar, other_avatar: Avatar) {
         const white_avatar = (own_color === "white") ? own_avatar : other_avatar;
         const black_avatar = (own_color === "black") ? own_avatar : other_avatar;
 
         this.logic = new Chess();
-        this.white = new ChessPlayer("human", "white", white_avatar, this); // TODO Player selection
+        this.white = new ChessPlayer("human", "white", white_avatar, this);
         this.black = new ChessPlayer(black_player_type, "black", black_avatar, this);
         this.own_player = own_color === "white" ? this.white : this.black;
         this.current_player = this.white;
@@ -109,6 +118,7 @@ export class ChessState {
         this.is_game_running = true;
         this.moves = [];
         this.game = game;
+        this.actionmanager = new ActionManager(this);
     }
 
     // ************************************************************************
@@ -175,7 +185,7 @@ export class ChessState {
 
         let target_pos = Position.getLocalFromGlobal(this.current_player.avatar.pose.hand_r, field_abs);
         setTimeout(() => {
-            Action.moveHands(this.current_player.avatar.pose.hand_r, hand_rel, target_pos);
+            ActionManager.moveHands(this.current_player.avatar.pose.hand_r, hand_rel, target_pos);
         }, 1000);
         setTimeout(() => {
             this.makeMove(move, this.selected_field.figure);
@@ -202,7 +212,7 @@ export class ChessState {
         let hand_rel = this.current_player.avatar.pose.hand_r.position;
         let field_abs = this.selected_field.mesh.absolutePosition;
         let target_pos = Position.getLocalFromGlobal(this.current_player.avatar.pose.hand_r, field_abs);
-        Action.moveHands(this.current_player.avatar.pose.hand_r, hand_rel, target_pos);
+        ActionManager.moveHands(this.current_player.avatar.pose.hand_r, hand_rel, target_pos);
     }
 
     /**
@@ -226,8 +236,7 @@ export class ChessState {
 
         // Make moves if Ai and continues the lifecycle
         if (this.current_player.type !== "human") {
-            let ai = this.current_player.type as AI;
-            const move = ChessState.toUpperNotationSingle(ai.getMove());
+            const move = ChessState.toUpperNotationSingle((this.current_player.type as AI).getMove());
             this.makeOtherPlayerMove(move);
         }
     }
@@ -265,14 +274,25 @@ export class ChessState {
     }
 
     /**
+     * Manages the processes involved when a figure is promoted (to a queen)
+     * @param promoted_pawn
+     * @param color
+     */
+    public physicalPromotion(promoted_pawn: ChessFigure, color: "white" | "black"): void {
+        let promotion_queen = this.game.chessboard.getPromotionQueen(color);
+        promotion_queen.addToField(promoted_pawn.position);
+        promoted_pawn.removeFromField();
+    }
+
+    /**
      * Manages the processes involved when a figure is captured
      * @param captured_figure
      */
-    public processCapturedFigure(captured_figure: ChessFigure): void {
+    public physicalCapture(captured_figure: ChessFigure): void {
+        // remove from chessboard physically TODO capture move hands
+        captured_figure.on_field = false;
         const new_pos = ChessState.getOffBoardPosition(captured_figure);
-
-        Action.moveFigure(captured_figure.mesh, captured_figure.position.scene_pos, new_pos);
-        // TODO capture move hands
+        this.actionmanager.moveFigure(captured_figure, captured_figure.position.scene_pos, new_pos);
         captured_figure.position = new Position(new_pos);
     }
 
@@ -292,21 +312,28 @@ export class ChessState {
             } else {
                 captured_fig = this.game.chessboard.getField(move.to).figure;
             }
-            captured_fig.capture();
+            this.physicalCapture(captured_fig)
         }
 
         // Animate
         let hand_rel = this.current_player.avatar.pose.hand_r.position;
         let field_abs = Position.getLocalFromGlobal(this.current_player.avatar.pose.hand_r, this.game.chessboard.getField(move.to).mesh.absolutePosition);
         let ori_rel = this.current_player.avatar.pose.hand_r_original.position;
+        const target_pos = new Position(move.to, "figure");
 
-        Action.moveHands(this.current_player.avatar.pose.hand_r, hand_rel, field_abs, ori_rel);
-        Action.moveFigure(fig_to_move.mesh, fig_to_move.mesh.position, Position.convertToScenePos(move.to, "figure"));
+        ActionManager.moveHands(this.current_player.avatar.pose.hand_r, hand_rel, field_abs, ori_rel);
+
+        // Promotion case
+        if (ChessState.isPromotion(move)) {
+            this.actionmanager.moveFigureAndPromote(fig_to_move, fig_to_move.mesh.position, target_pos.scene_pos);
+        }else {
+            this.actionmanager.moveFigure(fig_to_move, fig_to_move.mesh.position, target_pos.scene_pos);
+        }
 
         // Rochade/Castling case
         if (ChessState.isCastling(move)) {
             const castling = this.getCastlingInfo(move);
-            Action.moveFigure(castling['rook'].mesh, castling['from'].position.scene_pos, castling['to'].position.scene_pos);
+            this.actionmanager.moveFigure(castling['rook'].mesh, castling['from'].position.scene_pos, castling['to'].position.scene_pos);
         }
     }
 
@@ -317,8 +344,15 @@ export class ChessState {
      * @private
      */
     private makeLogicalMove(move: Move, fig_to_move: ChessFigure): void {
+        // Promotion (only queens for simplicity)
+        const prom_fig = ChessState.isPromotion(move) ? "q" : null;
+
         // Inform Chess.ts logic about move
-        const made_move = this.logic.move({from: move.from.toLowerCase(), to: move.to.toLowerCase()});
+        const made_move = this.logic.move({
+            from: move.from.toLowerCase(),
+            to: move.to.toLowerCase(),
+            promotion: prom_fig
+        });
         console.log(made_move);
         console.log(this.logic.ascii());
 
@@ -450,6 +484,10 @@ export class ChessState {
      */
     private static isEnPassantCapture(move: Move): boolean {
         return move.flags.includes("E");
+    }
+
+    private static isPromotion(move: Move): boolean {
+        return move.flags.includes("P");
     }
 
     /**

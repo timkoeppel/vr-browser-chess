@@ -114,3 +114,6 @@ dist
 *.blend
 *.blend1
 
+# Python evaluation (figures, data, ...)
+evaluation/
+

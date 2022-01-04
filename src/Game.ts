@@ -145,10 +145,8 @@ export default class Game {
 
         this.initiateLights();
         this.initiateMenuCamera();
-        this.initiateMeshes().then(() => {
-        });
-        this.initiateXR().then(() => {
-        });
+        this.initiateMeshes();
+        this.initiateXR();
         this.dom = new DOM(own_color, this, this.scene);
         this.DoRender(false);
     }
@@ -162,6 +160,8 @@ export default class Game {
      */
     public async setupPlayerReady(data: IPlayerData) {
         await this.initiateAvatar(data.color, data.avatar);
+        // Despite the asynchronous design it does not have the avatar initialized
+        // when wanting to change the camera --> unprofessional timeout
         setTimeout(async () => {
             this.changeToPlayerCamera();
         }, 500)

@@ -120,6 +120,4 @@ export class Pose {
         Object.assign(copy, instance);
         return copy;
     }
-
-
 }

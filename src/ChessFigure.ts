@@ -96,8 +96,19 @@ export class ChessFigure {
         const figure_meshes: Array<BABYLON.AbstractMesh> = meshes.filter(m => m.id.includes("fig"));
 
         figure_meshes.forEach(mesh => {
+            const color = this.getColor(mesh);
+            const color_abbr = color.charAt(0);
+            const is_not_on_field = mesh.id.includes(`fig_queen_${color_abbr}`) && mesh.id !== `fig_queen_${color_abbr}1`;
+
             figures.push(
-                new ChessFigure(mesh.id, new Position(mesh.position, "figure"), mesh, this.getColor(mesh), true, board)
+                new ChessFigure(
+                    mesh.id,
+                    new Position(mesh.position, "figure"),
+                    mesh,
+                    color,
+                    !is_not_on_field,
+                    board
+                )
             );
         });
 
@@ -105,11 +116,23 @@ export class ChessFigure {
     }
 
     /**
-     * Initializes the capture of the figure
+     * removes this figure from the physical field to the global origin (hidden in table)
      */
-    public capture() {
+    public removeFromField(){
+        this.position = new Position(BABYLON.Vector3.Zero());
+        this.mesh.position = BABYLON.Vector3.Zero();
         this.on_field = false;
-        this.board.state.processCapturedFigure(this);
+    }
+
+    /**
+     * Adds the figure to the table to the given position
+     * @param target_pos
+     */
+    public addToField(target_pos){
+        this.on_field = true;
+        this.position = target_pos;
+        this.board.getField(this.position.chess_pos).figure = this;
+        this.mesh.position = target_pos.scene_pos;
     }
 
     // ************************************************************************
