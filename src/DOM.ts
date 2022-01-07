@@ -121,6 +121,17 @@ export class DOM {
     // MAIN METHODS
     // ************************************************************************
 
+    public askPermissions(): void {
+        // Microphone
+        navigator.mediaDevices.getUserMedia({audio: true})
+            .then(function (stream) {
+                console.log('Microphone access granted!')
+            })
+            .catch(function (err) {
+                console.log('Microphone access denied!')
+            });
+    }
+
     /**
      * Redirect method if lobby is full
      * @param location

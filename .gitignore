@@ -117,3 +117,6 @@ dist
 # Python evaluation (figures, data, ...)
 evaluation/
 
+# performance measure files
+*.txt
+

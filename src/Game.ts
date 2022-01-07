@@ -148,7 +148,8 @@ export default class Game {
         this.initiateMeshes();
         this.initiateXR();
         this.dom = new DOM(own_color, this, this.scene);
-        this.DoRender(false);
+        this.DoRender(true);
+
     }
 
     // ************************************************************************
@@ -164,7 +165,7 @@ export default class Game {
         // when wanting to change the camera --> unprofessional timeout
         setTimeout(async () => {
             this.changeToPlayerCamera();
-        }, 500)
+        }, 1500)
     }
 
     /**
@@ -179,7 +180,6 @@ export default class Game {
         await this.initiateAvatar(other_player.color, other_player.avatar);
         this.chessboard.startChessGame(own_color, black_player, this.own_avatar, this.other_avatar);
         await this.initiateController(own_player.controller);
-        console.log(`Starting the chess game ...`);
     }
 
     /**
@@ -246,7 +246,7 @@ export default class Game {
         const z_pos = this.own_avatar.pose.nose.absolutePosition.z;
         const y_pos = this.own_avatar.pose.eye_l.absolutePosition.y;
         const eye_position = new BABYLON.Vector3(0, y_pos, z_pos);
-        console.log(eye_position);
+        // console.log(eye_position);
         this.camera.position.set(eye_position.x, eye_position.y, eye_position.z);
         this.camera.setTarget(new BABYLON.Vector3(0, 25, 0));
         this.camera.applyGravity = false;
@@ -260,11 +260,6 @@ export default class Game {
         console.log(`Initiating ${color} avatar ...`);
         let avatar = new Avatar(color, file_name);
         await this.LoadAvatar(avatar, color);
-        if (color === this.own_color) {
-            this.own_avatar = avatar;
-        } else {
-            this.other_avatar = avatar;
-        }
     }
 
 
@@ -308,15 +303,9 @@ export default class Game {
      * @constructor
      */
     public DoRender(show_fps: boolean): void {
-        // Fps management
-        let fps_element = document.getElementById("fps");
-        if (show_fps) {
-            this.app.game.dom.showHTMLElement(fps_element)
-        }
-
         // run the main render loop
         this.engine.runRenderLoop(() => {
-            fps_element.innerHTML = this.engine.getFps().toFixed() + " fps";
+            //const fps = this.engine.getFps().toFixed(1);
             this.scene.render();
         });
 
@@ -345,6 +334,11 @@ export default class Game {
 
             console.log(`Avatar ${color} initiated.`);
         });
+        if (color === this.own_color) {
+            this.own_avatar = avatar;
+        } else {
+            this.other_avatar = avatar;
+        }
     }
 
 }

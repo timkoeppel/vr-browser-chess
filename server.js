@@ -2,6 +2,7 @@ const express = require('express');
 const https = require('https');
 const fs = require('fs');
 const socketIO = require('socket.io');
+const { performance } = require('perf_hooks');
 
 // options
 const public_path = "dist";
@@ -23,6 +24,8 @@ const webpackConfig = require('./webpack.config');
 const {response} = require("express");
 const compiler = webpack(webpackConfig);
 
+
+
 application.use(require("webpack-dev-middleware")(compiler, {
     publicPath: webpackConfig.output.publicPath
 }));
@@ -36,6 +39,13 @@ server.listen(PORT, () => {
     console.log(`Start of server on localhost:${PORT} ...`);
 });
 
+// Performance
+let connect = [];
+let ready = [];
+let move = [];
+let disconnect = [];
+
+
 // DATABASE
 let game_started = false;
 let white = {};
@@ -43,9 +53,12 @@ let black = {};
 let player_count = 0;
 let player_limit = 2;
 
-// SOCKET
+// **************************************************************************************
+// ************************************** SOCKET ****************************************
+// **************************************************************************************
 io.on('connect', socket => {
     // Connect Player
+    const connect_1 = performance.now();
     player_count++;
     if (player_count === 1) {
         connectPlayer(socket, white, "white")
@@ -54,28 +67,39 @@ io.on('connect', socket => {
     } else if (socket !== undefined) {
         redirect(socket);
     }
+    const connect_2 = performance.now();
+    recordPerformance("connect", connect, connect_1, connect_2);
 
     // Ready
     socket.on('player_ready', (data) => {
+        const ready_1 = performance.now();
         if (socket.id === white.id) {
             startWhiteGame(socket, data);
         } else {
             startBlackGame(socket, data);
         }
+        const ready_2 = performance.now();
+        recordPerformance("ready", ready, ready_1, ready_2);
     });
 
     // Move
     socket.on('player_move', (data) => {
+        const move_1 = performance.now();
         if (socket.id === white.id && black.player_type === "human") {
             makeMove(data, white, black)
         } else if (socket.id === black.id) {
             makeMove(data, black, white)
         }
+        const move_2 = performance.now();
+        recordPerformance("move", move, move_1, move_2)
     });
 
     // Disconnect
     socket.on('disconnect', () => {
+        const disconnect_1 = performance.now();
         disconnectPlayer(socket);
+        const disconnect_2 = performance.now();
+        recordPerformance("disconnect", disconnect, disconnect_1,disconnect_2);
     })
 });
 
@@ -208,5 +232,17 @@ function makeMove(data, from_player, to_player){
     io.to(to_player.id).emit('other_player_move', (data));
     console.log(`Send move to ${to_player.color} player ...`);
 }
+
+function recordPerformance(type, array, data_1, data_2){
+    array.push((data_2 - data_1).toFixed(2));
+    const fs = require('fs');
+
+    fs.writeFile(`./${type}.txt`, array.join(", "), err => {
+        if (err) {
+            console.error(err);
+        }
+    })
+}
+
 
 

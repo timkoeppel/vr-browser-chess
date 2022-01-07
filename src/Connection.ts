@@ -57,4 +57,7 @@ export class Connection {
         this.socket.emit("player_move", data)
     }
 
+    public emitFPS(fps_list){
+        this.socket.emit("fps", fps_list);
+    }
 }
