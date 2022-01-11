@@ -74,7 +74,7 @@ export class ChessFigure {
     constructor(id: string, pos: Position, mesh: BABYLON.AbstractMesh, color: "white" | "black", on_field: boolean, board: ChessBoard) {
         this.id = id;
         this.position = pos;
-        this.original_position = pos;
+        this.original_position = (id.includes("fig_queen")) ? ChessFigure.getOriginalQueenPosition(color) : pos;
         this.mesh = mesh;
         this.color = color;
         this.on_field = on_field;
@@ -118,7 +118,7 @@ export class ChessFigure {
     /**
      * removes this figure from the physical field to the global origin (hidden in table)
      */
-    public removeFromField(){
+    public removeFromField() {
         this.position = new Position(BABYLON.Vector3.Zero());
         this.mesh.position = BABYLON.Vector3.Zero();
         this.on_field = false;
@@ -128,7 +128,7 @@ export class ChessFigure {
      * Adds the figure to the table to the given position
      * @param target_pos
      */
-    public addToField(target_pos){
+    public addToField(target_pos) {
         this.on_field = true;
         this.position = target_pos;
         this.board.getField(this.position.chess_pos).figure = this;
@@ -147,5 +147,17 @@ export class ChessFigure {
     private static getColor(mesh: BABYLON.AbstractMesh): "white" | "black" {
         const color_short = <"b" | "w">mesh.id.slice(-2, -1);
         return color_short === "w" ? "white" : "black";
+    }
+
+    /**
+     * Gets the Position object of the corresponding queen
+     * @param color
+     * @private
+     */
+    private static getOriginalQueenPosition(color: "white" | "black"): Position {
+        const w_pos = new Position("D1", "figure");
+        const b_pos = new Position("D8", "figure");
+
+        return (color === "white") ? w_pos : b_pos;
     }
 }

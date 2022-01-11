@@ -2,7 +2,7 @@ const express = require('express');
 const https = require('https');
 const fs = require('fs');
 const socketIO = require('socket.io');
-const { performance } = require('perf_hooks');
+const performance = require('perf_hooks');
 
 // options
 const public_path = "dist";
@@ -25,7 +25,6 @@ const {response} = require("express");
 const compiler = webpack(webpackConfig);
 
 
-
 application.use(require("webpack-dev-middleware")(compiler, {
     publicPath: webpackConfig.output.publicPath
 }));
@@ -39,12 +38,10 @@ server.listen(PORT, () => {
     console.log(`Start of server on localhost:${PORT} ...`);
 });
 
-// Performance
-let connect = [];
-let ready = [];
-let move = [];
-let disconnect = [];
-
+let start = fs.readFileSync("start.txt", "utf8").split(", ");
+let easy = fs.readFileSync("easy.txt", "utf8").split(", ");
+let intermediate = fs.readFileSync("intermediate.txt", "utf8").split(", ");
+let expert = fs.readFileSync("expert.txt", "utf8").split(", ");
 
 // DATABASE
 let game_started = false;
@@ -58,7 +55,6 @@ let player_limit = 2;
 // **************************************************************************************
 io.on('connect', socket => {
     // Connect Player
-    const connect_1 = performance.now();
     player_count++;
     if (player_count === 1) {
         connectPlayer(socket, white, "white")
@@ -67,39 +63,72 @@ io.on('connect', socket => {
     } else if (socket !== undefined) {
         redirect(socket);
     }
-    const connect_2 = performance.now();
-    recordPerformance("connect", connect, connect_1, connect_2);
 
-    // Ready
-    socket.on('player_ready', (data) => {
-        const ready_1 = performance.now();
+    // Selection -> Avatar preperation
+    socket.on('selection_done', (data) => {
         if (socket.id === white.id) {
-            startWhiteGame(socket, data);
+            prepareWhiteGame(socket, data);
         } else {
-            startBlackGame(socket, data);
+            prepareBlackGame(socket, data);
         }
-        const ready_2 = performance.now();
-        recordPerformance("ready", ready, ready_1, ready_2);
+    });
+
+    // Preperation -> Start
+    socket.on('preparation_done', () => {
+        const t1 = performance.performance.now();
+       if(socket.id === white.id){
+           white.prepared = true;
+       }else{
+           black.prepared = true;
+       }
+       startGameIfBothReady();
+       const t2 = performance.performance.now();
+       start.push((t2 - t1).toFixed(2));
+       fs.writeFile("./start.txt", start.join(", "), err => {
+            if (err) {
+                console.error(err)
+            }
+        });
     });
 
     // Move
     socket.on('player_move', (data) => {
-        const move_1 = performance.now();
         if (socket.id === white.id && black.player_type === "human") {
             makeMove(data, white, black)
         } else if (socket.id === black.id) {
             makeMove(data, black, white)
         }
-        const move_2 = performance.now();
-        recordPerformance("move", move, move_1, move_2)
+    });
+
+    // Performance
+    socket.on('easy', (val) => {
+        easy.push(val);
+        fs.writeFile("./easy.txt", easy.join(", "), err => {
+            if (err) {
+                console.error(err)
+            }
+        });
+    });
+    socket.on('intermediate', (val) => {
+        intermediate.push(val);
+        fs.writeFile("./intermediate.txt", intermediate.join(", "), err => {
+            if (err) {
+                console.error(err)
+            }
+        });
+    });
+    socket.on('expert', (val) => {
+        expert.push(val);
+        fs.writeFile("./expert.txt", expert.join(", "), err => {
+            if (err) {
+                console.error(err)
+            }
+        });
     });
 
     // Disconnect
     socket.on('disconnect', () => {
-        const disconnect_1 = performance.now();
         disconnectPlayer(socket);
-        const disconnect_2 = performance.now();
-        recordPerformance("disconnect", disconnect, disconnect_1,disconnect_2);
     })
 });
 
@@ -111,6 +140,7 @@ function connectPlayer(socket, player, color) {
     player.id = socket.id;
     player.color = color;
     player.ready = false;
+    player.prepared = false;
     socket.emit("initiate", color);
     console.log(`Player ${player.color} registered`);
     console.log(`${player_count}/${player_limit} player active`);
@@ -147,7 +177,7 @@ function redirect(socket) {
     console.log("Full Lobby. Connected Player rejected!")
 }
 
-function startWhiteGame(socket, data) {
+function prepareWhiteGame(socket, data) {
     Object.assign(white, data);
     white.ready = true;
     console.log(`Player ${white.color} is ready!`);
@@ -162,24 +192,24 @@ function startWhiteGame(socket, data) {
         // Black AI creation
         Object.assign(black, createAIData(black));
         console.log(`Player black is played by an ${black.player_type} AI!`);
-        startGameIfBothReady(socket);
+        prepareGameIfBothReady(socket);
 
         // A person is already in as black player --> redirect
         if (is_black_player_in_lobby) {
             redirect(getSocketById(black.id))
         }
-    }else{
-        startGameIfBothReady(socket);
+    } else {
+        prepareGameIfBothReady(socket);
     }
 }
 
-function startBlackGame(socket, data) {
+function prepareBlackGame(socket, data) {
     Object.assign(black, data);
     black.ready = true;
     socket.emit('ready', toIPlayerData(black));
     console.log(`Player ${black.color} is ready!`);
 
-    startGameIfBothReady(socket);
+    prepareGameIfBothReady(socket);
 }
 
 function getSocketById(id) {
@@ -190,6 +220,7 @@ function toIPlayerData(player) {
     let data = Object.assign({}, player);
     delete data.id;
     delete data.ready;
+    delete data.prepared;
     return data
 }
 
@@ -197,6 +228,7 @@ function createAIData(player) {
     const avatars = ["male_01", "male_02", "male_03", "female_01", "female_02", "female_03"];
     const data = {
         ready: true,
+        prepared: true,
         color: "black",
         controller: "gaze",
         avatar: avatars[Math.floor(Math.random() * avatars.length)],
@@ -213,36 +245,33 @@ function resetApp() {
     console.log(`No player in the game anymore. Resetting the game ...`)
 }
 
-function startGameIfBothReady(socket) {
+function prepareGameIfBothReady(socket) {
     if (socket.id === black.id && white.ready && black.ready) {
-        console.log(`Starting game ...`);
-        socket.emit('start', [toIPlayerData(black), toIPlayerData(white)]);
-        io.to(white.id).emit('start', [toIPlayerData(white), toIPlayerData(black)]);
-        game_started = true;
+        console.log(`Preparing game ...`);
+        socket.emit('prepare', [toIPlayerData(black), toIPlayerData(white)]);
+        io.to(white.id).emit('prepare', [toIPlayerData(white), toIPlayerData(black)]);
+        //game_started = true;
     } else if (socket.id === white.id && white.ready && black.ready) {
-        console.log(`Starting game ...`);
-        socket.emit('start', [toIPlayerData(white), toIPlayerData(black)]);
-        io.to(black.id).emit('start', [toIPlayerData(black), toIPlayerData(white)]);
-        game_started = true;
+        console.log(`Preparing game ...`);
+        socket.emit('prepare', [toIPlayerData(white), toIPlayerData(black)]);
+        io.to(black.id).emit('prepare', [toIPlayerData(black), toIPlayerData(white)]);
+        //game_started = true;
     }
 }
 
-function makeMove(data, from_player, to_player){
+function startGameIfBothReady(){
+    if(white.prepared && black.prepared) {
+        io.to(white.id).emit('start', [toIPlayerData(white), toIPlayerData(black)]);
+        io.to(black.id).emit('start', [toIPlayerData(black), toIPlayerData(white)]);
+    }
+}
+
+function makeMove(data, from_player, to_player) {
     console.log(`Player ${from_player.color} made move from ${data.from} to ${data.to}.`);
     io.to(to_player.id).emit('other_player_move', (data));
     console.log(`Send move to ${to_player.color} player ...`);
 }
 
-function recordPerformance(type, array, data_1, data_2){
-    array.push((data_2 - data_1).toFixed(2));
-    const fs = require('fs');
-
-    fs.writeFile(`./${type}.txt`, array.join(", "), err => {
-        if (err) {
-            console.error(err);
-        }
-    })
-}
 
 
 

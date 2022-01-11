@@ -22,6 +22,7 @@ export class ChessState {
     set actionmanager(value: ActionManager) {
         this._actionmanager = value;
     }
+
     get is_game_running(): boolean {
         return this._is_game_running;
     }
@@ -147,14 +148,14 @@ export class ChessState {
                 }
                 // Beatable enemy figure --> Make (beat) move
                 else if (this.isPartOfMove(clicked_field)) {
-                    this.makeHumanMove(clicked_field)
+                    this.makeHumanMove(clicked_field);
                 }
             }
             // Field without figure
             else {
                 // Playable Field --> Make move
                 if (this.isPartOfMove(clicked_field)) {
-                    this.makeHumanMove(clicked_field)
+                    this.makeHumanMove(clicked_field);
                 }
             }
         })
@@ -344,7 +345,7 @@ export class ChessState {
         // Promotion case
         if (ChessState.isPromotion(move)) {
             this.actionmanager.moveFigureAndPromote(fig_to_move, fig_to_move.mesh.position, target_pos.scene_pos);
-        }else {
+        } else {
             this.actionmanager.moveFigure(fig_to_move, fig_to_move.mesh.position, target_pos.scene_pos);
         }
 

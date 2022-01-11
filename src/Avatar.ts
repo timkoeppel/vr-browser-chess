@@ -5,6 +5,13 @@ import {Pose} from "./Pose";
  * Avatar manages everything avatar related
  */
 export class Avatar {
+    get loaded(): boolean {
+        return this._loaded;
+    }
+
+    set loaded(value: boolean) {
+        this._loaded = value;
+    }
     get rootURL(): string {
         return this._rootURL;
     }
@@ -69,6 +76,7 @@ export class Avatar {
     private _scale: BABYLON.Vector3;
     private _scene: BABYLON.ISceneLoaderAsyncResult;
     private _pose: Pose;
+    private _loaded: boolean;
 
     /**
      *
@@ -82,6 +90,7 @@ export class Avatar {
         this.position = Avatar._getPlayerSidePosition(player_side);
         this.rotation = Avatar._getRotation(player_side);
         this.scale = new BABYLON.Vector3(-scale, scale, scale);
+        this.loaded = false;
     }
 
     // ************************************************************************

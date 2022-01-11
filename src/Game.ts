@@ -149,7 +149,6 @@ export default class Game {
         this.initiateXR();
         this.dom = new DOM(own_color, this, this.scene);
         this.DoRender(true);
-
     }
 
     // ************************************************************************
@@ -159,28 +158,38 @@ export default class Game {
      * Initiates the own player avatar, controller and changes to the camera
      * @param data
      */
-    public async setupPlayerReady(data: IPlayerData) {
+    public async setupOwnPlayerReady(data: IPlayerData) {
         await this.initiateAvatar(data.color, data.avatar);
+
         // Despite the asynchronous design it does not have the avatar initialized
         // when wanting to change the camera --> unprofessional timeout
         setTimeout(async () => {
             this.changeToPlayerCamera();
-        }, 1500)
+        }, 1000)
     }
 
     /**
-     * Starts the chess game by initiating the other player and start the logic engine
+     * Prepares the chess game by initiating the other players avatar
      * @param own_player
      * @param other_player
      */
-    public async startChessGame(own_player: IPlayerData, other_player: IPlayerData) {
+    public async prepareChessGame(own_player: IPlayerData, other_player: IPlayerData) {
+        await this.initiateAvatar(other_player.color, other_player.avatar);
+    }
+
+    /**
+     * Starts the chess game by starting the logic engine and initiating controller
+     * @param own_player
+     * @param other_player
+     */
+    public async startChessGame(own_player: IPlayerData, other_player: IPlayerData){
         const own_color = own_player.color;
         const black_player = (own_player.color === "white") ? other_player.player_type : own_player.player_type;
 
-        await this.initiateAvatar(other_player.color, other_player.avatar);
         this.chessboard.startChessGame(own_color, black_player, this.own_avatar, this.other_avatar);
         await this.initiateController(own_player.controller);
     }
+
 
     /**
      * Initiates the canvas, engine and the scene (Babylon stuff)
@@ -212,10 +221,13 @@ export default class Game {
      */
     public async initiateMeshes() {
         console.log(`Initiating all meshes ...`);
+        const t1 = performance.now();
         await BABYLON.SceneLoader.AppendAsync("./meshes/", "scene.glb", this.scene).then(scene => {
             this.scene = scene;
             this.chessboard = new ChessBoard(scene.meshes, this);
-            console.log(`Meshes initiated.`);
+            const t2 = performance.now();
+            const t = ((t2 - t1)/1000).toFixed(2);
+            console.log(`Meshes initiated in ${t} ms.`);
         }).catch(error => {
             console.log(error);
         });
@@ -258,8 +270,14 @@ export default class Game {
      */
     public async initiateAvatar(color: "white" | "black", file_name: string): Promise<void> {
         console.log(`Initiating ${color} avatar ...`);
-        let avatar = new Avatar(color, file_name);
-        await this.LoadAvatar(avatar, color);
+        // Assignment in game
+        if (color === this.own_color) {
+            this.own_avatar = new Avatar(color, file_name);
+            await this.LoadAvatar(this.own_avatar, color);
+        } else {
+            this.other_avatar = new Avatar(color, file_name);
+            await this.LoadAvatar(this.other_avatar, color);
+        }
     }
 
 
@@ -325,19 +343,34 @@ export default class Game {
      * @constructor
      */
     private async LoadAvatar(avatar: Avatar, color: "white" | "black"): Promise<void> {
+        const t1 = performance.now();
         await BABYLON.SceneLoader.ImportMeshAsync("", avatar.rootURL, avatar.filename, this.scene).then(result => {
             avatar.scene = result;
             avatar.stopAnimations();
             avatar.placeAvatar();
             avatar.pose = new Pose(result.transformNodes);
             avatar.seatAvatar();
+            avatar.loaded = true;
 
-            console.log(`Avatar ${color} initiated.`);
+            const t2 = performance.now();
+            const t = ((t2 - t1)/1000).toFixed(2);
+            console.log(`Avatar ${color} initiated in ${t} s.`);
         });
-        if (color === this.own_color) {
-            this.own_avatar = avatar;
-        } else {
-            this.other_avatar = avatar;
+        this.checkAvatarsLoaded()
+    }
+
+    /**
+     * Checks if all avatars are loaded in the scene
+     * --> Give server the signal to start from this machine
+     * @private
+     */
+    private checkAvatarsLoaded(){
+        let avatars_loaded = false;
+        try{
+            avatars_loaded = this.own_avatar.loaded && this.other_avatar.loaded;
+        }catch (error) { }
+        if(avatars_loaded){
+            this.app.connection.emitPlayerPreparation();
         }
     }
 

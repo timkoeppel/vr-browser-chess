@@ -96,6 +96,7 @@ export class DOM {
         this.other_player = null;
 
         this.initiateGameMenu(own_color);
+        this.askPermissions();
     }
 
     // ************************************************************************

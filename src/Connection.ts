@@ -33,6 +33,7 @@ export class Connection {
         this.socket.on("initiate", (own_color: "white" | "black") => this.app.initiateGame(own_color));
         this.socket.on("redirect", (location: string) => this.app.game.dom.lobbyFullRedirect(location));
         this.socket.on("ready", (data: IPlayerData) => this.app.makeGameReady(data));
+        this.socket.on("prepare", (data: Array<IPlayerData>) => this.app.prepareGame(data));
         this.socket.on("start", (data: Array<IPlayerData>) => this.app.startGame(data));
         this.socket.on("other_player_move", (data) => this.app.game.chessboard.state.makeOtherPlayerMove(data));
         this.socket.on("game_reset", (other_player_color) => this.app.game.dom.refreshThroughOtherPlayerDisconnect(other_player_color));
@@ -46,7 +47,14 @@ export class Connection {
      * @param data The player data
      */
     public emitPlayerData(data: IPlayerData) {
-        this.socket.emit("player_ready", data);
+        this.socket.emit("selection_done", data);
+    }
+
+    /**
+     * Emits the status that this machine is done with the preparation of the avatars
+     */
+    public emitPlayerPreparation(){
+        this.socket.emit("preparation_done");
     }
 
     /**
@@ -57,7 +65,15 @@ export class Connection {
         this.socket.emit("player_move", data)
     }
 
-    public emitFPS(fps_list){
-        this.socket.emit("fps", fps_list);
+    public emitEasy(val) {
+        this.socket.emit("easy", val);
+    }
+
+    public emitIntermediate(val){
+        this.socket.emit("intermediate", val)
+    }
+
+    public emitExpert(val){
+        this.socket.emit("expert", val)
     }
 }

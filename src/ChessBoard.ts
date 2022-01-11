@@ -120,7 +120,7 @@ export class ChessBoard {
     }
 
     public getPromotionQueen(color: "white" | "black"): ChessFigure{
-        const queen_index = this.game.chessboard.countQueens(color) + 1;
+        const queen_index = this.game.chessboard.getMaxQueenIndex(color) + 1;
         const color_abbr = color.charAt(0);
         const queen_id = `fig_queen_${color_abbr}${queen_index}`;
 
@@ -139,10 +139,18 @@ export class ChessBoard {
         return this.fields.find(f => f.id === chess_pos);
     }
 
-    public countQueens(color: "white" | "black"): number {
+    public getMaxQueenIndex(color: "white" | "black"): number {
         const color_abbr = color.charAt(0);
         const queens = this.figures.filter(fig => fig.id.includes(`fig_queen_${color_abbr}`) && fig.on_field);
-        return queens.length;
+        let max_queen = 1;
+        queens.forEach(q => {
+           const index = Number(q.id.charAt(q.id.length - 1));
+           if(index > max_queen){
+               max_queen = index;
+           }
+        });
+
+        return max_queen;
     }
 
     /**

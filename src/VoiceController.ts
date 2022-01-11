@@ -77,9 +77,7 @@ export class VoiceController extends Controller {
         };
 
         this.client.onerror = (event) => {
-            if (event.error !== "no-speech") {
-                console.log(event);
-            }
+            console.log(event.error);
         };
         console.log(`Voice Controller initiated!`);
     }
@@ -181,7 +179,9 @@ export class VoiceController extends Controller {
         "age ": "H",
 
         // Numbers
+        "own": "1",
         "one": "1",
+        "want": "1",
         "to": "2",
         "too": "2",
         "free": "3",
@@ -190,10 +190,12 @@ export class VoiceController extends Controller {
         // Both
         "84": "A4",
         "ASICS": "A6",
+        "Beetle": "B2",
         "before": "B4",
         "be4e": "B4",
-        "ch": "C8",
+        //"ch": "C8",
         "DY1": "D1",
+        "IG": "E2",
         "fh4": "F4",
         "T5": "G5",
         "C8eese 7": "G7",

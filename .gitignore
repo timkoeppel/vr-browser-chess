@@ -111,6 +111,7 @@ dist
 *.crt
 
 # blender files (too large)
+meshes-blender
 *.blend
 *.blend1
 
