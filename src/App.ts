@@ -48,20 +48,21 @@ export class App {
      * Hides the GameMenu, shows the wait for other player loading screen and makes the player ready
      * @param data
      */
-    public async makeGameReady(data: IPlayerData):Promise<void>{
+    public async prepareOwnPlayer(data: IPlayerData):Promise<void>{
         this.game.dom.hidePanel(this.game.dom.game_menu);
         this.game.dom.displayMessage("Waiting for the other player ...", "important");
-        this.game.setupOwnPlayerReady(data).then(() => console.log(`Player ${data.color} ready!`));
+        this.game.prepareOwnPlayer(data).then(() => console.log(`Player ${data.color} ready!`));
+    }
+
+
+    public async prepareOtherPlayer(data: IPlayerData): Promise<void> {
+        await this.game.prepareOtherPlayer(data);
     }
 
     /**
      * Starts the game by hiding the loading screen and starting the game in Game class
      * @param data
      */
-    public async prepareGame(data: Array<IPlayerData>): Promise<void> {
-        await this.game.prepareChessGame(data[0], data[1]);
-    }
-
     public async startGame(data: Array<IPlayerData>): Promise<void> {
         this.game.dom.hideScreen(this.game.dom.message_screen);
         await this.game.startChessGame(data[0], data[1]);

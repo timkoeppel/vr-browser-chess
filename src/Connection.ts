@@ -32,8 +32,8 @@ export class Connection {
         // Initiate Receptions
         this.socket.on("initiate", (own_color: "white" | "black") => this.app.initiateGame(own_color));
         this.socket.on("redirect", (location: string) => this.app.game.dom.lobbyFullRedirect(location));
-        this.socket.on("ready", (data: IPlayerData) => this.app.makeGameReady(data));
-        this.socket.on("prepare", (data: Array<IPlayerData>) => this.app.prepareGame(data));
+        this.socket.on("prepare_own", (data: IPlayerData) => this.app.prepareOwnPlayer(data));
+        this.socket.on("prepare_other", (data:IPlayerData) => this.app.prepareOtherPlayer(data));
         this.socket.on("start", (data: Array<IPlayerData>) => this.app.startGame(data));
         this.socket.on("other_player_move", (data) => this.app.game.chessboard.state.makeOtherPlayerMove(data));
         this.socket.on("game_reset", (other_player_color) => this.app.game.dom.refreshThroughOtherPlayerDisconnect(other_player_color));
@@ -53,8 +53,8 @@ export class Connection {
     /**
      * Emits the status that this machine is done with the preparation of the avatars
      */
-    public emitPlayerPreparation(){
-        this.socket.emit("preparation_done");
+    public emitAvatarPreparation(color){
+        this.socket.emit("avatar_preparation_done", color);
     }
 
     /**

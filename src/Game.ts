@@ -7,10 +7,11 @@ import {ChessBoard} from "./ChessBoard";
 import {GazeController} from "./GazeController";
 import {VoiceController} from "./VoiceController";
 import {Controller} from "./Controller";
-import {DOM} from "./DOM";
+import {VRGUI} from "./VRGUI";
 import {App} from "./App";
 import {IPlayerData} from "./IPlayerData";
 import {Pose} from "./Pose";
+import {IWebXRFeature} from "@babylonjs/core";
 
 /**
  * Game manages all modules necessary for a chess game
@@ -40,11 +41,11 @@ export default class Game {
         this._own_color = value;
     }
 
-    get dom(): DOM {
+    get dom(): VRGUI {
         return this._dom;
     }
 
-    set dom(value: DOM) {
+    set dom(value: VRGUI) {
         this._dom = value;
     }
 
@@ -129,7 +130,7 @@ export default class Game {
     private _chessboard: ChessBoard;
     private _app: App;
     private _controller: Controller;
-    private _dom: DOM;
+    private _dom: VRGUI;
     private _own_color: "white" | "black";
     private _own_avatar: Avatar;
     private _other_avatar: Avatar;
@@ -147,7 +148,7 @@ export default class Game {
         this.initiateMenuCamera();
         this.initiateMeshes();
         this.initiateXR();
-        this.dom = new DOM(own_color, this, this.scene);
+        this.dom = new VRGUI(own_color, this, this.scene);
         this.DoRender(true);
     }
 
@@ -158,7 +159,7 @@ export default class Game {
      * Initiates the own player avatar, controller and changes to the camera
      * @param data
      */
-    public async setupOwnPlayerReady(data: IPlayerData) {
+    public async prepareOwnPlayer(data: IPlayerData) {
         await this.initiateAvatar(data.color, data.avatar);
 
         // Despite the asynchronous design it does not have the avatar initialized
@@ -170,10 +171,9 @@ export default class Game {
 
     /**
      * Prepares the chess game by initiating the other players avatar
-     * @param own_player
      * @param other_player
      */
-    public async prepareChessGame(own_player: IPlayerData, other_player: IPlayerData) {
+    public async prepareOtherPlayer(other_player: IPlayerData) {
         await this.initiateAvatar(other_player.color, other_player.avatar);
     }
 
@@ -188,6 +188,7 @@ export default class Game {
 
         this.chessboard.startChessGame(own_color, black_player, this.own_avatar, this.other_avatar);
         await this.initiateController(own_player.controller);
+        console.log("Chess game started.")
     }
 
 
@@ -292,6 +293,13 @@ export default class Game {
             },
         });
 
+        this.xr.pointerSelection = <BABYLON.WebXRControllerPointerSelection>this.xr.baseExperience.featuresManager.enableFeature(BABYLON.WebXRControllerPointerSelection, 'latest', {
+            gazeCamera: this.xr.baseExperience.camera,
+            forceGazeMode: true,
+            xrInput: this.xr.input,
+            timeToSelect: 1500,
+        });
+
         this.xr.baseExperience.onInitialXRPoseSetObservable.add((cam) => {
             cam.position = this.camera.position;
         });
@@ -355,23 +363,8 @@ export default class Game {
             const t2 = performance.now();
             const t = ((t2 - t1)/1000).toFixed(2);
             console.log(`Avatar ${color} initiated in ${t} s.`);
+
+            this.app.connection.emitAvatarPreparation(color)
         });
-        this.checkAvatarsLoaded()
     }
-
-    /**
-     * Checks if all avatars are loaded in the scene
-     * --> Give server the signal to start from this machine
-     * @private
-     */
-    private checkAvatarsLoaded(){
-        let avatars_loaded = false;
-        try{
-            avatars_loaded = this.own_avatar.loaded && this.other_avatar.loaded;
-        }catch (error) { }
-        if(avatars_loaded){
-            this.app.connection.emitPlayerPreparation();
-        }
-    }
-
 }

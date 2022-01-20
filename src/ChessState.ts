@@ -242,6 +242,7 @@ export class ChessState {
         // Make moves if Ai and continues the lifecycle
         if (this.current_player.type !== "human") {
             const move = ChessState.toUpperNotationSingle((this.current_player.type as AI).getMove());
+            this.submitMove(move);
             this.makeOtherPlayerMove(move);
         }
     }

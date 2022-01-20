@@ -5,9 +5,9 @@ import Game from "./Game";
 import {Avatar} from "./Avatar";
 
 /**
- * DOM regulates the 3D GUI of the game screen
+ * VRGUI regulates the 3D GUI of the game screen
  */
-export class DOM {
+export class VRGUI {
     get message_screen(): GUI.Rectangle {
         return this._message_screen;
     }
@@ -83,7 +83,7 @@ export class DOM {
     private _game_over_menu: GUI.StackPanel;
 
     /**
-     * Initiates the 3D DOM for the game
+     * Initiates the 3D VRGUI for the game
      * @param own_color important for not showing the other-player-choice
      * @param game
      * @param scene
@@ -138,7 +138,7 @@ export class DOM {
      * @param location
      */
     public lobbyFullRedirect(location: string) {
-        this.displayMessage(`Lobby is full!`, "important");
+        alert(`Lobby is full! Please try later again!`)
         setTimeout(() => {
             window.location.href = location
         }, 2000);
@@ -202,17 +202,17 @@ export class DOM {
         this.message_screen = new GUI.Rectangle("waiting_panel");
         this.message_screen.width = "500px";
         this.message_screen.height = "50px";
-        this.message_screen.cornerRadius = DOM.CORNER_RADIUS;
+        this.message_screen.cornerRadius = VRGUI.CORNER_RADIUS;
         this.message_screen.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
         this.message_screen.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_CENTER;
         texture.addControl(this.message_screen);
         let text = new GUI.TextBlock("message", message);
 
         if (type === "warning") {
-            this.message_screen.background = DOM.WARNING_COLOR;
-            text.color = DOM.PRIMARY_COLOR;
+            this.message_screen.background = VRGUI.WARNING_COLOR;
+            text.color = VRGUI.PRIMARY_COLOR;
         } else if (type === "important") {
-            this.message_screen.background = DOM.PRIMARY_COLOR;
+            this.message_screen.background = VRGUI.PRIMARY_COLOR;
             text.color = "black";
         }
         this.message_screen.addControl(text);
@@ -234,7 +234,7 @@ export class DOM {
     public initiateGameMenuGrid(player_color: "white" | "black"): void {
         // Grid Panel Init
         this.game_menu_grid = new GUI.Grid();
-        this.game_menu_grid.background = DOM.BACKGROUND_COLOR;
+        this.game_menu_grid.background = VRGUI.BACKGROUND_COLOR;
         this.game_menu_grid.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_CENTER;
         this.game_menu_grid.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
 
@@ -246,15 +246,15 @@ export class DOM {
         this.game_menu_grid.addColumnDefinition(0.25);
         this.game_menu_grid.addColumnDefinition(0.5);
         this.game_menu_grid.addColumnDefinition(0.25);
-        DOM.addRows(this.game_menu_grid, DOM.TITLE_ROW_HEIGHT, 1); // Controller title
-        DOM.addRows(this.game_menu_grid, DOM.RADIO_ROW_HEIGHT, 2); // Controller
+        VRGUI.addRows(this.game_menu_grid, VRGUI.TITLE_ROW_HEIGHT, 1); // Controller title
+        VRGUI.addRows(this.game_menu_grid, VRGUI.RADIO_ROW_HEIGHT, 2); // Controller
         if (player_color === "white") {
-            DOM.addRows(this.game_menu_grid, DOM.TITLE_ROW_HEIGHT, 1); // Other player title
-            DOM.addRows(this.game_menu_grid, DOM.RADIO_ROW_HEIGHT, 4); // Other player
+            VRGUI.addRows(this.game_menu_grid, VRGUI.TITLE_ROW_HEIGHT, 1); // Other player title
+            VRGUI.addRows(this.game_menu_grid, VRGUI.RADIO_ROW_HEIGHT, 4); // Other player
         }
-        DOM.addRows(this.game_menu_grid, DOM.TITLE_ROW_HEIGHT, 1); // Avatars title
-        DOM.addRows(this.game_menu_grid, DOM.IMAGE_ROW_HEIGHT, 2); // Avatars
-        DOM.addRows(this.game_menu_grid, DOM.BUTTON_ROW_HEIGHT, 1); // Submit
+        VRGUI.addRows(this.game_menu_grid, VRGUI.TITLE_ROW_HEIGHT, 1); // Avatars title
+        VRGUI.addRows(this.game_menu_grid, VRGUI.IMAGE_ROW_HEIGHT, 2); // Avatars
+        VRGUI.addRows(this.game_menu_grid, VRGUI.BUTTON_ROW_HEIGHT, 1); // Submit
     }
 
     /**
@@ -264,7 +264,7 @@ export class DOM {
      * @private
      */
     private createControllerChoice(panel: GUI.Grid, start_row: number) {
-        DOM.addChoiceTitle("Controller:", start_row, 1, panel);
+        VRGUI.addChoiceTitle("Controller:", start_row, 1, panel);
         this.addRadioButton("Voice", "controller", panel, start_row + 1, 1, true);
         this.addRadioButton("Gaze", "controller", panel, start_row + 2, 1);
     }
@@ -276,7 +276,7 @@ export class DOM {
      * @private
      */
     private createAvatarChoice(panel: GUI.Grid, start_row: number) {
-        DOM.addChoiceTitle("Avatar:", start_row, 1, panel);
+        VRGUI.addChoiceTitle("Avatar:", start_row, 1, panel);
 
         this.addAvatarImageRadio("male_01", Avatar.MALE_01_PATH, panel, start_row + 1, 0, true);
         this.addAvatarImageRadio("male_02", Avatar.MALE_02_PATH, panel, start_row + 1, 1);
@@ -293,7 +293,7 @@ export class DOM {
      * @private
      */
     private createAIOrHumanChoice(panel: GUI.Grid, start_row: number) {
-        DOM.addChoiceTitle("Other Player:", start_row, 1, panel);
+        VRGUI.addChoiceTitle("Other Player:", start_row, 1, panel);
         this.addRadioButton("Human", "other_player", panel, start_row + 1, 1, true);
         this.addRadioButton("Easy", "other_player", panel, start_row + 2, 1);
         this.addRadioButton("Intermediate", "other_player", panel, start_row + 3, 1);
@@ -318,11 +318,11 @@ export class DOM {
     private addAvatarImageRadio(name: string, path: string, parent: GUI.Grid, row: number, column: number, active?: boolean) {
         let button: GUI.Button = GUI.Button.CreateImageOnlyButton(name, path);
         button.name = name.toLowerCase();
-        button.width = `${DOM.IMAGE_WIDTH}px`;
-        button.height = `${DOM.IMAGE_ROW_HEIGHT - DOM.PADDING}px`;
-        button.color = DOM.PRIMARY_COLOR;
-        button.background = DOM.BACKGROUND_COLOR;
-        button.cornerRadius = DOM.CORNER_RADIUS;
+        button.width = `${VRGUI.IMAGE_WIDTH}px`;
+        button.height = `${VRGUI.IMAGE_ROW_HEIGHT - VRGUI.PADDING}px`;
+        button.color = VRGUI.PRIMARY_COLOR;
+        button.background = VRGUI.BACKGROUND_COLOR;
+        button.cornerRadius = VRGUI.CORNER_RADIUS;
 
         if (active) {
             this.setAvatarChoice(button)
@@ -348,10 +348,10 @@ export class DOM {
     private addRadioButton(text: string, group: string, parent: GUI.Grid, row: number, col: number, checked = false) {
         let button = new GUI.RadioButton();
         button.name = text.toLowerCase();
-        button.width = `${DOM.RADIO_ROW_HEIGHT - DOM.PADDING}px`;
-        button.height = `${DOM.RADIO_ROW_HEIGHT - DOM.PADDING}px`;
-        button.color = DOM.PRIMARY_COLOR;
-        button.background = DOM.SECONDARY_COLOR;
+        button.width = `${VRGUI.RADIO_ROW_HEIGHT - VRGUI.PADDING}px`;
+        button.height = `${VRGUI.RADIO_ROW_HEIGHT - VRGUI.PADDING}px`;
+        button.color = VRGUI.PRIMARY_COLOR;
+        button.background = VRGUI.SECONDARY_COLOR;
         button.group = group;
         button.isChecked = checked;
 
@@ -371,13 +371,13 @@ export class DOM {
             }
         });
 
-        let header: GUI.Control = GUI.Control.AddHeader(button, text, `${DOM.IMAGE_WIDTH}px`, {
+        let header: GUI.Control = GUI.Control.AddHeader(button, text, `${VRGUI.IMAGE_WIDTH}px`, {
             isHorizontal: true,
             controlFirst: true
         });
-        header.height = `${DOM.RADIO_ROW_HEIGHT - DOM.PADDING}px`;
-        header.color = DOM.PRIMARY_COLOR;
-        header.fontSize = `${DOM.FONT_SIZE_TEXT}px`;
+        header.height = `${VRGUI.RADIO_ROW_HEIGHT - VRGUI.PADDING}px`;
+        header.color = VRGUI.PRIMARY_COLOR;
+        header.fontSize = `${VRGUI.FONT_SIZE_TEXT}px`;
         parent.addControl(header, row, col);
     }
 
@@ -391,9 +391,9 @@ export class DOM {
      */
     private static addChoiceTitle(text: string, row: number, col: number, panel: GUI.Grid) {
         let textblock = new GUI.TextBlock();
-        textblock.height = `${DOM.TITLE_ROW_HEIGHT}px`;
-        textblock.fontSize = `${DOM.FONT_SIZE_TITLE}px`;
-        textblock.color = DOM.PRIMARY_COLOR;
+        textblock.height = `${VRGUI.TITLE_ROW_HEIGHT}px`;
+        textblock.fontSize = `${VRGUI.FONT_SIZE_TITLE}px`;
+        textblock.color = VRGUI.PRIMARY_COLOR;
         textblock.text = text;
         textblock.fontWeight = "bold";
         panel.addControl(textblock, row, col);
@@ -409,12 +409,12 @@ export class DOM {
      */
     private addSubmitButton(panel: GUI.Grid, text: string, row: number, col: number) {
         let button = GUI.Button.CreateSimpleButton("submit", text);
-        button.width = `${DOM.BUTTON_WIDTH}px`;
-        button.height = `${DOM.BUTTON_ROW_HEIGHT - DOM.PADDING}px`;
+        button.width = `${VRGUI.BUTTON_WIDTH}px`;
+        button.height = `${VRGUI.BUTTON_ROW_HEIGHT - VRGUI.PADDING}px`;
         button.color = "black";
-        button.fontSize = `${DOM.FONT_SIZE_TEXT}px`;
-        button.cornerRadius = DOM.CORNER_RADIUS;
-        button.background = DOM.PRIMARY_COLOR;
+        button.fontSize = `${VRGUI.FONT_SIZE_TEXT}px`;
+        button.cornerRadius = VRGUI.CORNER_RADIUS;
+        button.background = VRGUI.PRIMARY_COLOR;
         button.onPointerDownObservable.add(() => {
             this.submitReadyPlayer();
         });
@@ -450,10 +450,10 @@ export class DOM {
      */
     private setAvatarChoice(button: GUI.Button): void {
         if (this.avatar !== null) {
-            this.avatar.background = DOM.BACKGROUND_COLOR;
+            this.avatar.background = VRGUI.BACKGROUND_COLOR;
         }
         this.avatar = button;
-        button.background = DOM.PRIMARY_COLOR;
+        button.background = VRGUI.PRIMARY_COLOR;
     }
 
     /**
