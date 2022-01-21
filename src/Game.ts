@@ -2,6 +2,7 @@ import "@babylonjs/core/Debug/debugLayer";
 import "@babylonjs/inspector";
 import "@babylonjs/loaders/glTF";
 import * as BABYLON from "@babylonjs/core";
+import {WebXRState} from "@babylonjs/core";
 import {Avatar} from "./Avatar";
 import {ChessBoard} from "./ChessBoard";
 import {GazeController} from "./GazeController";
@@ -296,19 +297,21 @@ export default class Game {
     public async initiateXR(): Promise<void> {
         console.log(`Initiating XR ...`);
 
-        // Instantiate
+        // instantiate
         this.xr = await this.scene.createDefaultXRExperienceAsync({
             uiOptions: {
                 sessionMode: "immersive-vr",
             },
         });
 
+        // support check
         const supported = this.xr.baseExperience.sessionManager.isSessionSupportedAsync('immersive-vr');
         if (!supported) {
             console.log(`XR not supported on this device. XR not initiated.`);
             return;
         }
 
+        // configure gaze pointer
         this.xr.pointerSelection = <BABYLON.WebXRControllerPointerSelection>this.xr.baseExperience.featuresManager.enableFeature(BABYLON.WebXRControllerPointerSelection, 'latest', {
             gazeCamera: this.xr.baseExperience.camera,
             forceGazeMode: true,
@@ -316,11 +319,21 @@ export default class Game {
             timeToSelect: 1500,
         });
 
+        // set XR-camera position to non-XR camera position
         this.xr.baseExperience.onInitialXRPoseSetObservable.add((cam) => {
             cam.position = this.camera.position;
         });
 
-        this.dom.initiateCross();
+        // Make selector cross visible in XR mode
+        this.xr.baseExperience.onStateChangedObservable.add( (xrs, xre) => {
+            if(xrs === WebXRState.IN_XR){
+                this.dom.initiateCross();
+            }else if (xrs === WebXRState.NOT_IN_XR){
+                this.dom.hideScreen(this.dom.selector_cross_v);
+                this.dom.hideScreen(this.dom.selector_cross_h);
+            }
+        });
+
         console.log(`XR initiated`);
     }
 

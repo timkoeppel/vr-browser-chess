@@ -8,6 +8,19 @@ import {Avatar} from "./Avatar";
  * VRGUI regulates the 3D GUI of the game screen
  */
 export class VRGUI {
+    get selector_cross_v(): GUI.Rectangle {
+        return this._selector_cross_v;
+    }
+    set selector_cross_v(value: GUI.Rectangle) {
+        this._selector_cross_v = value;
+    }
+    get selector_cross_h(): GUI.Rectangle {
+        return this._selector_cross_h;
+    }
+
+    set selector_cross_h(value: GUI.Rectangle) {
+        this._selector_cross_h = value;
+    }
     get message_screen(): GUI.Rectangle {
         return this._message_screen;
     }
@@ -80,7 +93,8 @@ export class VRGUI {
     private _message_screen: GUI.Rectangle;
     private _game_menu: BABYLON.AbstractMesh;
     private _game_menu_grid: GUI.Grid;
-    private _game_over_menu: GUI.StackPanel;
+    private _selector_cross_h: GUI.Rectangle;
+    private _selector_cross_v: GUI.Rectangle;
 
     /**
      * Initiates the 3D VRGUI for the game
@@ -158,10 +172,10 @@ export class VRGUI {
     public initiateCross(): void {
         // @ts-ignore
         let texture = GUI.AdvancedDynamicTexture.CreateFullscreenUI("cross_screen", true, this.scene);
-        let cross_hori = new GUI.Rectangle("cross_horizontal");
-        let cross_vert = new GUI.Rectangle("cross_vertical");
+        this.selector_cross_h = new GUI.Rectangle("cross_horizontal");
+        this.selector_cross_v = new GUI.Rectangle("cross_vertical");
 
-        [cross_vert, cross_hori].forEach(cross => {
+        [this.selector_cross_v, this.selector_cross_h].forEach(cross => {
             cross.isVisible = true;
             cross.background = "white";
             cross.color = "white";
@@ -169,6 +183,7 @@ export class VRGUI {
             cross.height = (cross.name === "cross_horizontal") ?"2px" : "8px";
             cross.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
             cross.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_CENTER;
+
             texture.addControl(cross);
         });
     }
