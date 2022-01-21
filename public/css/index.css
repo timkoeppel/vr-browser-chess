@@ -24,30 +24,36 @@ canvas {
     display: none !important;
 }
 
-/* HIDE RADIO */
-.avatar_radio{
-    position: absolute;
-    opacity: 0;
-    width: 0;
-    height: 0;
+.overlay{
+    display: flex !important;
+    flex-direction: column;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100vw;
+    height: 40vh;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-top-left-radius: 30px;
+    border-top-right-radius: 30px;
+    justify-content: center;
+    align-content: center;
+    flex-wrap: wrap;
 }
 
-/* IMAGE STYLES */
-.avatar_img {
-    padding: 4px;
-    width: 150px;
-    cursor: pointer;
+.instruction {
+    order: 1;
+    text-align: center;
+    font-size: 3em;
+    font-family: Montserrat, serif;
 }
 
-/* CHECKED STYLES */
-.avatar_radio:checked + label{
-    border: 1px;
-    border-radius: 2pt;
-    box-shadow: 0 0 0 2px var(--bs-blue);
-    outline: none;
-    transition: .2s;
-}
-
-.avatar_radio + label{
-    margin: 5px;
+.vr-button, .babylonVRicon{
+    order: 2;
+    width: 50vw !important;
+    height: 15vh !important;
+    background-color: transparent !important;
+    background-image: url(../img/vr-goggles.svg) !important;
+    background-position: center !important;
+    background-size: 70% !important;
+    border-radius: 30px;
+    align-items: center !important;
 }

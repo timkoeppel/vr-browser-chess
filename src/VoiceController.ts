@@ -63,9 +63,9 @@ export class VoiceController extends Controller {
                     const chess_field = this.game.chessboard.getField(pos);
                     this.game.chessstate.processClick(chess_field);
                 } else if (pos === "" && this.game.chessstate !== undefined) {
-                    this.game.dom.displayMessage(`Invalid command. You said: "${transcript}"`, "warning");
+                    this.game.gui.displayMessage(`Invalid command. You said: "${transcript}"`, "warning");
                     setTimeout(() => {
-                        this.game.dom.hideScreen(this.game.dom.message_screen);
+                        this.game.gui.hideScreen(this.game.gui.message_screen);
                     }, 2000)
                 }
             })

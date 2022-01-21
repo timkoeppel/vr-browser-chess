@@ -254,7 +254,7 @@ export class ChessState {
         const won_lost = (this.current_player === this.own_player) ? "won" : "lost";
         const game_over_message: string = `GAME OVER: You ${won_lost}!`;
         console.log(game_over_message);
-        this.game.dom.displayMessage(game_over_message, "important");
+        this.game.gui.displayMessage(game_over_message, "important");
     }
 
     /**
@@ -372,7 +372,7 @@ export class ChessState {
             to: move.to.toLowerCase(),
             promotion: prom_fig
         });
-        console.log(made_move);
+        console.log(`Player ${this.current_player.color} moved ${ChessState.pieces[made_move.piece]} from ${made_move.from} to ${made_move.to}.`);
         console.log(this.logic.ascii());
 
         // Refresh Project Figure
@@ -580,4 +580,15 @@ export class ChessState {
         this.game.app.connection.emitPlayerMove(data)
     }
 
+    // ************************************************************************
+    // CONSTANTS
+    // ************************************************************************
+    private static pieces: object =  {
+        "n": "knight",
+        "b": "bishop",
+        "r": "rook",
+        "p": "pawn",
+        "k": "king",
+        "q": "queen"
+    }
 }

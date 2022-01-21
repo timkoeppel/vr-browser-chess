@@ -333,6 +333,30 @@ export class VRGUI {
         this.addRadioButton("Expert", "other_player", panel, start_row + 4, 1);
     }
 
+    /**
+     * Changes the default Enter XR button
+     * @param overlay
+     */
+    public static changeButtonStyle(overlay: HTMLDivElement): void{
+        let button = overlay.children[0] as HTMLButtonElement;
+        let instruction = document.createElement('label') as HTMLLabelElement;
+
+        // overlay
+        VRGUI.showHTMLElement(overlay);
+        overlay.classList.add('overlay');
+
+
+        // instruction
+        overlay.appendChild(instruction);
+        instruction.classList.add('instruction');
+        instruction.htmlFor = button.id;
+        instruction.innerText = "Click to enter VR";
+
+        // button style
+        button.classList.add('vr-button');
+    }
+
+
 
     // ************************************************************************
     // HELPER METHODS
@@ -502,8 +526,16 @@ export class VRGUI {
      * Shows an HTML element
      * @param element
      */
-    public showHTMLElement(element: HTMLElement) {
+    public static showHTMLElement(element: HTMLElement) {
         element.classList.remove("no_display");
+    }
+
+    /**
+     * Hides an HTML element
+     * @param element
+     */
+    public static hideHTMLElement(element: HTMLElement) {
+        element.classList.add("no_display");
     }
 
     /**

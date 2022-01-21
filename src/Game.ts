@@ -49,12 +49,12 @@ export default class Game {
         this._own_color = value;
     }
 
-    get dom(): VRGUI {
-        return this._dom;
+    get gui(): VRGUI {
+        return this._gui;
     }
 
-    set dom(value: VRGUI) {
-        this._dom = value;
+    set gui(value: VRGUI) {
+        this._gui = value;
     }
 
     get app(): App {
@@ -139,7 +139,7 @@ export default class Game {
     private _chessstate: ChessState;
     private _app: App;
     private _controller: Controller;
-    private _dom: VRGUI;
+    private _gui: VRGUI;
     private _own_color: "white" | "black";
     private _own_avatar: Avatar;
     private _other_avatar: Avatar;
@@ -157,7 +157,7 @@ export default class Game {
         this.initiateMenuCamera();
         this.initiateMeshes();
         this.initiateXR();
-        this.dom = new VRGUI(own_color, this, this.scene);
+        this.gui = new VRGUI(own_color, this, this.scene);
         this.DoRender(true);
     }
 
@@ -241,7 +241,7 @@ export default class Game {
         }).catch(error => {
             console.log(error);
         });
-
+        VRGUI.changeButtonStyle(this.xr.enterExitUI.overlay);
     }
 
     /**
@@ -265,13 +265,17 @@ export default class Game {
      */
     public changeToPlayerCamera(): void {
         console.log(`Initiating player camera ...`);
+        // get new positions
         const z_pos = this.own_avatar.pose.nose.absolutePosition.z;
         const y_pos = this.own_avatar.pose.eye_l.absolutePosition.y;
         const eye_position = new BABYLON.Vector3(0, y_pos, z_pos);
-        // console.log(eye_position);
+
+        // adjust camera (XR case as well as non-XR case)
         this.camera.position.set(eye_position.x, eye_position.y, eye_position.z);
+        this.xr.baseExperience.camera.position.set(eye_position.x, eye_position.y, eye_position.z);
         this.camera.setTarget(new BABYLON.Vector3(0, 25, 0));
         this.camera.applyGravity = false;
+
         console.log(`Player camera initiated.`);
     }
 
@@ -300,7 +304,7 @@ export default class Game {
         // instantiate
         this.xr = await this.scene.createDefaultXRExperienceAsync({
             uiOptions: {
-                sessionMode: "immersive-vr",
+                sessionMode: "immersive-vr"
             },
         });
 
@@ -321,19 +325,23 @@ export default class Game {
 
         // set XR-camera position to non-XR camera position
         this.xr.baseExperience.onInitialXRPoseSetObservable.add((cam) => {
-            cam.position = this.camera.position;
+            cam.position = new BABYLON.Vector3(this.camera.position.x, this.camera.position.y, this.camera.position.z);
         });
 
         // Make selector cross visible in XR mode
         this.xr.baseExperience.onStateChangedObservable.add( (xrs, xre) => {
             if(xrs === WebXRState.IN_XR){
-                this.dom.initiateCross();
+                if(this.controller === undefined || this.controller.type === "gaze"){
+                    this.gui.initiateCross();
+                }
             }else if (xrs === WebXRState.NOT_IN_XR){
-                this.dom.hideScreen(this.dom.selector_cross_v);
-                this.dom.hideScreen(this.dom.selector_cross_h);
+                this.gui.hideScreen(this.gui.selector_cross_v);
+                this.gui.hideScreen(this.gui.selector_cross_h);
             }
         });
 
+        // Hide Button until meshes ready
+        VRGUI.hideHTMLElement(this.xr.enterExitUI.overlay);
         console.log(`XR initiated`);
     }
 

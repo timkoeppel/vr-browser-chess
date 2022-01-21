@@ -49,8 +49,8 @@ export class App {
      * @param data
      */
     public async prepareOwnPlayer(data: IPlayerData):Promise<void>{
-        this.game.dom.hidePanel(this.game.dom.game_menu);
-        this.game.dom.displayMessage("Waiting for the other player ...", "important");
+        this.game.gui.hidePanel(this.game.gui.game_menu);
+        this.game.gui.displayMessage("Waiting for the other player ...", "important");
         this.game.prepareOwnPlayer(data).then(() => console.log(`Player ${data.color} ready!`));
     }
 
@@ -64,7 +64,7 @@ export class App {
      * @param data
      */
     public async startGame(data: Array<IPlayerData>): Promise<void> {
-        this.game.dom.hideScreen(this.game.dom.message_screen);
+        this.game.gui.hideScreen(this.game.gui.message_screen);
         await this.game.startChessGame(data[0], data[1]);
     }
 }

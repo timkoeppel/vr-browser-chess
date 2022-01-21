@@ -31,12 +31,12 @@ export class Connection {
 
         // Initiate Receptions
         this.socket.on("initiate", (own_color: "white" | "black") => this.app.initiateGame(own_color));
-        this.socket.on("redirect", (location: string) => this.app.game.dom.lobbyFullRedirect(location));
+        this.socket.on("redirect", (location: string) => this.app.game.gui.lobbyFullRedirect(location));
         this.socket.on("prepare_own", (data: IPlayerData) => this.app.prepareOwnPlayer(data));
         this.socket.on("prepare_other", (data:IPlayerData) => this.app.prepareOtherPlayer(data));
         this.socket.on("start", (data: Array<IPlayerData>) => this.app.startGame(data));
         this.socket.on("other_player_move", (data) => this.app.game.chessstate.makeOtherPlayerMove(data));
-        this.socket.on("game_reset", (other_player_color) => this.app.game.dom.refreshThroughOtherPlayerDisconnect(other_player_color));
+        this.socket.on("game_reset", (other_player_color) => this.app.game.gui.refreshThroughOtherPlayerDisconnect(other_player_color));
     }
 
     // ************************************************************************

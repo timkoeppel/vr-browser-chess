@@ -87,36 +87,10 @@ io.on('connect', socket => {
         }
     });
 
-    // Performance
-    socket.on('easy', (val) => {
-        easy.push(val);
-        fs.writeFile("./easy.txt", easy.join(", "), err => {
-            if (err) {
-                console.error(err)
-            }
-        });
-    });
-    socket.on('intermediate', (val) => {
-        intermediate.push(val);
-        fs.writeFile("./intermediate.txt", intermediate.join(", "), err => {
-            if (err) {
-                console.error(err)
-            }
-        });
-    });
-    socket.on('expert', (val) => {
-        expert.push(val);
-        fs.writeFile("./expert.txt", expert.join(", "), err => {
-            if (err) {
-                console.error(err)
-            }
-        });
-    });
-
     // Disconnect
     socket.on('disconnect', () => {
         disconnectPlayer(socket);
-    })
+    });
 });
 
 
@@ -203,8 +177,7 @@ function prepareWhiteGame(socket, data) {
     socket.emit('prepare_own', toIPlayerData(white));
 
     // Black should be played by an AI
-    black.player_type = white.other_player;
-    if (black.player_type !== "human") {
+    if (white.other_player !== "human") {
         player_limit = 1;
 
         // A person is already in as black player --> redirect
@@ -213,13 +186,13 @@ function prepareWhiteGame(socket, data) {
             redirect(getSocketById(black.id))
         }
 
-        Object.assign(black, createAIData(black));
+        Object.assign(black, createAIData(black, white.other_player));
         socket.emit("prepare_other", toIPlayerData(black));
         console.log(`Player black is played by an ${black.player_type} AI!`);
     } else {
         io.to(black.id).emit('prepare_other', toIPlayerData(white))
     }
-    console.log(`Player white is ready.`);
+    console.log(`Game of player white is prepared.`);
 }
 
 /**
@@ -228,12 +201,12 @@ function prepareWhiteGame(socket, data) {
  * @param data {IPlayerData} The PlayerData of the black player
  * @return {void}
  */
- function prepareBlackGame(socket, data) {
+function prepareBlackGame(socket, data) {
     Object.assign(black, data);
     black.ready = true;
     socket.emit('prepare_own', toIPlayerData(black));
     io.to(white.id).emit('prepare_other', toIPlayerData(black));
-    console.log(`Player black is ready.`);
+    console.log(`Game of player black is prepared.`);
 }
 
 /**
@@ -248,7 +221,7 @@ function getSocketById(id) {
 /**
  *
  * @param player {object} The player from the app data
- * @return {IPlayerData} The PlayerData for the frontend to use
+ * @return {Object} The PlayerData for the frontend to use
  */
 function toIPlayerData(player) {
     let data = Object.assign({}, player);
@@ -256,15 +229,17 @@ function toIPlayerData(player) {
     delete data.ready;
     delete data.white_avatar;
     delete data.black_avatar;
-    return data
+
+    return data;
 }
 
 /**
  * Creates fitting AI data for the singleplayer mode
- * @param player The player from the app data
+ * @param player {object} The player from the app data
+ * @param player_type {"AI" | "easy" | "intermediate" | "expert"}
  * @return {{black_avatar: boolean, controller: string, color: string, ready: boolean, white_avatar: boolean, avatar: (string|GUI.Button|"male_01"|"male_02"|"male_03"|"female_01"|"female_02"|"female_03"|"male_01"|"male_02"|"male_03"|"female_01"|"female_02"|"female_03"|Avatar), player_type: (string|"human"|"easy"|"intermediate"|"expert"|"human"|"easy"|"intermediate"|"expert"|*)}}
  */
-function createAIData(player) {
+function createAIData(player, player_type) {
     const avatars = ["male_01", "male_02", "male_03", "female_01", "female_02", "female_03"];
 
     // special situation if black already loaded from other human player but white wants against AI
@@ -277,7 +252,7 @@ function createAIData(player) {
         color: "black",
         controller: "gaze",
         avatar: avatar,
-        player_type: player.player_type
+        player_type: player_type
     };
     return Object.assign({}, data);
 }
@@ -288,7 +263,7 @@ function createAIData(player) {
  * @param color {"white" | "black"} The color of the avatar
  * @return {void}
  */
-function registerPreparation(socket, color){
+function registerPreparation(socket, color) {
     let prepared_player;
     let prepared_avatar_color;
     if (socket.id === white.id) {
@@ -360,7 +335,7 @@ function makeMove(data, from_player, to_player) {
  * @return {boolean}
  */
 function isConnected(player) {
-    return player.white_avatar !== undefined;
+    return player.white_avatar !== undefined && player.black_avatar !== undefined && player.ready !== undefined && player.id !== undefined;
 }
 
 
