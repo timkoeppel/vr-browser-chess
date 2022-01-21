@@ -43,7 +43,7 @@ export class GazeController extends Controller {
     public setupSelection(field: ChessField): void {
         field.mesh.actionManager.registerAction(
             new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickDownTrigger, () => {
-                field.board.state.processClick(field);
+                field.board.game.chessstate.processClick(field);
             }));
     }
 

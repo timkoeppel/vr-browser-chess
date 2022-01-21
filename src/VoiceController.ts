@@ -59,10 +59,10 @@ export class VoiceController extends Controller {
                 console.log("You said:", transcript);
                 // SELECT
                 const pos = VoiceController.extractPosition(transcript);
-                if (pos !== "" && this.game.chessboard.state !== undefined) {
+                if (pos !== "" && this.game.chessstate !== undefined) {
                     const chess_field = this.game.chessboard.getField(pos);
-                    this.game.chessboard.state.processClick(chess_field);
-                } else if (pos === "" && this.game.chessboard.state !== undefined) {
+                    this.game.chessstate.processClick(chess_field);
+                } else if (pos === "" && this.game.chessstate !== undefined) {
                     this.game.dom.displayMessage(`Invalid command. You said: "${transcript}"`, "warning");
                     setTimeout(() => {
                         this.game.dom.hideScreen(this.game.dom.message_screen);

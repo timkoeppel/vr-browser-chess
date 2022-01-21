@@ -35,7 +35,7 @@ export class Connection {
         this.socket.on("prepare_own", (data: IPlayerData) => this.app.prepareOwnPlayer(data));
         this.socket.on("prepare_other", (data:IPlayerData) => this.app.prepareOtherPlayer(data));
         this.socket.on("start", (data: Array<IPlayerData>) => this.app.startGame(data));
-        this.socket.on("other_player_move", (data) => this.app.game.chessboard.state.makeOtherPlayerMove(data));
+        this.socket.on("other_player_move", (data) => this.app.game.chessstate.makeOtherPlayerMove(data));
         this.socket.on("game_reset", (other_player_color) => this.app.game.dom.refreshThroughOtherPlayerDisconnect(other_player_color));
     }
 

@@ -18,14 +18,6 @@ export class ChessBoard {
         this._game = value;
     }
 
-    get state(): ChessState {
-        return this._state;
-    }
-
-    set state(value: ChessState) {
-        this._state = value;
-    }
-
     get figures(): Array<ChessFigure> {
         return this._figures;
     }
@@ -44,7 +36,6 @@ export class ChessBoard {
 
     private _figures: Array<ChessFigure>;
     private _fields: Array<ChessField>;
-    private _state: ChessState;
     private _game: Game;
 
     /**
@@ -61,18 +52,6 @@ export class ChessBoard {
     // ************************************************************************
     // MAIN METHODS
     // ************************************************************************
-
-    /**
-     * The actual game gets started with its bounded logic by finalizing the iniation of the chessboard
-     * @param own_color The own color of the player using the browser
-     * @param black_player The type of the black/second player
-     * @param own_avatar The avatar you yourself use
-     * @param other_avatar The avatar the opponent player uses
-     */
-    public startChessGame(own_color: "white" | "black", black_player: "human" | "easy" | "intermediate" | "expert", own_avatar: Avatar, other_avatar: Avatar): void {
-        this.state = new ChessState(this.game, own_color, black_player, own_avatar, other_avatar);
-    }
-
     /**
      * Resets the material for all fields to their original black/white field material
      */

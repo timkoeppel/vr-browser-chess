@@ -8,7 +8,6 @@ import {ActionManager} from "./ActionManager";
 import Game from "./Game";
 import {AI} from "./AI";
 import {Avatar} from "./Avatar";
-import {ChessBoard} from "./ChessBoard";
 
 /**
  * ChessState manages the game state, logic and move management

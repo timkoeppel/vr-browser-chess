@@ -76,19 +76,19 @@ io.on('connect', socket => {
         let prepared_player;
         let prepared_avatar_color;
         if (socket.id === white.id) {
-            if(color === "white"){
+            if (color === "white") {
                 white.white_avatar = true;
                 prepared_avatar_color = "white";
-            }else{
+            } else {
                 white.black_avatar = true;
                 prepared_avatar_color = "black";
             }
             prepared_player = "white";
         } else {
-            if(color === "white"){
+            if (color === "white") {
                 black.white_avatar = true;
                 prepared_avatar_color = "white";
-            }else{
+            } else {
                 black.black_avatar = true;
                 prepared_avatar_color = "black";
             }
@@ -149,6 +149,7 @@ function connectPlayer(socket, player, color) {
     player.ready = false;
     player.white_avatar = false;
     player.black_avatar = false;
+    player.player_type = "human";
     socket.emit("initiate", color);
 
     // If white is already ready and waiting for black to get ready
@@ -199,24 +200,21 @@ function prepareWhiteGame(socket, data) {
     console.log(`Player ${white.color} is ready!`);
     socket.emit('prepare_own', toIPlayerData(white));
 
-    black.player_type = white.other_player;
     // Black should be played by an AI
+    black.player_type = white.other_player;
     if (black.player_type !== "human") {
         player_limit = 1;
-        const black_already_in_lobby = isConnected(black, false);
 
-        // Black AI creation
         // A person is already in as black player --> redirect
-        if (black_already_in_lobby) {
+        console.log(isConnected(black));
+        if (isConnected(black)) {
             redirect(getSocketById(black.id))
         }
-        Object.assign(black, createAIData(black, white.black_avatar));
-        // If black was already loaded into white game
-        if (isConnected(black, true)) {
-            socket.emit('prepare_other', toIPlayerData(black));
-        }
+
+        Object.assign(black, createAIData(black));
+        socket.emit("prepare_other", toIPlayerData(black));
         console.log(`Player black is played by an ${black.player_type} AI!`);
-    } else if (isConnected(black, false)) {
+    } else {
         io.to(black.id).emit('prepare_other', toIPlayerData(white))
     }
     console.log(`Player white is ready.`);
@@ -243,7 +241,7 @@ function toIPlayerData(player) {
     return data
 }
 
-function createAIData(player, black_avatar_loaded) {
+function createAIData(player) {
     const avatars = ["male_01", "male_02", "male_03", "female_01", "female_02", "female_03"];
 
     // special situation if black already loaded from other human player but white wants against AI
@@ -252,7 +250,7 @@ function createAIData(player, black_avatar_loaded) {
     const data = {
         ready: true,
         white_avatar: true,
-        black_avatar: black_avatar_loaded,
+        black_avatar: true,
         color: "black",
         controller: "gaze",
         avatar: avatar,
@@ -270,6 +268,7 @@ function resetApp() {
 }
 
 function startGameIfBothReady() {
+    console.log(white.white_avatar, white.black_avatar, black.white_avatar, black.black_avatar);
     if (white.white_avatar && white.black_avatar && black.white_avatar && black.black_avatar) {
         io.to(white.id).emit('start', [toIPlayerData(white), toIPlayerData(black)]);
         io.to(black.id).emit('start', [toIPlayerData(black), toIPlayerData(white)]);
@@ -280,25 +279,14 @@ function startGameIfBothReady() {
 function makeMove(data, from_player, to_player) {
     // Future logging
     console.log(`Player ${from_player.color} made move from ${data.from} to ${data.to}.`);
-    if(black.player_type === "human") {
+    if (black.player_type === "human") {
         io.to(to_player.id).emit('other_player_move', (data));
         console.log(`Send move to ${to_player.color} player ...`);
     }
 }
 
-function isConnected(player, check_for_and_ready) {
-    let ready;
-    try {
-        ready = player.ready;
-    } catch (e) {
-        return false;
-    }
-
-    if (check_for_and_ready) {
-        return ready;
-    } else {
-        return true;
-    }
+function isConnected(player) {
+    return player.white_avatar !== undefined;
 }
 
 

@@ -65,7 +65,7 @@ export class Controller {
     public restorePreviousMaterial(field: ChessField): void {
         if (field.isSelected()) {
             field.mesh.material = this.selection_material;
-        } else if (field.board.state.isPartOfMove(field)) {
+        } else if (field.board.game.chessstate.isPartOfMove(field)) {
             field.mesh.material = this.getMoveMaterial(field);
         } else {
             field.mesh.material = field.original_material;

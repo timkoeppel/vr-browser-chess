@@ -138,7 +138,7 @@ export class VRGUI {
      * @param location
      */
     public lobbyFullRedirect(location: string) {
-        alert(`Lobby is full! Please try later again!`)
+        alert(`Lobby is full! Please try later again!`);
         setTimeout(() => {
             window.location.href = location
         }, 2000);
@@ -153,6 +153,24 @@ export class VRGUI {
         setTimeout(() => {
             window.location.reload();
         }, 2000);
+    }
+
+    public initiateCross(): void {
+        // @ts-ignore
+        let texture = GUI.AdvancedDynamicTexture.CreateFullscreenUI("cross_screen", true, this.scene);
+        let cross_hori = new GUI.Rectangle("cross_horizontal");
+        let cross_vert = new GUI.Rectangle("cross_vertical");
+
+        [cross_vert, cross_hori].forEach(cross => {
+            cross.isVisible = true;
+            cross.background = "white";
+            cross.color = "white";
+            cross.width = (cross.name === "cross_horizontal") ? "15px" : "6px";
+            cross.height = (cross.name === "cross_horizontal") ?"2px" : "8px";
+            cross.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+            cross.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_CENTER;
+            texture.addControl(cross);
+        });
     }
 
     /**

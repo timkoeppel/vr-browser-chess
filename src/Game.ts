@@ -11,12 +11,19 @@ import {VRGUI} from "./VRGUI";
 import {App} from "./App";
 import {IPlayerData} from "./IPlayerData";
 import {Pose} from "./Pose";
-import {IWebXRFeature} from "@babylonjs/core";
+import {ChessState} from "./ChessState";
 
 /**
  * Game manages all modules necessary for a chess game
  */
 export default class Game {
+    get chessstate(): ChessState {
+        return this._chessstate;
+    }
+
+    set chessstate(value: ChessState) {
+        this._chessstate = value;
+    }
     get other_avatar(): Avatar {
         return this._other_avatar;
     }
@@ -128,6 +135,7 @@ export default class Game {
     private _light: BABYLON.Light;
     private _xr: BABYLON.WebXRDefaultExperience;
     private _chessboard: ChessBoard;
+    private _chessstate: ChessState;
     private _app: App;
     private _controller: Controller;
     private _dom: VRGUI;
@@ -186,7 +194,7 @@ export default class Game {
         const own_color = own_player.color;
         const black_player = (own_player.color === "white") ? other_player.player_type : own_player.player_type;
 
-        this.chessboard.startChessGame(own_color, black_player, this.own_avatar, this.other_avatar);
+        this.chessstate = new ChessState(this, own_color, black_player, this.own_avatar, this.other_avatar);
         await this.initiateController(own_player.controller);
         console.log("Chess game started.")
     }
@@ -228,7 +236,7 @@ export default class Game {
             this.chessboard = new ChessBoard(scene.meshes, this);
             const t2 = performance.now();
             const t = ((t2 - t1)/1000).toFixed(2);
-            console.log(`Meshes initiated in ${t} ms.`);
+            console.log(`Meshes initiated in ${t} s.`);
         }).catch(error => {
             console.log(error);
         });
@@ -287,11 +295,19 @@ export default class Game {
      */
     public async initiateXR(): Promise<void> {
         console.log(`Initiating XR ...`);
+
+        // Instantiate
         this.xr = await this.scene.createDefaultXRExperienceAsync({
             uiOptions: {
                 sessionMode: "immersive-vr",
             },
         });
+
+        const supported = this.xr.baseExperience.sessionManager.isSessionSupportedAsync('immersive-vr');
+        if (!supported) {
+            console.log(`XR not supported on this device. XR not initiated.`);
+            return;
+        }
 
         this.xr.pointerSelection = <BABYLON.WebXRControllerPointerSelection>this.xr.baseExperience.featuresManager.enableFeature(BABYLON.WebXRControllerPointerSelection, 'latest', {
             gazeCamera: this.xr.baseExperience.camera,
@@ -304,6 +320,7 @@ export default class Game {
             cam.position = this.camera.position;
         });
 
+        this.dom.initiateCross();
         console.log(`XR initiated`);
     }
 

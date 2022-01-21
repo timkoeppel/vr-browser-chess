@@ -103,8 +103,8 @@ export class ChessField {
      */
     public isSelected() {
         let result = false;
-        if (this.board.state.selected_field !== null) {
-            result = this.id === this.board.state.selected_field.id;
+        if (this.board.game.chessstate.selected_field !== null) {
+            result = this.id === this.board.game.chessstate.selected_field.id;
         }
         return result;
     }
