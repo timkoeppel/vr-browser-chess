@@ -45,10 +45,6 @@ canvas {
     align-items: center !important;
 }
 
-#babylonjsLoadingDiv {
-
-}
-
 #loading-screen{
     opacity: 1;
     transition: opacity 1.5s ease 0s;
@@ -66,7 +62,8 @@ canvas {
 
 #scene-progress {
     position: absolute;
-    width: 80vw;
-    left: 10%;
-    bottom: 30%;
+    width: 20vw;
+    left: 40%;
+    top: 62%;
+    z-index: 100;
 }

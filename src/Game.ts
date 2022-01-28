@@ -174,8 +174,11 @@ export default class Game {
         // Despite the asynchronous design it does not have the avatar initialized
         // when wanting to change the camera --> unprofessional timeout
         setTimeout(async () => {
-           await  this.changeToPlayerCamera();
-        }, 1000)
+           await this.changeToPlayerCamera();
+            if(this.other_avatar === undefined){
+                this.gui.displayMessage("Waiting for the other player ...", "important");
+            }
+        }, 1000);
         console.log(`Player ${data.color} ready!`)
     }
 
@@ -212,6 +215,7 @@ export default class Game {
         this.scene = new BABYLON.Scene(this.engine);
 
         BABYLON.DefaultLoadingScreen.DefaultLogoUrl = "./img/vr-browser-chess.png";
+        BABYLON.DefaultLoadingScreen.DefaultSpinnerUrl = "./img/favicon-16x16.png";
         //BABYLON.SceneLoader.ShowLoadingScreen = false;
         console.log(`Babylon JS initiated.`);
     }
@@ -236,8 +240,9 @@ export default class Game {
     public async initiateScene() {
         console.log(`Initiating all meshes ...`);
         const t1 = performance.now();
-         //TODO own icon
-        await BABYLON.SceneLoader.AppendAsync("./meshes/", "scene.glb", this.scene, ).then(scene => {
+        await BABYLON.SceneLoader.AppendAsync("./meshes/", "scene.glb", this.scene, (evt) => {
+            this.gui.displaySceneProgress(evt.loaded, evt.total)
+        }).then(scene => {
             this.scene = scene;
             this.chessboard = new ChessBoard(scene.meshes, this);
             const t2 = performance.now();
@@ -247,6 +252,8 @@ export default class Game {
             console.log(error);
         });
 
+        // Prepare GUI
+        VRGUI.hideHTMLElement(document.getElementById("scene-progress"));
         const supported = await this.xr.baseExperience.sessionManager.isSessionSupportedAsync('immersive-vr');
         if(supported){
             VRGUI.showEnterVRDisplay(this.xr.enterExitUI.overlay);
@@ -399,7 +406,9 @@ export default class Game {
      */
     private async LoadAvatar(avatar: Avatar, color: "white" | "black"): Promise<Avatar> {
         const t1 = performance.now();
-        await BABYLON.SceneLoader.ImportMeshAsync("", avatar.rootURL, avatar.filename, this.scene).then(result => {
+        await BABYLON.SceneLoader.ImportMeshAsync("", avatar.rootURL, avatar.filename, this.scene, (evt) => {
+            this.gui.displayMessage(`Loading ${color} avatar: ${((evt.loaded / evt.total) * 100).toFixed(1)}%`, "important");
+        }).then(result => {
             avatar.scene = result;
             avatar.stopAnimations();
             avatar.placeAvatar();
@@ -411,8 +420,7 @@ export default class Game {
             const t = ((t2 - t1)/1000).toFixed(2);
             console.log(`Avatar ${color} initiated in ${t} s.`);
 
-            this.app.connection.emitAvatarPreparation(color)
-
+            this.app.connection.emitAvatarPreparation(color);
         });
         return avatar;
     }

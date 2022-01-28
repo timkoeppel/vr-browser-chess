@@ -8,12 +8,21 @@ import {Avatar} from "./Avatar";
  * VRGUI regulates the 3D GUI of the game screen
  */
 export class VRGUI {
+    get message_texture(): GUI.AdvancedDynamicTexture {
+        return this._message_texture;
+    }
+
+    set message_texture(value: GUI.AdvancedDynamicTexture) {
+        this._message_texture = value;
+    }
     get selector_cross_v(): GUI.Rectangle {
         return this._selector_cross_v;
     }
+
     set selector_cross_v(value: GUI.Rectangle) {
         this._selector_cross_v = value;
     }
+
     get selector_cross_h(): GUI.Rectangle {
         return this._selector_cross_h;
     }
@@ -21,6 +30,7 @@ export class VRGUI {
     set selector_cross_h(value: GUI.Rectangle) {
         this._selector_cross_h = value;
     }
+
     get message_screen(): GUI.Rectangle {
         return this._message_screen;
     }
@@ -91,6 +101,7 @@ export class VRGUI {
     private _avatar: GUI.Button;
     private _other_player: GUI.RadioButton;
     private _message_screen: GUI.Rectangle;
+    private _message_texture: GUI.AdvancedDynamicTexture;
     private _game_menu: BABYLON.AbstractMesh;
     private _game_menu_grid: GUI.Grid;
     private _selector_cross_h: GUI.Rectangle;
@@ -111,6 +122,10 @@ export class VRGUI {
 
         this.initiateGameMenu(own_color);
         this.askPermissions();
+        // @ts-ignore
+        this.message_texture = GUI.AdvancedDynamicTexture.CreateFullscreenUI("message", true, this.scene);
+        this.message_screen = new GUI.Rectangle("message_panel");
+        this.hideScreen(this.message_screen);
     }
 
     // ************************************************************************
@@ -180,7 +195,7 @@ export class VRGUI {
             cross.background = VRGUI.PRIMARY_COLOR;
             cross.color = VRGUI.PRIMARY_COLOR;
             cross.width = (cross.name === "cross_horizontal") ? "15px" : "6px";
-            cross.height = (cross.name === "cross_horizontal") ?"2px" : "8px";
+            cross.height = (cross.name === "cross_horizontal") ? "2px" : "8px";
             cross.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
             cross.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_CENTER;
 
@@ -210,6 +225,21 @@ export class VRGUI {
     }
 
     /**
+     * Displays the HTML loading bar in the beginning
+     * @param loaded
+     * @param total
+     */
+    public displaySceneProgress(loaded: number, total: number) {
+        let bar = document.getElementById("scene-progress-bar");
+        if (bar.ariaValueMax === "") {
+            bar.ariaValueMax = total.toString();
+        }
+
+        bar.style.width = `${(loaded / total) * 100}%`;
+        bar.ariaValueNow = loaded.toString();
+    }
+
+    /**
      * Hides the Game Menu
      */
     public hidePanel(panel: BABYLON.AbstractMesh): void {
@@ -217,28 +247,29 @@ export class VRGUI {
         panel.setEnabled(false);
     }
 
-
+    /**
+     * Hides any rectangle screen in an Advanced Texture
+     * @param screen
+     */
     public hideScreen(screen: GUI.Rectangle) {
+        screen.clearControls();
         screen.isVisible = false;
-    }
-
-    public showScreen(screen: GUI.Rectangle) {
-        screen.isVisible = true;
     }
 
     /**
      * Initiates the waiting screen after player ready
      */
     public displayMessage(message: string, type: "warning" | "important"): void {
-        // @ts-ignore
-        let texture = GUI.AdvancedDynamicTexture.CreateFullscreenUI("loading", true, this.scene);
-        this.message_screen = new GUI.Rectangle("waiting_panel");
+        this.hideScreen(this.message_screen);
+        this.message_screen.isVisible = true;
+
         this.message_screen.width = "500px";
+        this.message_screen.adaptWidthToChildren = true;
         this.message_screen.height = "50px";
         this.message_screen.cornerRadius = VRGUI.CORNER_RADIUS;
         this.message_screen.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
         this.message_screen.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_CENTER;
-        texture.addControl(this.message_screen);
+        this.message_texture.addControl(this.message_screen);
         let text = new GUI.TextBlock("message", message);
 
         if (type === "warning") {
@@ -337,7 +368,7 @@ export class VRGUI {
      * Changes the default Enter XR button
      * @param overlay
      */
-    public static showEnterVRDisplay(overlay: HTMLDivElement): void{
+    public static showEnterVRDisplay(overlay: HTMLDivElement): void {
         let button = overlay.children[0] as HTMLButtonElement;
         let instruction = document.createElement('label') as HTMLLabelElement;
 
@@ -355,7 +386,6 @@ export class VRGUI {
         // button style
         button.classList.add('vr-button');
     }
-
 
 
     // ************************************************************************
@@ -539,6 +569,7 @@ export class VRGUI {
     public static hideHTMLElement(element: HTMLElement) {
         element.classList.add("no-display");
     }
+
 
     /**
      * Fetches the needed data to the PlayerData interface
