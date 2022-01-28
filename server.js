@@ -20,7 +20,6 @@ let io = socketIO(server);
 // DEV SERVER-----------------------------------------------------
 const webpack = require('webpack');
 const webpackConfig = require('./webpack.config');
-const {response} = require("express");
 const compiler = webpack(webpackConfig);
 
 
@@ -37,14 +36,9 @@ server.listen(PORT, () => {
     console.log(`Start of server on localhost:${PORT} ...`);
 });
 
-let easy = fs.readFileSync("easy.txt", "utf8").split(", ");
-let intermediate = fs.readFileSync("intermediate.txt", "utf8").split(", ");
-let expert = fs.readFileSync("expert.txt", "utf8").split(", ");
-
 // **************************************************************************************
 // ************************************* APP DATA ***************************************
 // **************************************************************************************
-let game_started = false;
 let white = {};
 let black = {};
 let player_count = 0;
@@ -297,7 +291,6 @@ function resetApp() {
     white = {};
     black = {};
     player_limit = 2;
-    game_started = false;
     console.log(`No player in the game anymore. Resetting the game ...`)
 }
 
@@ -321,8 +314,8 @@ function startGameIfBothReady() {
  * @return {void}
  */
 function makeMove(data, from_player, to_player) {
-    // Future logging
-    console.log(`Player ${from_player.color} made move from ${data.from} to ${data.to}.`);
+    console.log(`Player ${data.color} made move from ${data.from} to ${data.to}.`);
+
     if (black.player_type === "human") {
         io.to(to_player.id).emit('other_player_move', (data));
         console.log(`Send move to ${to_player.color} player ...`);

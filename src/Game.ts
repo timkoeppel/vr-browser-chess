@@ -155,7 +155,7 @@ export default class Game {
 
         this.initiateLights();
         this.initiateMenuCamera();
-        this.initiateMeshes();
+        this.initiateScene();
         this.initiateXR();
         this.gui = new VRGUI(own_color, this, this.scene);
         this.DoRender(true);
@@ -174,8 +174,9 @@ export default class Game {
         // Despite the asynchronous design it does not have the avatar initialized
         // when wanting to change the camera --> unprofessional timeout
         setTimeout(async () => {
-            this.changeToPlayerCamera();
+           await  this.changeToPlayerCamera();
         }, 1000)
+        console.log(`Player ${data.color} ready!`)
     }
 
     /**
@@ -206,9 +207,12 @@ export default class Game {
      */
     public initiateBabylon() {
         console.log(`Initiating Babylon JS ...`);
-        this.canvas = document.getElementById("gameCanvas") as HTMLCanvasElement;
+        this.canvas = document.getElementById("game-canvas") as HTMLCanvasElement;
         this.engine = new BABYLON.Engine(this.canvas, true);
         this.scene = new BABYLON.Scene(this.engine);
+
+        BABYLON.DefaultLoadingScreen.DefaultLogoUrl = "./img/vr-browser-chess.png";
+        //BABYLON.SceneLoader.ShowLoadingScreen = false;
         console.log(`Babylon JS initiated.`);
     }
 
@@ -229,10 +233,11 @@ export default class Game {
     /**
      * Initiates all meshes and imports the whole 3D scene from Blender into the BABYLON Scene
      */
-    public async initiateMeshes() {
+    public async initiateScene() {
         console.log(`Initiating all meshes ...`);
         const t1 = performance.now();
-        await BABYLON.SceneLoader.AppendAsync("./meshes/", "scene.glb", this.scene).then(scene => {
+         //TODO own icon
+        await BABYLON.SceneLoader.AppendAsync("./meshes/", "scene.glb", this.scene, ).then(scene => {
             this.scene = scene;
             this.chessboard = new ChessBoard(scene.meshes, this);
             const t2 = performance.now();
@@ -241,7 +246,11 @@ export default class Game {
         }).catch(error => {
             console.log(error);
         });
-        VRGUI.changeButtonStyle(this.xr.enterExitUI.overlay);
+
+        const supported = await this.xr.baseExperience.sessionManager.isSessionSupportedAsync('immersive-vr');
+        if(supported){
+            VRGUI.showEnterVRDisplay(this.xr.enterExitUI.overlay);
+        }
     }
 
     /**
@@ -263,7 +272,7 @@ export default class Game {
     /**
      * Changes to the correlating camera of the player
      */
-    public changeToPlayerCamera(): void {
+    public async changeToPlayerCamera(): Promise<void> {
         console.log(`Initiating player camera ...`);
         // get new positions
         const z_pos = this.own_avatar.pose.nose.absolutePosition.z;
@@ -287,10 +296,10 @@ export default class Game {
         // Assignment in game
         if (color === this.own_color) {
             this.own_avatar = new Avatar(color, file_name);
-            await this.LoadAvatar(this.own_avatar, color);
+            this.own_avatar = await this.LoadAvatar(this.own_avatar, color);
         } else {
             this.other_avatar = new Avatar(color, file_name);
-            await this.LoadAvatar(this.other_avatar, color);
+            this.other_avatar = await this.LoadAvatar(this.other_avatar, color);
         }
     }
 
@@ -388,7 +397,7 @@ export default class Game {
      * @param color
      * @constructor
      */
-    private async LoadAvatar(avatar: Avatar, color: "white" | "black"): Promise<void> {
+    private async LoadAvatar(avatar: Avatar, color: "white" | "black"): Promise<Avatar> {
         const t1 = performance.now();
         await BABYLON.SceneLoader.ImportMeshAsync("", avatar.rootURL, avatar.filename, this.scene).then(result => {
             avatar.scene = result;
@@ -403,6 +412,8 @@ export default class Game {
             console.log(`Avatar ${color} initiated in ${t} s.`);
 
             this.app.connection.emitAvatarPreparation(color)
+
         });
+        return avatar;
     }
 }

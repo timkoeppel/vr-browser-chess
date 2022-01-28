@@ -51,7 +51,7 @@ export class App {
     public async prepareOwnPlayer(data: IPlayerData):Promise<void>{
         this.game.gui.hidePanel(this.game.gui.game_menu);
         this.game.gui.displayMessage("Waiting for the other player ...", "important");
-        this.game.prepareOwnPlayer(data).then(() => console.log(`Player ${data.color} ready!`));
+        await this.game.prepareOwnPlayer(data);
     }
 
 

@@ -126,8 +126,8 @@ export class VRGUI {
     private static CORNER_RADIUS = 20;
     private static FONT_SIZE_TEXT = 30;
     private static FONT_SIZE_TITLE = 40;
-    private static PRIMARY_COLOR = "white";
-    private static SECONDARY_COLOR = "grey";
+    private static PRIMARY_COLOR = "#FFFFFF";
+    private static SECONDARY_COLOR = "#222222";
     private static BACKGROUND_COLOR = "transparent";
     private static WARNING_COLOR = "red";
 
@@ -177,8 +177,8 @@ export class VRGUI {
 
         [this.selector_cross_v, this.selector_cross_h].forEach(cross => {
             cross.isVisible = true;
-            cross.background = "white";
-            cross.color = "white";
+            cross.background = VRGUI.PRIMARY_COLOR;
+            cross.color = VRGUI.PRIMARY_COLOR;
             cross.width = (cross.name === "cross_horizontal") ? "15px" : "6px";
             cross.height = (cross.name === "cross_horizontal") ?"2px" : "8px";
             cross.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
@@ -206,7 +206,7 @@ export class VRGUI {
             this.createAIOrHumanChoice(this.game_menu_grid, 3);
         }
         this.createAvatarChoice(this.game_menu_grid, avatar_row);
-        this.addSubmitButton(this.game_menu_grid, "Start Game!", submit_row, 1);
+        this.addSubmitButton(this.game_menu_grid, "START GAME", submit_row, 1);
     }
 
     /**
@@ -246,7 +246,7 @@ export class VRGUI {
             text.color = VRGUI.PRIMARY_COLOR;
         } else if (type === "important") {
             this.message_screen.background = VRGUI.PRIMARY_COLOR;
-            text.color = "black";
+            text.color = VRGUI.SECONDARY_COLOR;
         }
         this.message_screen.addControl(text);
     }
@@ -337,7 +337,7 @@ export class VRGUI {
      * Changes the default Enter XR button
      * @param overlay
      */
-    public static changeButtonStyle(overlay: HTMLDivElement): void{
+    public static showEnterVRDisplay(overlay: HTMLDivElement): void{
         let button = overlay.children[0] as HTMLButtonElement;
         let instruction = document.createElement('label') as HTMLLabelElement;
 
@@ -408,7 +408,7 @@ export class VRGUI {
         button.width = `${VRGUI.RADIO_ROW_HEIGHT - VRGUI.PADDING}px`;
         button.height = `${VRGUI.RADIO_ROW_HEIGHT - VRGUI.PADDING}px`;
         button.color = VRGUI.PRIMARY_COLOR;
-        button.background = VRGUI.SECONDARY_COLOR;
+        button.background = VRGUI.BACKGROUND_COLOR;
         button.group = group;
         button.isChecked = checked;
 
@@ -468,8 +468,10 @@ export class VRGUI {
         let button = GUI.Button.CreateSimpleButton("submit", text);
         button.width = `${VRGUI.BUTTON_WIDTH}px`;
         button.height = `${VRGUI.BUTTON_ROW_HEIGHT - VRGUI.PADDING}px`;
-        button.color = "black";
+        button.color = VRGUI.SECONDARY_COLOR;
         button.fontSize = `${VRGUI.FONT_SIZE_TEXT}px`;
+        button.fontWeight = "bold";
+        button.thickness = 0;
         button.cornerRadius = VRGUI.CORNER_RADIUS;
         button.background = VRGUI.PRIMARY_COLOR;
         button.onPointerDownObservable.add(() => {
@@ -527,7 +529,7 @@ export class VRGUI {
      * @param element
      */
     public static showHTMLElement(element: HTMLElement) {
-        element.classList.remove("no_display");
+        element.classList.remove("no-display");
     }
 
     /**
@@ -535,7 +537,7 @@ export class VRGUI {
      * @param element
      */
     public static hideHTMLElement(element: HTMLElement) {
-        element.classList.add("no_display");
+        element.classList.add("no-display");
     }
 
     /**

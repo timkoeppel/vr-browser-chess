@@ -7,24 +7,11 @@ canvas {
     height: 100%;
 }
 
-#fps {
-    position: absolute;
-    background-color: black;
-    border: 2px solid red;
-    text-align: center;
-    font-size: 16px;
-    color: white;
-    top: 15px;
-    right: 10px;
-    width: 60px;
-    height: 20px;
-}
-
-.no_display {
+.no-display {
     display: none !important;
 }
 
-.overlay{
+.overlay {
     display: flex !important;
     flex-direction: column;
     right: 0 !important;
@@ -46,7 +33,7 @@ canvas {
     font-family: Montserrat, serif;
 }
 
-.vr-button, .babylonVRicon{
+.vr-button, .babylonVRicon {
     order: 2;
     width: 50vw !important;
     height: 15vh !important;
@@ -56,4 +43,30 @@ canvas {
     background-size: 70% !important;
     border-radius: 30px;
     align-items: center !important;
+}
+
+#babylonjsLoadingDiv {
+
+}
+
+#loading-screen{
+    opacity: 1;
+    transition: opacity 1.5s ease 0s;
+    pointer-events: none;
+    place-items: center;
+    align-items: center;
+    justify-items: center;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: black;
+}
+
+#scene-progress {
+    position: absolute;
+    width: 80vw;
+    left: 10%;
+    bottom: 30%;
 }

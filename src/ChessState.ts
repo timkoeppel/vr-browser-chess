@@ -14,6 +14,13 @@ import {Avatar} from "./Avatar";
  * ... -> next Player (begin) -> select move -> make move -> next Player -> ... -> Game Over
  */
 export class ChessState {
+    get other_player(): ChessPlayer {
+        return this._other_player;
+    }
+
+    set other_player(value: ChessPlayer) {
+        this._other_player = value;
+    }
     get actionmanager(): ActionManager {
         return this._actionmanager;
     }
@@ -97,6 +104,7 @@ export class ChessState {
     private _logic: Chess;
     private _current_player: ChessPlayer;
     private _own_player: ChessPlayer;
+    private _other_player: ChessPlayer
     private _white: ChessPlayer;
     private _black: ChessPlayer;
     private _selected_field: ChessField | null;
@@ -113,6 +121,7 @@ export class ChessState {
         this.white = new ChessPlayer("human", "white", white_avatar, this);
         this.black = new ChessPlayer(black_player_type, "black", black_avatar, this);
         this.own_player = own_color === "white" ? this.white : this.black;
+        this.other_player = own_color === "white" ? this.black : this.white;
         this.current_player = this.white;
         this.selected_field = null;
         this.is_game_running = true;
@@ -177,19 +186,11 @@ export class ChessState {
      */
     public makeOtherPlayerMove(move: Move) {
         this.selected_field = this.game.chessboard.getField(move.from);
+        if(this.other_player.type !== "human"){
+            this.submitMove(move)
+        }
 
-        /* NOT WORKING HAND ANIMATION TODO
-        let hand_rel = this.current_player.avatar.pose.hand_r.position;
-        let field_abs = this.selected_field.mesh.absolutePosition;
-
-        let target_pos = Position.getLocalFromGlobal(this.current_player.avatar.pose.hand_r, field_abs);
-        setTimeout(() => {
-            ActionManager.moveHands(this.current_player.avatar.pose.hand_r, hand_rel, target_pos);
-        }, 1000);
-         */
-
-        // Wait 2 seconds to make experience not too stressed
-        // Action
+        // Wait 1 seconds to make experience not too stressed
         setTimeout(() => {
             this.makeMove(move, this.selected_field.figure);
             this.toNextPlayer();
@@ -210,13 +211,6 @@ export class ChessState {
         const playable_fields = this.getPlayableFields(this.moves);
         this.game.controller.setFieldAsSelected(this.selected_field);
         this.game.controller.setFieldsAsPlayable(playable_fields);
-
-        /* NOT WORKING HAND ANIMATION TODO
-        let hand_rel = this.current_player.avatar.pose.hand_r.position;
-        let field_abs = this.selected_field.mesh.absolutePosition;
-        let target_pos = Position.getLocalFromGlobal(this.current_player.avatar.pose.hand_r, field_abs);
-        ActionManager.moveHands(this.current_player.avatar.pose.hand_r, hand_rel, target_pos);
-         */
     }
 
     /**
@@ -301,9 +295,9 @@ export class ChessState {
         captured_figure.on_field = false;
         captured_field.figure = is_en_passant ? null : moved_fig;
 
-        // physical capture TODO capture move hands
+        // physical capture
         const new_pos = ChessState.getOffBoardPosition(captured_figure);
-        this.actionmanager.moveFigure(captured_figure, captured_figure.position.scene_pos, new_pos);
+        this.actionmanager.moveFigureAndCapture(captured_figure, captured_figure.position.scene_pos, new_pos);
         captured_figure.position = new Position(new_pos);
     }
 
@@ -333,16 +327,8 @@ export class ChessState {
             this.capture(fig_to_move, captured_fig, captured_field, is_en_passant)
         }
 
-        const target_pos = new Position(move.to, "figure");
-        /* NOT WORKING HAND ANIMATION TODO
-        let hand_rel = this.current_player.avatar.pose.hand_r.position;
-        let field_abs = Position.getLocalFromGlobal(this.current_player.avatar.pose.hand_r, this.game.chessboard.getField(move.to).mesh.absolutePosition);
-        let ori_rel = this.current_player.avatar.pose.hand_r_original.position;
-
-        ActionManager.moveHands(this.current_player.avatar.pose.hand_r, hand_rel, field_abs, ori_rel);
-         */
-
         // Promotion case
+        const target_pos = new Position(move.to, "figure");
         if (ChessState.isPromotion(move)) {
             this.actionmanager.moveFigureAndPromote(fig_to_move, fig_to_move.mesh.position, target_pos.scene_pos);
         } else {
