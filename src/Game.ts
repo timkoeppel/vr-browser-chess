@@ -10,7 +10,7 @@ import {VoiceController} from "./VoiceController";
 import {Controller} from "./Controller";
 import {VRGUI} from "./VRGUI";
 import {App} from "./App";
-import {IPlayerData} from "./IPlayerData";
+import {IPlayerData} from "./PlayerData";
 import {Pose} from "./Pose";
 import {ChessState} from "./ChessState";
 
@@ -210,13 +210,14 @@ export default class Game {
      */
     public initiateBabylon() {
         console.log(`Initiating Babylon JS ...`);
+        // Babylon necessities
         this.canvas = document.getElementById("game-canvas") as HTMLCanvasElement;
         this.engine = new BABYLON.Engine(this.canvas, true);
         this.scene = new BABYLON.Scene(this.engine);
 
+        // Loading Screen
         BABYLON.DefaultLoadingScreen.DefaultLogoUrl = "./img/vr-browser-chess.png";
         BABYLON.DefaultLoadingScreen.DefaultSpinnerUrl = "./img/favicon-16x16.png";
-        //BABYLON.SceneLoader.ShowLoadingScreen = false;
         console.log(`Babylon JS initiated.`);
     }
 

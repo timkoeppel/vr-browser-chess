@@ -1,5 +1,5 @@
 import {App} from "./App";
-import {IPlayerData} from "./IPlayerData";
+import {IPlayerData} from "./PlayerData";
 
 /**
  * Connection manages the interface to the server via socket connection

@@ -8,6 +8,7 @@ import {ActionManager} from "./ActionManager";
 import Game from "./Game";
 import {AI} from "./AI";
 import {Avatar} from "./Avatar";
+import {ICastling} from "./Castling";
 
 /**
  * ChessState manages the game state, logic and move management
@@ -186,9 +187,6 @@ export class ChessState {
      */
     public makeOtherPlayerMove(move: Move) {
         this.selected_field = this.game.chessboard.getField(move.from);
-        if(this.other_player.type !== "human"){
-            this.submitMove(move)
-        }
 
         // Wait 1 seconds to make experience not too stressed
         setTimeout(() => {
@@ -308,6 +306,12 @@ export class ChessState {
      * @private
      */
     private makePhysicalMove(move: Move, fig_to_move: ChessFigure): void {
+        // Rochade/Castling case
+        if (ChessState.isCastling(move)) {
+            let castling = this.getCastlingInfo(move);
+            this.actionmanager.moveFigure(castling.rook, castling.from.position.scene_pos, castling.to.position.scene_pos);
+        }
+
         // Capture case
         if (ChessState.isCapture(move)) {
             let captured_fig: ChessFigure;
@@ -334,12 +338,6 @@ export class ChessState {
         } else {
             this.actionmanager.moveFigure(fig_to_move, fig_to_move.mesh.position, target_pos.scene_pos);
         }
-
-        // Rochade/Castling case
-        if (ChessState.isCastling(move)) {
-            const castling = this.getCastlingInfo(move);
-            this.actionmanager.moveFigure(castling['rook'].mesh, castling['from'].position.scene_pos, castling['to'].position.scene_pos);
-        }
     }
 
     /**
@@ -356,28 +354,23 @@ export class ChessState {
         const made_move = this.logic.move({
             from: move.from.toLowerCase(),
             to: move.to.toLowerCase(),
-            promotion: prom_fig
+            promotion: prom_fig,
         });
         console.log(`Player ${this.current_player.color} moved ${ChessState.pieces[made_move.piece]} from ${made_move.from} to ${made_move.to}.`);
         console.log(this.logic.ascii());
 
-        // Refresh Project Figure
+        // Refresh Chessboard
         fig_to_move.position = new Position(move.to, "figure");
-
-        // Refresh Project fields
         this.game.chessboard.getField(move.from).figure = null;
         this.game.chessboard.getField(move.to).figure = fig_to_move;
 
-        // Rochade/Castling case
+        // Refresh Rochade/Castling
         if (ChessState.isCastling(move)) {
-            const castling = this.getCastlingInfo(move);
+            let castling = this.getCastlingInfo(move);
 
-            // Refresh Project Rook
-            castling['rook'].pos = castling['to'].position;
-
-            // Refresh Project fields
-            castling['from'].figure = null;
-            castling['to'].figure = castling['rook'];
+            castling.rook.position = castling.to.position;
+            castling.from.figure = null;
+            castling.to.figure = castling.rook;
         }
     }
 
@@ -491,6 +484,11 @@ export class ChessState {
         return move.flags.includes("E");
     }
 
+    /**
+     * Checks if the given move is a promotion
+     * @param move
+     * @private
+     */
     private static isPromotion(move: Move): boolean {
         return move.flags.includes("P");
     }
@@ -536,7 +534,7 @@ export class ChessState {
      * @param move
      * @private
      */
-    private getCastlingInfo(move: Move): object {
+    private getCastlingInfo(move: Move): ICastling {
         // @ts-ignore
         const chess_z = move.color === "W" ? 1 : 8;
 
@@ -549,12 +547,7 @@ export class ChessState {
         const rook_to_x = move.flags.includes("Q") ? "D" : "F";
         const to_field = this.game.chessboard.getField(rook_to_x + chess_z);
 
-        return {
-            rook: rook,
-            from: from_field,
-            to: to_field
-        };
-
+        return new ICastling(rook, from_field, to_field);
     }
 
     /**

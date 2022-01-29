@@ -314,7 +314,7 @@ function startGameIfBothReady() {
  * @return {void}
  */
 function makeMove(data, from_player, to_player) {
-    console.log(`Player ${data.color} made move from ${data.from} to ${data.to}.`);
+    console.log(`Player ${(data.color === "W" ? "white" : "black") } made move from ${data.from} to ${data.to}.`);
 
     if (black.player_type === "human") {
         io.to(to_player.id).emit('other_player_move', (data));

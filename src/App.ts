@@ -1,6 +1,6 @@
 import Game from "./Game";
 import {Connection} from "./Connection";
-import {IPlayerData} from "./IPlayerData";
+import {IPlayerData} from "./PlayerData";
 
 /**
  * App is the main module
