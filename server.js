@@ -175,7 +175,6 @@ function prepareWhiteGame(socket, data) {
         player_limit = 1;
 
         // A person is already in as black player --> redirect
-        console.log(isConnected(black));
         if (isConnected(black)) {
             redirect(getSocketById(black.id))
         }

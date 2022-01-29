@@ -25,6 +25,7 @@ export default class Game {
     set chessstate(value: ChessState) {
         this._chessstate = value;
     }
+
     get other_avatar(): Avatar {
         return this._other_avatar;
     }
@@ -170,12 +171,11 @@ export default class Game {
      */
     public async prepareOwnPlayer(data: IPlayerData) {
         await this.initiateAvatar(data.color, data.avatar);
-
         // Despite the asynchronous design it does not have the avatar initialized
         // when wanting to change the camera --> unprofessional timeout
         setTimeout(async () => {
-           await this.changeToPlayerCamera();
-            if(this.other_avatar === undefined){
+            await this.changeToPlayerCamera();
+            if (this.other_avatar === undefined) {
                 this.gui.displayMessage("Waiting for the other player ...", "important");
             }
         }, 1000);
@@ -195,7 +195,7 @@ export default class Game {
      * @param own_player
      * @param other_player
      */
-    public async startChessGame(own_player: IPlayerData, other_player: IPlayerData){
+    public async startChessGame(own_player: IPlayerData, other_player: IPlayerData) {
         const own_color = own_player.color;
         const black_player = (own_player.color === "white") ? other_player.player_type : own_player.player_type;
 
@@ -247,7 +247,7 @@ export default class Game {
             this.scene = scene;
             this.chessboard = new ChessBoard(scene.meshes, this);
             const t2 = performance.now();
-            const t = ((t2 - t1)/1000).toFixed(2);
+            const t = ((t2 - t1) / 1000).toFixed(2);
             console.log(`Meshes initiated in ${t} s.`);
         }).catch(error => {
             console.log(error);
@@ -256,7 +256,7 @@ export default class Game {
         // Prepare GUI
         VRGUI.hideHTMLElement(document.getElementById("scene-progress"));
         const supported = await this.xr.baseExperience.sessionManager.isSessionSupportedAsync('immersive-vr');
-        if(supported){
+        if (supported) {
             VRGUI.showEnterVRDisplay(this.xr.enterExitUI.overlay);
         }
     }
@@ -292,7 +292,8 @@ export default class Game {
         this.xr.baseExperience.camera.position.set(eye_position.x, eye_position.y, eye_position.z);
         this.camera.setTarget(new BABYLON.Vector3(0, 25, 0));
         this.camera.applyGravity = false;
-
+        this.gui.initiateCross();
+        await this.dimLights(this.light, 1000, false, 1);
         console.log(`Player camera initiated.`);
     }
 
@@ -305,6 +306,7 @@ export default class Game {
         if (color === this.own_color) {
             this.own_avatar = new Avatar(color, file_name);
             this.own_avatar = await this.LoadAvatar(this.own_avatar, color);
+
         } else {
             this.other_avatar = new Avatar(color, file_name);
             this.other_avatar = await this.LoadAvatar(this.other_avatar, color);
@@ -346,12 +348,12 @@ export default class Game {
         });
 
         // Make selector cross visible in XR mode
-        this.xr.baseExperience.onStateChangedObservable.add( (xrs, xre) => {
-            if(xrs === WebXRState.IN_XR){
-                if(this.controller === undefined || this.controller.type === "gaze"){
+        this.xr.baseExperience.onStateChangedObservable.add((xrs, xre) => {
+            if (xrs === WebXRState.IN_XR) {
+                if (this.controller === undefined || this.controller.type === "gaze") {
                     this.gui.initiateCross();
                 }
-            }else if (xrs === WebXRState.NOT_IN_XR){
+            } else if (xrs === WebXRState.NOT_IN_XR) {
                 this.gui.hideScreen(this.gui.selector_cross_v);
                 this.gui.hideScreen(this.gui.selector_cross_h);
             }
@@ -407,6 +409,11 @@ export default class Game {
      */
     private async LoadAvatar(avatar: Avatar, color: "white" | "black"): Promise<Avatar> {
         const t1 = performance.now();
+        if (color === this.own_color) {
+            await this.dimLights(this.light, 1000, true, 1);
+            this.gui.hideScreen(this.gui.selector_cross_v);
+            this.gui.hideScreen(this.gui.selector_cross_h);
+        }
         await BABYLON.SceneLoader.ImportMeshAsync("", avatar.rootURL, avatar.filename, this.scene, (evt) => {
             this.gui.displayMessage(`Loading ${color} avatar: ${((evt.loaded / evt.total) * 100).toFixed(1)}%`, "important");
         }).then(result => {
@@ -418,11 +425,35 @@ export default class Game {
             avatar.loaded = true;
 
             const t2 = performance.now();
-            const t = ((t2 - t1)/1000).toFixed(2);
+            const t = ((t2 - t1) / 1000).toFixed(2);
             console.log(`Avatar ${color} initiated in ${t} s.`);
-
             this.app.connection.emitAvatarPreparation(color);
         });
         return avatar;
+    }
+
+    /**
+     * Dims the lights down or up to make a smooth back transition
+     * @param light
+     * @param total_duration
+     * @param dim_down
+     * @param ori_intensity
+     */
+    public async dimLights(light: BABYLON.Light, total_duration: number, dim_down: boolean, ori_intensity: number): Promise<void> {
+        const dim_duration = total_duration / 2;
+        const dim_frac: number = dim_duration / 10;
+        const light_frac = ori_intensity / 50;
+
+        const timer = () => new Promise(res => setTimeout(res, dim_frac / 100));
+
+        async function load(down: boolean) { // We need to wrap the loop into an async function for this to work
+            for (let i = 0; i < dim_frac; i++) {
+                light.intensity = (down) ? (light.intensity - light_frac) : (light.intensity + light_frac);
+                console.log(light.intensity);
+                await timer(); // then the created Promise can be awaited
+            }
+        }
+
+        await load(dim_down);
     }
 }

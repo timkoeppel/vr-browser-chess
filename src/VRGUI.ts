@@ -231,7 +231,12 @@ export class VRGUI {
      */
     public displaySceneProgress(loaded: number, total: number) {
         let bar = document.getElementById("scene-progress-bar");
+        // Initial
         if (bar.ariaValueMax === "") {
+            bar.classList.remove("progress-bar-striped", "bg-dark", "progress-bar-animated");
+            bar.classList.add("bg-light");
+            bar.style.width = "0";
+            bar.innerHTML = "";
             bar.ariaValueMax = total.toString();
         }
 
