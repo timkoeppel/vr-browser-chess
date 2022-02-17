@@ -292,7 +292,9 @@ export default class Game {
         this.xr.baseExperience.camera.position.set(eye_position.x, eye_position.y, eye_position.z);
         this.camera.setTarget(new BABYLON.Vector3(0, 25, 0));
         this.camera.applyGravity = false;
-        this.gui.initiateCross();
+        if(await this.xr.baseExperience.sessionManager.isSessionSupportedAsync('immersive-vr')){
+            this.gui.initiateCross();
+        }
         await this.dimLights(this.light, 1000, false, 1);
         console.log(`Player camera initiated.`);
     }
@@ -411,8 +413,11 @@ export default class Game {
         const t1 = performance.now();
         if (color === this.own_color) {
             await this.dimLights(this.light, 1000, true, 1);
-            this.gui.hideScreen(this.gui.selector_cross_v);
-            this.gui.hideScreen(this.gui.selector_cross_h);
+            if(await this.xr.baseExperience.sessionManager.isSessionSupportedAsync('immersive-vr')){
+                this.gui.hideScreen(this.gui.selector_cross_v);
+                this.gui.hideScreen(this.gui.selector_cross_h);
+            }
+
         }
         await BABYLON.SceneLoader.ImportMeshAsync("", avatar.rootURL, avatar.filename, this.scene, (evt) => {
             this.gui.displayMessage(`Loading ${color} avatar: ${((evt.loaded / evt.total) * 100).toFixed(1)}%`, "important");
@@ -428,6 +433,7 @@ export default class Game {
             const t = ((t2 - t1) / 1000).toFixed(2);
             console.log(`Avatar ${color} initiated in ${t} s.`);
             this.app.connection.emitAvatarPreparation(color);
+            this.gui.hideScreen(this.gui.message_screen);
         });
         return avatar;
     }
