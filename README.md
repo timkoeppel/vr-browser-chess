@@ -2,7 +2,10 @@
 
 This application lets you play chess in VR in the browser. 
 Either choose the Multiplayer mode against another real person or the
-single-player action against an AI.
+single-player action against an AI. 
+
+<ins>Disclaimer:</ins> This app only works with WebXR API
+supported browsers, most notably: **Google Chrome** and **Samsung Internet**.
 
 ## Installation
 Clone this GitHub repository with your preferred download method:  
