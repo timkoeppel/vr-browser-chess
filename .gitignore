@@ -121,3 +121,4 @@ evaluation/
 # performance measure files
 *.txt
 
+*.glb
